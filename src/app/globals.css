@@ -1,0 +1,100 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Dungeon Inn Theme Colors */
+  --primary-header: #2C1E18;
+  --secondary-header: #4A2F22;
+  --header-text: #F0E5D8;
+  --sub-header-text: #A88C6B;
+  --canvas-bg: #1A1A1A;
+  --surface-bg: #2B2B2B;
+  --primary-text: #D4CFC6;
+  --secondary-text: #8A8177;
+  --accent: #E57A00;
+  --outline: #403A36;
+  --primary-interactive: #E57A00;
+  --primary-interactive-text: #1A110A;
+  --secondary-interactive: #454545;
+  --secondary-interactive-text: #D4CFC6;
+  
+  /* Default mapping */
+  --background: #1A1A1A;
+  --foreground: #D4CFC6;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: 'Cinzel', 'Georgia', serif;
+}
+
+/* Custom scrollbar for dark theme */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--canvas-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--outline);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+/* Custom selection color */
+::selection {
+  background: var(--accent);
+  color: var(--primary-interactive-text);
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  /* Dungeon Inn utility classes */
+  .dungeon-bg {
+    background-color: var(--canvas-bg);
+  }
+  
+  .dungeon-surface {
+    background-color: var(--surface-bg);
+  }
+  
+  .dungeon-text {
+    color: var(--primary-text);
+  }
+  
+  .dungeon-text-secondary {
+    color: var(--secondary-text);
+  }
+  
+  .dungeon-accent {
+    color: var(--accent);
+  }
+  
+  .dungeon-header {
+    color: var(--header-text);
+  }
+  
+  .dungeon-border {
+    border-color: var(--outline);
+  }
+  
+  .btn-primary {
+    background-color: var(--primary-interactive);
+    color: var(--primary-interactive-text);
+  }
+  
+  .btn-secondary {
+    background-color: var(--secondary-interactive);
+    color: var(--secondary-interactive-text);
+  }
+}

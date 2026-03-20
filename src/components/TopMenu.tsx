@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/redux/store';
 import { logout } from '@/redux/features/authSlice';
@@ -21,8 +22,16 @@ export default function TopMenu() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center">
-            <span className="text-2xl font-bold text-[#E57A00]">Dungeon Inn</span>
+          <Link href="/" className="flex items-center gap-2">
+            <Image
+              src="/logo.png"
+              alt="Dungeon Inn"
+              width={40}
+              height={40}
+              className="w-10 h-10 object-contain"
+            />
+            {/* Show title only on desktop (md and up) */}
+            <span className="hidden md:block text-2xl font-bold text-[#E57A00]">Dungeon Inn</span>
           </Link>
 
           {/* Navigation Links */}

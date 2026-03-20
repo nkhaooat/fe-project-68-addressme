@@ -17,7 +17,7 @@
 
 | Environment | URL |
 |-------------|-----|
-| **Frontend** | https://address-me-draft.vercel.app/ |
+| **Frontend** | https://fe-project-68-addressme.vercel.app/ |
 | **Backend API** | https://be-project-68-bitkrub.onrender.com |
 
 ---

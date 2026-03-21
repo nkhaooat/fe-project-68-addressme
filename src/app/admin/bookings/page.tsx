@@ -124,12 +124,12 @@ export default function AdminBookingsPage() {
                 <div>
                   <p className="text-[#8A8177] text-sm">Service</p>
                   <p className="text-[#D4CFC6] font-medium">
-                    {typeof reservation.service === 'object'
+                    {reservation.service && typeof reservation.service === 'object'
                       ? reservation.service.name
                       : 'Service'}
                   </p>
                   <p className="text-[#A88C6B] text-sm">
-                    {typeof reservation.shop === 'object'
+                    {reservation.shop && typeof reservation.shop === 'object'
                       ? reservation.shop.name
                       : 'Shop'}
                   </p>

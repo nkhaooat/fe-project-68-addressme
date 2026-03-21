@@ -73,29 +73,61 @@ export default function ShopDetailPage() {
         </Link>
 
         {/* Shop Header */}
-        <div className="bg-[#2B2B2B] border border-[#403A36] rounded-lg p-8 mb-8">
-          <h1 className="text-3xl font-bold text-[#F0E5D8] mb-4">{shop.name}</h1>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-[#D4CFC6]">
-            <div>
-              <p className="text-[#8A8177] mb-1">📍 Address</p>
-              <p>{shop.address}</p>
-              <p className="text-[#A88C6B]">{shop.location}</p>
+        <div className="bg-[#2B2B2B] border border-[#403A36] rounded-lg overflow-hidden mb-8">
+          {/* Shop Photo */}
+          {shop.photo && (
+            <div className="h-64 w-full overflow-hidden">
+              <img 
+                src={shop.photo} 
+                alt={shop.name}
+                className="w-full h-full object-cover"
+              />
             </div>
-            <div>
-              <p className="text-[#8A8177] mb-1">📞 Contact</p>
-              <p>{shop.tel}</p>
-              <p className="text-[#A88C6B]">
-                {shop.openTime} - {shop.closeTime}
+          )}
+          <div className="p-8">
+            <div className="flex justify-between items-start mb-4">
+              <h1 className="text-3xl font-bold text-[#F0E5D8]">{shop.name}</h1>
+              {shop.rating && (
+                <div className="flex items-center bg-[#1A1A1A] px-3 py-1 rounded-full">
+                  <span className="text-yellow-400 mr-1">⭐</span>
+                  <span className="text-[#F0E5D8] font-bold">{shop.rating}</span>
+                </div>
+              )}
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-[#D4CFC6]">
+              <div>
+                <p className="text-[#8A8177] mb-1">📍 Address</p>
+                <p>{shop.address}</p>
+                <p className="text-[#A88C6B]">{shop.location}</p>
+              </div>
+              <div>
+                <p className="text-[#8A8177] mb-1">📞 Contact</p>
+                <p>{shop.tel}</p>
+                <p className="text-[#A88C6B]">
+                  {shop.openTime} - {shop.closeTime}
+                </p>
+              </div>
+            </div>
+            <div className="mt-4 pt-4 border-t border-[#403A36]">
+              <p className="text-[#8A8177]">
+                Price Range:{' '}
+                <span className="text-[#E57A00] font-bold">
+                  ฿{shop.priceRangeMin} - ฿{shop.priceRangeMax}
+                </span>
               </p>
             </div>
-          </div>
-          <div className="mt-4 pt-4 border-t border-[#403A36]">
-            <p className="text-[#8A8177]">
-              Price Range:{' '}
-              <span className="text-[#E57A00] font-bold">
-                ฿{shop.priceRangeMin} - ฿{shop.priceRangeMax}
-              </span>
-            </p>
+            {shop.map && (
+              <div className="mt-4">
+                <a 
+                  href={shop.map} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-[#E57A00] hover:text-[#c46a00] transition-colors text-sm"
+                >
+                  📍 View on Google Maps →
+                </a>
+              </div>
+            )}
           </div>
         </div>
 

@@ -103,12 +103,12 @@ export default function MyBookingsPage() {
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                   <div>
                     <h3 className="text-xl font-bold text-[#F0E5D8]">
-                      {typeof reservation.service === 'object'
+                      {reservation.service && typeof reservation.service === 'object'
                         ? reservation.service.name
                         : 'Service'}
                     </h3>
                     <p className="text-[#A88C6B]">
-                      {typeof reservation.shop === 'object'
+                      {reservation.shop && typeof reservation.shop === 'object'
                         ? reservation.shop.name
                         : 'Shop'}
                     </p>

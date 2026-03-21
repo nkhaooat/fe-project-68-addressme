@@ -17,6 +17,9 @@ export interface Shop {
   closeTime: string;
   priceRangeMin: number;
   priceRangeMax: number;
+  rating?: number;
+  photo?: string;
+  placeId?: string;
 }
 
 export interface Service {

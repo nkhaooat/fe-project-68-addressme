@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { getShops, getShopAreas, ShopQueryParams } from '@/libs/shops';
 import { Shop } from '@/interface';
@@ -10,6 +10,23 @@ interface PaginationData {
   page: number;
   pages: number;
   limit: number;
+}
+
+// Debounce hook
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
 }
 
 export default function ShopsPage() {
@@ -27,6 +44,9 @@ export default function ShopsPage() {
   const [priceRange, setPriceRange] = useState('');
   const [sortBy, setSortBy] = useState<ShopQueryParams['sortBy']>('rating');
   const [sortOrder, setSortOrder] = useState<ShopQueryParams['sortOrder']>('desc');
+
+  // Debounced search query
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
   const ITEMS_PER_PAGE = 12;
 
@@ -55,7 +75,7 @@ export default function ShopsPage() {
           sortOrder,
         };
 
-        if (searchQuery) params.search = searchQuery;
+        if (debouncedSearchQuery) params.search = debouncedSearchQuery;
         if (selectedArea) params.searchArea = selectedArea;
         if (minRating) params.minRating = parseFloat(minRating);
         
@@ -80,12 +100,12 @@ export default function ShopsPage() {
     }
 
     fetchShops();
-  }, [currentPage, searchQuery, selectedArea, minRating, priceRange, sortBy, sortOrder]);
+  }, [currentPage, debouncedSearchQuery, selectedArea, minRating, priceRange, sortBy, sortOrder]);
 
-  // Reset to page 1 when filters change
+  // Reset to page 1 when filters change (except search which has its own debounce)
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, selectedArea, minRating, priceRange, sortBy, sortOrder]);
+  }, [debouncedSearchQuery, selectedArea, minRating, priceRange, sortBy, sortOrder]);
 
   if (loading && shops.length === 0) {
     return (
@@ -227,6 +247,9 @@ export default function ShopsPage() {
           {pagination && (
             <div className="mt-4 text-[#8A8177] text-sm">
               Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} - {Math.min(currentPage * ITEMS_PER_PAGE, pagination.total)} of {pagination.total} shops
+              {debouncedSearchQuery && searchQuery !== debouncedSearchQuery && (
+                <span className="ml-2 text-[#E57A00]">(searching...)</span>
+              )}
             </div>
           )}
         </div>

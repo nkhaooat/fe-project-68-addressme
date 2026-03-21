@@ -14,6 +14,23 @@ interface PaginationData {
   limit: number;
 }
 
+// Debounce hook
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
 export default function AdminBookingsPage() {
   const { token, user } = useSelector((state: RootState) => state.auth);
   const [reservations, setReservations] = useState<Reservation[]>([]);
@@ -27,6 +44,9 @@ export default function AdminBookingsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchUser, setSearchUser] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  
+  // Debounced search
+  const debouncedSearchUser = useDebounce(searchUser, 500);
   
   const ITEMS_PER_PAGE = 12;
 
@@ -46,11 +66,11 @@ export default function AdminBookingsPage() {
         if (res.success) {
           let filtered = res.data;
           
-          // Client-side filter by username
-          if (searchUser) {
+          // Client-side filter by username (using debounced value)
+          if (debouncedSearchUser) {
             filtered = filtered.filter((r: Reservation) => {
               const userName = typeof r.user === 'object' ? r.user.name : '';
-              return userName.toLowerCase().includes(searchUser.toLowerCase());
+              return userName.toLowerCase().includes(debouncedSearchUser.toLowerCase());
             });
           }
           
@@ -69,7 +89,7 @@ export default function AdminBookingsPage() {
     if (token && user?.role === 'admin') {
       fetchReservations();
     }
-  }, [token, user, currentPage, statusFilter, searchUser]);
+  }, [token, user, currentPage, statusFilter, debouncedSearchUser]);
 
   const handleUpdate = async (id: string) => {
     try {
@@ -174,6 +194,9 @@ export default function AdminBookingsPage() {
                 onChange={(e) => setSearchUser(e.target.value)}
                 className="w-full bg-[#1A1A1A] border border-[#403A36] rounded-lg px-4 py-2 text-[#F0E5D8] focus:border-[#E57A00] focus:outline-none"
               />
+              {debouncedSearchUser && searchUser !== debouncedSearchUser && (
+                <span className="text-[#E57A00] text-xs mt-1 block">Searching...</span>
+              )}
             </div>
             
             {/* Status Filter */}

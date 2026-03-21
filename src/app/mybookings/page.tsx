@@ -124,14 +124,16 @@ export default function MyBookingsPage() {
                       Status: {reservation.status.charAt(0).toUpperCase() + reservation.status.slice(1)}
                     </p>
                   </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleDelete(reservation._id)}
-                      className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
-                    >
-                      Cancel
-                    </button>
-                  </div>
+                  {reservation.status !== 'completed' && (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleDelete(reservation._id)}
+                        className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

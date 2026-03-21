@@ -107,11 +107,16 @@ export default function MyBookingsPage() {
                         ? reservation.service.name
                         : 'Service'}
                     </h3>
-                    <p className="text-[#A88C6B]">
-                      {reservation.shop && typeof reservation.shop === 'object'
-                        ? reservation.shop.name
-                        : 'Shop'}
-                    </p>
+                    {reservation.shop && typeof reservation.shop === 'object' ? (
+                      <Link
+                        href={`/shop/${reservation.shop._id}`}
+                        className="text-[#A88C6B] hover:text-[#E57A00] transition-colors"
+                      >
+                        {reservation.shop.name}
+                      </Link>
+                    ) : (
+                      <p className="text-[#A88C6B]">Shop</p>
+                    )}
                     <p className="text-[#8A8177] text-sm mt-1">
                       📅 {new Date(reservation.resvDate).toLocaleString()}
                     </p>

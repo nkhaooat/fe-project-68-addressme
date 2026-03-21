@@ -128,11 +128,16 @@ export default function AdminBookingsPage() {
                       ? reservation.service.name
                       : 'Service'}
                   </p>
-                  <p className="text-[#A88C6B] text-sm">
-                    {reservation.shop && typeof reservation.shop === 'object'
-                      ? reservation.shop.name
-                      : 'Shop'}
-                  </p>
+                  {reservation.shop && typeof reservation.shop === 'object' ? (
+                    <Link
+                      href={`/shop/${reservation.shop._id}`}
+                      className="text-[#A88C6B] text-sm hover:text-[#E57A00] transition-colors"
+                    >
+                      {reservation.shop.name}
+                    </Link>
+                  ) : (
+                    <p className="text-[#A88C6B] text-sm">Shop</p>
+                  )}
                 </div>
                 <div>
                   <p className="text-[#8A8177] text-sm">Date & Time</p>

@@ -16,7 +16,7 @@ export default function MyBookingsPage() {
   useEffect(() => {
     async function fetchReservations() {
       try {
-        const res = await getReservations(token!);
+        const res = await getReservations(token!, true);
         if (res.success) {
           setReservations(res.data);
         } else {

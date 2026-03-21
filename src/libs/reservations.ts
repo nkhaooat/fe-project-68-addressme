@@ -1,7 +1,10 @@
 import { API_URL } from './config';
 
-export async function getReservations(token: string) {
-  const response = await fetch(`${API_URL}/reservations`, {
+export async function getReservations(token: string, myBookings: boolean = false) {
+  const url = myBookings 
+    ? `${API_URL}/reservations?myBookings=true`
+    : `${API_URL}/reservations`;
+  const response = await fetch(url, {
     headers: { 'Authorization': `Bearer ${token}` },
   });
   return response.json();

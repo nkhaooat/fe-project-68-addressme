@@ -191,7 +191,11 @@ export default function AdminBookingsPage() {
                 type="text"
                 placeholder="Enter username..."
                 value={searchUser}
-                onChange={(e) => setSearchUser(e.target.value)}
+                onChange={(e) => {
+                  // Remove illegal characters: backslash, forward slash, <, >, &, quotes
+                  const sanitized = e.target.value.replace(/[\\/<>&"']/g, '');
+                  setSearchUser(sanitized);
+                }}
                 className="w-full bg-[#1A1A1A] border border-[#403A36] rounded-lg px-4 py-2 text-[#F0E5D8] focus:border-[#E57A00] focus:outline-none"
               />
               {debouncedSearchUser && searchUser !== debouncedSearchUser && (

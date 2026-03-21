@@ -157,7 +157,11 @@ export default function ShopsPage() {
               type="text"
               placeholder="Search massage shops..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                // Remove illegal characters: backslash, forward slash, <, >, &, quotes
+                const sanitized = e.target.value.replace(/[\\/<>&"']/g, '');
+                setSearchQuery(sanitized);
+              }}
               className="w-full bg-[#2B2B2B] border border-[#403A36] rounded-lg px-4 py-3 pl-12 text-[#F0E5D8] placeholder-[#8A8177] focus:border-[#E57A00] focus:outline-none"
             />
             <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#8A8177]">

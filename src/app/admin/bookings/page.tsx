@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import { getReservations, updateReservation, deleteReservation } from '@/libs/reservations';
 import { Reservation } from '@/interface';
+import Link from 'next/link';
 
 export default function AdminBookingsPage() {
   const { token, user } = useSelector((state: RootState) => state.auth);

@@ -75,7 +75,14 @@ export default function AdminBookingsPage() {
           }
           
           setReservations(filtered);
-          setPagination(res.pagination);
+          // Handle both old and new pagination format
+          const paginationData = res.pagination || {
+            total: res.count || 0,
+            page: currentPage,
+            pages: Math.ceil((res.count || 0) / ITEMS_PER_PAGE),
+            limit: ITEMS_PER_PAGE
+          };
+          setPagination(paginationData);
         } else {
           setError(res.message || 'Failed to load reservations');
         }
@@ -222,7 +229,15 @@ export default function AdminBookingsPage() {
             {/* Results count */}
             <div className="flex items-end">
               <p className="text-[#8A8177] text-sm">
-                {pagination && `Showing ${(currentPage - 1) * ITEMS_PER_PAGE + 1} - ${Math.min(currentPage * ITEMS_PER_PAGE, pagination.total)} of ${pagination.total} bookings`}
+                {pagination ? (
+                  debouncedSearchUser ? (
+                    `Showing ${reservations.length} filtered bookings (from ${pagination.total} total)`
+                  ) : (
+                    `Showing ${(currentPage - 1) * ITEMS_PER_PAGE + 1} - ${Math.min(currentPage * ITEMS_PER_PAGE, pagination.total)} of ${pagination.total} bookings`
+                  )
+                ) : (
+                  'Loading...'
+                )}
               </p>
             </div>
           </div>
@@ -324,8 +339,8 @@ export default function AdminBookingsPage() {
           ))}
         </div>
 
-        {/* Pagination */}
-        {pagination && pagination.pages > 1 && (
+        {/* Pagination - hide when searching since results are client-side filtered */}
+        {pagination && pagination.pages > 1 && !debouncedSearchUser && (
           <div className="flex justify-center items-center gap-2 mt-12">
             {/* Previous */}
             <button
@@ -365,6 +380,13 @@ export default function AdminBookingsPage() {
               Next →
             </button>
           </div>
+        )}
+
+        {/* Message when searching with filtered results */}
+        {debouncedSearchUser && reservations.length > 0 && (
+          <p className="text-center text-[#8A8177] text-sm mt-8">
+            Showing filtered results. Clear search to see all pages.
+          </p>
         )}
       </div>
     </main>

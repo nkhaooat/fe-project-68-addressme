@@ -251,14 +251,15 @@ export default function ShopsPage() {
                 )}
               </div>
               <div className="p-6">
-                <div className="flex justify-between items-start mb-2">
-                  <h2 className="text-xl font-bold text-[#F0E5D8] group-hover:text-[#E57A00] transition-colors">
+                <div className="flex justify-between items-start gap-2 mb-2">
+                  <h2 className="text-xl font-bold text-[#F0E5D8] group-hover:text-[#E57A00] transition-colors leading-tight">
                     {shop.name}
                   </h2>
                   {shop.rating && (
-                    <span className="text-yellow-400 text-sm font-bold">
-                      ⭐ {shop.rating}
-                    </span>
+                    <div className="flex items-center gap-1 text-yellow-400 shrink-0">
+                      <span>⭐</span>
+                      <span className="text-sm font-bold">{shop.rating}</span>
+                    </div>
                   )}
                 </div>
                 <p className="text-[#8A8177] text-sm mb-2">{shop.address}</p>

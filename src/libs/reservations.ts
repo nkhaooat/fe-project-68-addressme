@@ -1,9 +1,18 @@
 import { API_URL } from './config';
 
-export async function getReservations(token: string, myBookings: boolean = false) {
-  const url = myBookings 
-    ? `${API_URL}/reservations?myBookings=true`
-    : `${API_URL}/reservations`;
+export async function getReservations(token: string, myBookings: boolean = false, queryString: string = '') {
+  let url = `${API_URL}/reservations`;
+  
+  const params = new URLSearchParams(queryString);
+  if (myBookings) {
+    params.set('myBookings', 'true');
+  }
+  
+  const query = params.toString();
+  if (query) {
+    url += `?${query}`;
+  }
+  
   const response = await fetch(url, {
     headers: { 'Authorization': `Bearer ${token}` },
   });

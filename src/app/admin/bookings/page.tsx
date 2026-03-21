@@ -7,20 +7,55 @@ import { getReservations, updateReservation, deleteReservation } from '@/libs/re
 import { Reservation } from '@/interface';
 import Link from 'next/link';
 
+interface PaginationData {
+  total: number;
+  page: number;
+  pages: number;
+  limit: number;
+}
+
 export default function AdminBookingsPage() {
   const { token, user } = useSelector((state: RootState) => state.auth);
   const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [pagination, setPagination] = useState<PaginationData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [newStatus, setNewStatus] = useState('');
+  
+  // Pagination & Search states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchUser, setSearchUser] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  
+  const ITEMS_PER_PAGE = 12;
 
   useEffect(() => {
     async function fetchReservations() {
+      setLoading(true);
       try {
-        const res = await getReservations(token!);
+        const params = new URLSearchParams();
+        params.set('page', currentPage.toString());
+        params.set('limit', ITEMS_PER_PAGE.toString());
+        
+        if (statusFilter) {
+          params.set('status', statusFilter);
+        }
+        
+        const res = await getReservations(token!, false, params.toString());
         if (res.success) {
-          setReservations(res.data);
+          let filtered = res.data;
+          
+          // Client-side filter by username
+          if (searchUser) {
+            filtered = filtered.filter((r: Reservation) => {
+              const userName = typeof r.user === 'object' ? r.user.name : '';
+              return userName.toLowerCase().includes(searchUser.toLowerCase());
+            });
+          }
+          
+          setReservations(filtered);
+          setPagination(res.pagination);
         } else {
           setError(res.message || 'Failed to load reservations');
         }
@@ -34,7 +69,7 @@ export default function AdminBookingsPage() {
     if (token && user?.role === 'admin') {
       fetchReservations();
     }
-  }, [token, user]);
+  }, [token, user, currentPage, statusFilter, searchUser]);
 
   const handleUpdate = async (id: string) => {
     try {
@@ -78,6 +113,25 @@ export default function AdminBookingsPage() {
     }
   };
 
+  // Generate page numbers for pagination
+  const getPageNumbers = () => {
+    const totalPages = pagination?.pages || 1;
+    const pages: (number | string)[] = [];
+    
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      if (currentPage <= 3) {
+        pages.push(1, 2, 3, 4, '...', totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1, '...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        pages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
+      }
+    }
+    return pages;
+  };
+
   if (user?.role !== 'admin') {
     return (
       <main className="min-h-screen bg-[#1A1A1A] flex items-center justify-center">
@@ -106,6 +160,46 @@ export default function AdminBookingsPage() {
             {error}
           </div>
         )}
+
+        {/* Search & Filter */}
+        <div className="bg-[#2B2B2B] border border-[#403A36] rounded-lg p-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Search by username */}
+            <div>
+              <label className="block text-[#8A8177] text-sm mb-2">Search User</label>
+              <input
+                type="text"
+                placeholder="Enter username..."
+                value={searchUser}
+                onChange={(e) => setSearchUser(e.target.value)}
+                className="w-full bg-[#1A1A1A] border border-[#403A36] rounded-lg px-4 py-2 text-[#F0E5D8] focus:border-[#E57A00] focus:outline-none"
+              />
+            </div>
+            
+            {/* Status Filter */}
+            <div>
+              <label className="block text-[#8A8177] text-sm mb-2">Status</label>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="w-full bg-[#1A1A1A] border border-[#403A36] rounded-lg px-4 py-2 text-[#F0E5D8] focus:border-[#E57A00] focus:outline-none"
+              >
+                <option value="">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="canceled">Canceled</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
+            
+            {/* Results count */}
+            <div className="flex items-end">
+              <p className="text-[#8A8177] text-sm">
+                {pagination && `Showing ${(currentPage - 1) * ITEMS_PER_PAGE + 1} - ${Math.min(currentPage * ITEMS_PER_PAGE, pagination.total)} of ${pagination.total} bookings`}
+              </p>
+            </div>
+          </div>
+        </div>
 
         <div className="space-y-4">
           {reservations.map((reservation) => (
@@ -202,6 +296,49 @@ export default function AdminBookingsPage() {
             </div>
           ))}
         </div>
+
+        {/* Pagination */}
+        {pagination && pagination.pages > 1 && (
+          <div className="flex justify-center items-center gap-2 mt-12">
+            {/* Previous */}
+            <button
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="px-4 py-2 bg-[#2B2B2B] border border-[#403A36] rounded-lg text-[#F0E5D8] disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#E57A00] transition-colors"
+            >
+              ← Prev
+            </button>
+
+            {/* Page Numbers */}
+            <div className="flex gap-1">
+              {getPageNumbers().map((page, index) => (
+                <button
+                  key={index}
+                  onClick={() => typeof page === 'number' && setCurrentPage(page)}
+                  disabled={page === '...'}
+                  className={`w-10 h-10 rounded-lg border transition-colors ${
+                    page === currentPage
+                      ? 'bg-[#E57A00] border-[#E57A00] text-[#1A110A] font-bold'
+                      : page === '...'
+                      ? 'bg-transparent border-transparent text-[#8A8177] cursor-default'
+                      : 'bg-[#2B2B2B] border-[#403A36] text-[#F0E5D8] hover:border-[#E57A00]'
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+            </div>
+
+            {/* Next */}
+            <button
+              onClick={() => setCurrentPage(p => Math.min(pagination.pages, p + 1))}
+              disabled={currentPage === pagination.pages}
+              className="px-4 py-2 bg-[#2B2B2B] border border-[#403A36] rounded-lg text-[#F0E5D8] disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#E57A00] transition-colors"
+            >
+              Next →
+            </button>
+          </div>
+        )}
       </div>
     </main>
   );

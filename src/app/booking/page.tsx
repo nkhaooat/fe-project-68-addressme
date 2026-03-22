@@ -11,6 +11,7 @@ import { Shop, Service } from '@/interface';
 import Link from 'next/link';
 
 // Check if selected time is within shop hours
+// Handles overnight hours (e.g., 21:00 - 02:00) and midnight closing (e.g., 09:00 - 00:00)
 function isWithinShopHours(time: string, openTime: string, closeTime: string): boolean {
   const [hour, min] = time.split(':').map(Number);
   const [openHour, openMin] = openTime.split(':').map(Number);
@@ -25,6 +26,14 @@ function isWithinShopHours(time: string, openTime: string, closeTime: string): b
     closeValue = 24 * 60; // 1440 minutes = 24:00
   }
 
+  // Check if hours span midnight (close time is earlier than open time)
+  if (closeValue < openValue) {
+    // Overnight hours: valid if after open OR before close
+    // e.g., 21:00-02:00: 23:00 is valid (after 21:00), 01:00 is valid (before 02:00)
+    return selectedValue >= openValue || selectedValue <= closeValue;
+  }
+
+  // Normal hours: valid if between open and close
   return selectedValue >= openValue && selectedValue <= closeValue;
 }
 

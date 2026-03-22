@@ -78,6 +78,14 @@ export default function EditBookingModal({
       closeValue = 24 * 60; // 1440 minutes = 24:00
     }
 
+    // Check if hours span midnight (close time is earlier than open time)
+    if (closeValue < openValue) {
+      // Overnight hours: valid if after open OR before close
+      // e.g., 21:00-02:00: 23:00 is valid (after 21:00), 01:00 is valid (before 02:00)
+      return timeValue >= openValue || timeValue <= closeValue;
+    }
+
+    // Normal hours: valid if between open and close
     return timeValue >= openValue && timeValue <= closeValue;
   };
 

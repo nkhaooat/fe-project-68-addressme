@@ -10,16 +10,18 @@ import { createReservation } from '@/libs/reservations';
 import { Shop, Service } from '@/interface';
 import Link from 'next/link';
 
+// Parse time string to minutes since midnight
+function parseTimeToMinutes(time: string): number {
+  const [hour, min] = time.split(':').map(Number);
+  return hour * 60 + min;
+}
+
 // Check if selected time is within shop hours
 // Handles overnight hours (e.g., 21:00 - 02:00) and midnight closing (e.g., 09:00 - 00:00)
 function isWithinShopHours(time: string, openTime: string, closeTime: string): boolean {
-  const [hour, min] = time.split(':').map(Number);
-  const [openHour, openMin] = openTime.split(':').map(Number);
-  const [closeHour, closeMin] = closeTime.split(':').map(Number);
-
-  const selectedValue = hour * 60 + min;
-  const openValue = openHour * 60 + (openMin || 0);
-  let closeValue = closeHour * 60 + (closeMin || 0);
+  const selectedValue = parseTimeToMinutes(time);
+  const openValue = parseTimeToMinutes(openTime);
+  let closeValue = parseTimeToMinutes(closeTime);
 
   // Handle midnight (00:00) as end of day (24:00)
   if (closeValue === 0) {
@@ -29,12 +31,88 @@ function isWithinShopHours(time: string, openTime: string, closeTime: string): b
   // Check if hours span midnight (close time is earlier than open time)
   if (closeValue < openValue) {
     // Overnight hours: valid if after open OR before close
-    // e.g., 21:00-02:00: 23:00 is valid (after 21:00), 01:00 is valid (before 02:00)
     return selectedValue >= openValue || selectedValue <= closeValue;
   }
 
   // Normal hours: valid if between open and close
   return selectedValue >= openValue && selectedValue <= closeValue;
+}
+
+// Check if service duration fits within shop hours
+// Returns { valid: boolean, endTime: string, error?: string }
+function checkServiceDuration(
+  startTime: string,
+  durationMinutes: number,
+  openTime: string,
+  closeTime: string
+): { valid: boolean; endTime: string; error?: string } {
+  const startValue = parseTimeToMinutes(startTime);
+  const openValue = parseTimeToMinutes(openTime);
+  let closeValue = parseTimeToMinutes(closeTime);
+
+  // Handle midnight (00:00) as end of day (24:00)
+  if (closeValue === 0) {
+    closeValue = 24 * 60;
+  }
+
+  const endValue = startValue + durationMinutes;
+  const endHour = Math.floor(endValue / 60) % 24;
+  const endMin = endValue % 60;
+  const endTime = `${String(endHour).padStart(2, '0')}:${String(endMin).padStart(2, '0')}`;
+
+  // Check if hours span midnight
+  if (closeValue < openValue) {
+    // Overnight hours: service must fit within the overnight window
+    // Valid start times: between open and (close - duration)
+    // OR if service wraps past midnight, it must end before close
+    const maxStartForSameDay = closeValue - durationMinutes;
+
+    if (startValue >= openValue) {
+      // Starting after open (same day)
+      if (endValue <= 24 * 60) {
+        // Ends same day, must be before midnight
+        return { valid: true, endTime };
+      } else {
+        // Wraps to next day, must end before close
+        const nextDayEnd = endValue - 24 * 60;
+        if (nextDayEnd <= closeValue) {
+          return { valid: true, endTime };
+        }
+        return {
+          valid: false,
+          endTime,
+          error: `Service ends at ${endTime} but shop closes at ${closeTime}`,
+        };
+      }
+    } else if (startValue <= closeValue) {
+      // Starting before close (next day portion)
+      if (endValue <= closeValue) {
+        return { valid: true, endTime };
+      }
+      return {
+        valid: false,
+        endTime,
+        error: `Service ends at ${endTime} but shop closes at ${closeTime}`,
+      };
+    }
+
+    return {
+      valid: false,
+      endTime,
+      error: `Invalid time for overnight hours`,
+    };
+  }
+
+  // Normal hours (same day)
+  if (endValue > closeValue) {
+    return {
+      valid: false,
+      endTime,
+      error: `Service ends at ${endTime} but shop closes at ${closeTime}`,
+    };
+  }
+
+  return { valid: true, endTime };
 }
 
 export default function BookingPage() {
@@ -82,18 +160,30 @@ export default function BookingPage() {
     fetchData();
   }, [shopId, serviceId, isAuthenticated, router]);
 
-  // Validate time when shop or time changes
+  // Validate time and service duration when shop, time, or service changes
   useEffect(() => {
     if (shop && resvTime) {
       if (!isWithinShopHours(resvTime, shop.openTime, shop.closeTime)) {
         setTimeError(`Please select a time between ${shop.openTime} and ${shop.closeTime}`);
+      } else if (service && service.duration > 0) {
+        const durationCheck = checkServiceDuration(
+          resvTime,
+          service.duration,
+          shop.openTime,
+          shop.closeTime
+        );
+        if (!durationCheck.valid) {
+          setTimeError(durationCheck.error || 'Service duration exceeds shop hours');
+        } else {
+          setTimeError('');
+        }
       } else {
         setTimeError('');
       }
     } else {
       setTimeError('');
     }
-  }, [shop, resvTime]);
+  }, [shop, service, resvTime]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -108,6 +198,19 @@ export default function BookingPage() {
     if (shop && !isWithinShopHours(resvTime, shop.openTime, shop.closeTime)) {
       setError(`Shop is only open from ${shop.openTime} to ${shop.closeTime}`);
       return;
+    }
+
+    if (shop && service && service.duration > 0) {
+      const durationCheck = checkServiceDuration(
+        resvTime,
+        service.duration,
+        shop.openTime,
+        shop.closeTime
+      );
+      if (!durationCheck.valid) {
+        setError(durationCheck.error || 'Service duration exceeds shop hours');
+        return;
+      }
     }
 
     setSubmitting(true);

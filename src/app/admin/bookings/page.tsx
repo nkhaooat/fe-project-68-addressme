@@ -6,6 +6,7 @@ import { RootState } from '@/redux/store';
 import { getReservations, updateReservation, deleteReservation } from '@/libs/reservations';
 import { Reservation } from '@/interface';
 import Link from 'next/link';
+import EditBookingModal from '@/components/EditBookingModal';
 
 interface PaginationData {
   total: number;
@@ -39,6 +40,7 @@ export default function AdminBookingsPage() {
   const [error, setError] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [newStatus, setNewStatus] = useState('');
+  const [editingReservation, setEditingReservation] = useState<Reservation | null>(null);
   
   // Pagination & Search states
   const [currentPage, setCurrentPage] = useState(1);
@@ -98,7 +100,7 @@ export default function AdminBookingsPage() {
     }
   }, [token, user, currentPage, statusFilter, debouncedSearchUser]);
 
-  const handleUpdate = async (id: string) => {
+  const handleUpdateStatus = async (id: string) => {
     try {
       const res = await updateReservation(id, { status: newStatus }, token!);
       if (res.success) {
@@ -110,6 +112,11 @@ export default function AdminBookingsPage() {
     } catch {
       alert('Error updating reservation');
     }
+  };
+
+  const handleUpdateDate = (updated: Reservation) => {
+    setReservations(reservations.map((r) => (r._id === updated._id ? updated : r)));
+    setEditingReservation(null);
   };
 
   const handleDelete = async (id: string) => {
@@ -302,7 +309,7 @@ export default function AdminBookingsPage() {
                   {editingId === reservation._id ? (
                     <>
                       <button
-                        onClick={() => handleUpdate(reservation._id)}
+                        onClick={() => handleUpdateStatus(reservation._id)}
                         className="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
                       >
                         Save
@@ -323,7 +330,13 @@ export default function AdminBookingsPage() {
                         }}
                         className="px-3 py-2 bg-[#E57A00] text-[#1A110A] rounded hover:bg-[#c46a00] transition-colors"
                       >
-                        Edit
+                        Edit Status
+                      </button>
+                      <button
+                        onClick={() => setEditingReservation(reservation)}
+                        className="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                      >
+                        Edit Date
                       </button>
                       <button
                         onClick={() => handleDelete(reservation._id)}
@@ -389,6 +402,15 @@ export default function AdminBookingsPage() {
           </p>
         )}
       </div>
+
+      <EditBookingModal
+        reservation={editingReservation!}
+        isOpen={!!editingReservation}
+        onClose={() => setEditingReservation(null)}
+        onUpdate={handleUpdateDate}
+        token={token!}
+        isAdmin={true}
+      />
     </main>
   );
 }

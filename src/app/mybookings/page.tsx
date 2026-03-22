@@ -6,12 +6,14 @@ import { RootState } from '@/redux/store';
 import { getReservations, deleteReservation } from '@/libs/reservations';
 import { Reservation } from '@/interface';
 import Link from 'next/link';
+import EditBookingModal from '@/components/EditBookingModal';
 
 export default function MyBookingsPage() {
   const { token } = useSelector((state: RootState) => state.auth);
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [editingReservation, setEditingReservation] = useState<Reservation | null>(null);
 
   useEffect(() => {
     async function fetchReservations() {
@@ -47,6 +49,16 @@ export default function MyBookingsPage() {
     } catch {
       alert('Error canceling booking');
     }
+  };
+
+  const handleUpdate = (updated: Reservation) => {
+    setReservations(reservations.map((r) => (r._id === updated._id ? updated : r)));
+    setEditingReservation(null);
+  };
+
+  const canEdit = (reservation: Reservation): boolean => {
+    // Can edit if status is pending or confirmed (not canceled or completed)
+    return reservation.status === 'pending' || reservation.status === 'confirmed';
   };
 
   const getStatusColor = (status: string) => {
@@ -124,22 +136,39 @@ export default function MyBookingsPage() {
                       Status: {reservation.status.charAt(0).toUpperCase() + reservation.status.slice(1)}
                     </p>
                   </div>
-                  {reservation.status !== 'completed' && (
-                    <div className="flex gap-2">
+                  <div className="flex gap-2">
+                    {canEdit(reservation) && (
+                      <button
+                        onClick={() => setEditingReservation(reservation)}
+                        className="px-4 py-2 bg-[#E57A00] text-[#1A110A] font-bold rounded hover:bg-[#c46a00] transition-colors"
+                      >
+                        Edit
+                      </button>
+                    )}
+                    {reservation.status !== 'completed' && (
                       <button
                         onClick={() => handleDelete(reservation._id)}
                         className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
                       >
                         Cancel
                       </button>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         )}
       </div>
+
+      <EditBookingModal
+        reservation={editingReservation!}
+        isOpen={!!editingReservation}
+        onClose={() => setEditingReservation(null)}
+        onUpdate={handleUpdate}
+        token={token!}
+        isAdmin={false}
+      />
     </main>
   );
 }

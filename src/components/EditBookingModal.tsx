@@ -89,6 +89,87 @@ export default function EditBookingModal({
     return timeValue >= openValue && timeValue <= closeValue;
   };
 
+  // Parse time string to minutes since midnight
+  const parseTimeToMinutes = (time: string): number => {
+    const [hour, min] = time.split(':').map(Number);
+    return hour * 60 + min;
+  };
+
+  // Check if service duration fits within shop hours
+  // Returns { valid: boolean, endTime: string, error?: string }
+  const checkServiceDuration = (
+    startDate: Date,
+    durationMinutes: number
+  ): { valid: boolean; endTime: string; error?: string } => {
+    if (!shop || !shop.openTime || !shop.closeTime) {
+      return { valid: true, endTime: '' };
+    }
+
+    const startValue = startDate.getHours() * 60 + startDate.getMinutes();
+    const openValue = parseTimeToMinutes(shop.openTime);
+    let closeValue = parseTimeToMinutes(shop.closeTime);
+
+    // Handle midnight (00:00) as end of day (24:00)
+    if (closeValue === 0) {
+      closeValue = 24 * 60;
+    }
+
+    const endValue = startValue + durationMinutes;
+    const endHour = Math.floor(endValue / 60) % 24;
+    const endMin = endValue % 60;
+    const endTime = `${String(endHour).padStart(2, '0')}:${String(endMin).padStart(2, '0')}`;
+
+    // Check if hours span midnight
+    if (closeValue < openValue) {
+      // Overnight hours
+      if (startValue >= openValue) {
+        // Starting after open (same day)
+        if (endValue <= 24 * 60) {
+          // Ends same day, must be before midnight
+          return { valid: true, endTime };
+        } else {
+          // Wraps to next day, must end before close
+          const nextDayEnd = endValue - 24 * 60;
+          if (nextDayEnd <= closeValue) {
+            return { valid: true, endTime };
+          }
+          return {
+            valid: false,
+            endTime,
+            error: `Service ends at ${endTime} but shop closes at ${shop.closeTime}`,
+          };
+        }
+      } else if (startValue <= closeValue) {
+        // Starting before close (next day portion)
+        if (endValue <= closeValue) {
+          return { valid: true, endTime };
+        }
+        return {
+          valid: false,
+          endTime,
+          error: `Service ends at ${endTime} but shop closes at ${shop.closeTime}`,
+        };
+      }
+
+      return {
+        valid: false,
+        endTime,
+        error: `Invalid time for overnight hours`,
+      };
+    }
+
+    // Normal hours (same day)
+    if (endValue > closeValue) {
+      return {
+        valid: false,
+        endTime,
+        error: `Service ends at ${endTime} but shop closes at ${shop.closeTime}`,
+      };
+    }
+
+    return { valid: true, endTime };
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -110,6 +191,17 @@ export default function EditBookingModal({
       setError(`Shop is only open from ${shop?.openTime} to ${shop?.closeTime}`);
       setLoading(false);
       return;
+    }
+
+    // Check if service duration fits within shop hours
+    const serviceDuration = typeof reservation.service === 'object' ? reservation.service.duration : 0;
+    if (serviceDuration > 0) {
+      const durationCheck = checkServiceDuration(selectedDate, serviceDuration);
+      if (!durationCheck.valid) {
+        setError(durationCheck.error || 'Service duration exceeds shop hours');
+        setLoading(false);
+        return;
+      }
     }
 
     try {
@@ -137,6 +229,7 @@ export default function EditBookingModal({
 
   const shopName = typeof reservation.shop === 'object' ? reservation.shop.name : 'Shop';
   const serviceName = typeof reservation.service === 'object' ? reservation.service.name : 'Service';
+  const serviceDuration = typeof reservation.service === 'object' ? reservation.service.duration : 0;
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
@@ -147,7 +240,7 @@ export default function EditBookingModal({
         
         <div className="mb-4 text-[#8A8177]">
           <p><span className="text-[#D4CFC6]">Shop:</span> {shopName}</p>
-          <p><span className="text-[#D4CFC6]">Service:</span> {serviceName}</p>
+          <p><span className="text-[#D4CFC6]">Service:</span> {serviceName} {serviceDuration > 0 && `(${serviceDuration} mins)`}</p>
           {shop && (
             <p className="text-sm mt-2">
               <span className="text-[#A88C6B]">Shop Hours:</span> {shop.openTime} - {shop.closeTime}

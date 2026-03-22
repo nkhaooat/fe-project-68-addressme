@@ -18,7 +18,12 @@ function isWithinShopHours(time: string, openTime: string, closeTime: string): b
 
   const selectedValue = hour * 60 + min;
   const openValue = openHour * 60 + (openMin || 0);
-  const closeValue = closeHour * 60 + (closeMin || 0);
+  let closeValue = closeHour * 60 + (closeMin || 0);
+
+  // Handle midnight (00:00) as end of day (24:00)
+  if (closeValue === 0) {
+    closeValue = 24 * 60; // 1440 minutes = 24:00
+  }
 
   return selectedValue >= openValue && selectedValue <= closeValue;
 }

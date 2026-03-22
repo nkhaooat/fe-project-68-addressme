@@ -133,7 +133,7 @@ export default function MyBookingsPage() {
                       <p className="text-[#A88C6B]">Shop</p>
                     )}
                     <p className="text-[#8A8177] text-sm mt-1">
-                      📅 {new Date(reservation.resvDate).toLocaleString('en-GB', { hour12: false })}
+                      📅 {new Date(reservation.resvDate).toLocaleString()}
                     </p>
                     <p className={`text-sm mt-2 font-bold ${getStatusColor(reservation.status)}`}>
                       Status: {reservation.status.charAt(0).toUpperCase() + reservation.status.slice(1)}

@@ -309,7 +309,7 @@ export default function AdminBookingsPage() {
                 <div>
                   <p className="text-[#8A8177] text-sm">Date & Time</p>
                   <p className="text-[#D4CFC6]">
-                    {new Date(reservation.resvDate).toLocaleString('en-GB', { hour12: false })}
+                    {new Date(reservation.resvDate).toLocaleString()}
                   </p>
                   {editingId === reservation._id ? (
                     <select

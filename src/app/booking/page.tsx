@@ -124,6 +124,9 @@ export default function BookingPage() {
             <div className="mb-4">
               <p className="text-[#8A8177]">Shop</p>
               <p className="text-[#D4CFC6] font-medium">{shop.name}</p>
+              <p className="text-[#A88C6B] text-sm mt-1">
+                🕐 Open: {shop.openTime} - {shop.closeTime}
+              </p>
             </div>
           )}
 
@@ -157,6 +160,11 @@ export default function BookingPage() {
             <div>
               <label className="block text-[#A88C6B] text-sm font-bold mb-2">
                 Time
+                {shop && (
+                  <span className="text-[#8A8177] font-normal ml-2">
+                    ({shop.openTime} - {shop.closeTime})
+                  </span>
+                )}
               </label>
               <input
                 type="time"

@@ -46,6 +46,7 @@ export default function AdminBookingsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchUser, setSearchUser] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [showCanceled, setShowCanceled] = useState(true);
   
   // Debounced search
   const debouncedSearchUser = useDebounce(searchUser, 500);
@@ -76,6 +77,11 @@ export default function AdminBookingsPage() {
             });
           }
           
+          // Filter out canceled bookings if showCanceled is false
+          if (!showCanceled) {
+            filtered = filtered.filter((r: Reservation) => r.status !== 'canceled');
+          }
+          
           setReservations(filtered);
           // Handle both old and new pagination format
           const paginationData = res.pagination || {
@@ -98,7 +104,7 @@ export default function AdminBookingsPage() {
     if (token && user?.role === 'admin') {
       fetchReservations();
     }
-  }, [token, user, currentPage, statusFilter, debouncedSearchUser]);
+  }, [token, user, currentPage, statusFilter, debouncedSearchUser, showCanceled]);
 
   const handleUpdateStatus = async (id: string) => {
     try {
@@ -236,20 +242,34 @@ export default function AdminBookingsPage() {
               </select>
             </div>
             
-            {/* Results count */}
+            {/* Show Canceled Toggle */}
             <div className="flex items-end">
-              <p className="text-[#8A8177] text-sm">
-                {pagination ? (
-                  debouncedSearchUser ? (
-                    `Showing ${reservations.length} filtered bookings (from ${pagination.total} total)`
-                  ) : (
-                    `Showing ${(currentPage - 1) * ITEMS_PER_PAGE + 1} - ${Math.min(currentPage * ITEMS_PER_PAGE, pagination.total)} of ${pagination.total} bookings`
-                  )
-                ) : (
-                  'Loading...'
-                )}
-              </p>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={showCanceled}
+                  onChange={(e) => setShowCanceled(e.target.checked)}
+                  className="w-4 h-4 rounded border-[#403A36] bg-[#1A1A1A] text-[#E57A00] focus:ring-[#E57A00]"
+                />
+                <span className="text-[#8A8177] text-sm">Show canceled bookings</span>
+              </label>
             </div>
+          </div>
+          
+          {/* Results count */}
+          <div className="mt-4 pt-4 border-t border-[#403A36]">
+            <p className="text-[#8A8177] text-sm">
+              {pagination ? (
+                debouncedSearchUser ? (
+                  `Showing ${reservations.length} filtered bookings (from ${pagination.total} total)`
+                ) : (
+                  `Showing ${(currentPage - 1) * ITEMS_PER_PAGE + 1} - ${Math.min(currentPage * ITEMS_PER_PAGE, pagination.total)} of ${pagination.total} bookings`
+                )
+              ) : (
+                'Loading...'
+              )}
+              {!showCanceled && ' (canceled bookings hidden)'}
+            </p>
           </div>
         </div>
 

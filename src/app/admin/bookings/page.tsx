@@ -361,12 +361,14 @@ export default function AdminBookingsPage() {
                       >
                         Edit Date
                       </button>
-                      <button
-                        onClick={() => handleDelete(reservation._id)}
-                        className="px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
-                      >
-                        Cancel Booking
-                      </button>
+                      {reservation.status !== 'cancelled' && reservation.status !== 'completed' && (
+                        <button
+                          onClick={() => handleDelete(reservation._id)}
+                          className="px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+                        >
+                          Cancel Booking
+                        </button>
+                      )}
                     </>
                   )}
                 </div>

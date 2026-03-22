@@ -148,7 +148,7 @@ export default function MyBookingsPage() {
                         Edit
                       </button>
                     )}
-                    {reservation.status !== 'completed' && (
+                    {reservation.status !== 'completed' && reservation.status !== 'cancelled' && (
                       <button
                         onClick={() => handleDelete(reservation._id)}
                         className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"

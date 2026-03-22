@@ -10,6 +10,19 @@ import { createReservation } from '@/libs/reservations';
 import { Shop, Service } from '@/interface';
 import Link from 'next/link';
 
+// Check if selected time is within shop hours
+function isWithinShopHours(time: string, openTime: string, closeTime: string): boolean {
+  const [hour, min] = time.split(':').map(Number);
+  const [openHour, openMin] = openTime.split(':').map(Number);
+  const [closeHour, closeMin] = closeTime.split(':').map(Number);
+
+  const selectedValue = hour * 60 + min;
+  const openValue = openHour * 60 + (openMin || 0);
+  const closeValue = closeHour * 60 + (closeMin || 0);
+
+  return selectedValue >= openValue && selectedValue <= closeValue;
+}
+
 export default function BookingPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -26,6 +39,7 @@ export default function BookingPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [timeError, setTimeError] = useState('');
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -54,6 +68,19 @@ export default function BookingPage() {
     fetchData();
   }, [shopId, serviceId, isAuthenticated, router]);
 
+  // Validate time when shop or time changes
+  useEffect(() => {
+    if (shop && resvTime) {
+      if (!isWithinShopHours(resvTime, shop.openTime, shop.closeTime)) {
+        setTimeError(`Please select a time between ${shop.openTime} and ${shop.closeTime}`);
+      } else {
+        setTimeError('');
+      }
+    } else {
+      setTimeError('');
+    }
+  }, [shop, resvTime]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -61,6 +88,11 @@ export default function BookingPage() {
 
     if (!resvDate || !resvTime) {
       setError('Please select date and time');
+      return;
+    }
+
+    if (shop && !isWithinShopHours(resvTime, shop.openTime, shop.closeTime)) {
+      setError(`Shop is only open from ${shop.openTime} to ${shop.closeTime}`);
       return;
     }
 
@@ -173,6 +205,9 @@ export default function BookingPage() {
                 className="w-full px-4 py-3 bg-[#1A1A1A] border border-[#403A36] rounded text-[#D4CFC6] focus:outline-none focus:border-[#E57A00]"
                 required
               />
+              {timeError && (
+                <p className="text-red-400 text-sm mt-2">{timeError}</p>
+              )}
             </div>
           </div>
 
@@ -185,7 +220,7 @@ export default function BookingPage() {
             </Link>
             <button
               type="submit"
-              disabled={submitting}
+              disabled={submitting || !!timeError}
               className="flex-1 py-3 bg-[#E57A00] text-[#1A110A] font-bold rounded hover:bg-[#c46a00] transition-colors disabled:opacity-50"
             >
               {submitting ? 'Booking...' : 'Confirm Booking'}

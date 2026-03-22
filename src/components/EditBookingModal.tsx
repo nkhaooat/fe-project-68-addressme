@@ -60,6 +60,22 @@ export default function EditBookingModal({
     }
   };
 
+  const isWithinShopHours = (date: Date): boolean => {
+    if (!shop || !shop.openTime || !shop.closeTime) return true;
+
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const timeValue = hours * 60 + minutes;
+
+    const [openHour, openMin] = shop.openTime.split(':').map(Number);
+    const [closeHour, closeMin] = shop.closeTime.split(':').map(Number);
+
+    const openValue = openHour * 60 + (openMin || 0);
+    const closeValue = closeHour * 60 + (closeMin || 0);
+
+    return timeValue >= openValue && timeValue <= closeValue;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -72,6 +88,13 @@ export default function EditBookingModal({
     // Check if date is in the future
     if (selectedDate <= now) {
       setError('Please select a future date and time');
+      setLoading(false);
+      return;
+    }
+
+    // Check if within shop hours
+    if (!isWithinShopHours(selectedDate)) {
+      setError(`Shop is only open from ${shop?.openTime} to ${shop?.closeTime}`);
       setLoading(false);
       return;
     }

@@ -42,7 +42,10 @@ export default function MyBookingsPage() {
     try {
       const res = await deleteReservation(id, token!);
       if (res.success) {
-        setReservations(reservations.filter((r) => r._id !== id));
+        // Update the reservation status to canceled instead of removing it
+        setReservations(reservations.map((r) => 
+          r._id === id ? { ...r, status: 'canceled' } : r
+        ));
       } else {
         alert(res.message || 'Failed to cancel booking');
       }

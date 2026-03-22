@@ -120,17 +120,20 @@ export default function AdminBookingsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this booking?')) return;
+    if (!confirm('Are you sure you want to cancel this booking?')) return;
 
     try {
       const res = await deleteReservation(id, token!);
       if (res.success) {
-        setReservations(reservations.filter((r) => r._id !== id));
+        // Update the reservation status to canceled instead of removing it
+        setReservations(reservations.map((r) => 
+          r._id === id ? { ...r, status: 'canceled' } : r
+        ));
       } else {
-        alert(res.message || 'Failed to delete');
+        alert(res.message || 'Failed to cancel');
       }
     } catch {
-      alert('Error deleting reservation');
+      alert('Error canceling reservation');
     }
   };
 
@@ -342,7 +345,7 @@ export default function AdminBookingsPage() {
                         onClick={() => handleDelete(reservation._id)}
                         className="px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
                       >
-                        Delete
+                        Cancel Booking
                       </button>
                     </>
                   )}

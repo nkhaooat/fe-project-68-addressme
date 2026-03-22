@@ -29,9 +29,15 @@ export default function EditBookingModal({
 
   useEffect(() => {
     if (isOpen && reservation) {
-      // Format the current reservation date for datetime-local input
+      // Format the current reservation date for datetime-local input (local time)
       const currentDate = new Date(reservation.resvDate);
-      const formattedDate = currentDate.toISOString().slice(0, 16);
+      // Convert to local timezone format YYYY-MM-DDTHH:MM
+      const year = currentDate.getFullYear();
+      const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+      const day = String(currentDate.getDate()).padStart(2, '0');
+      const hours = String(currentDate.getHours()).padStart(2, '0');
+      const minutes = String(currentDate.getMinutes()).padStart(2, '0');
+      const formattedDate = `${year}-${month}-${day}T${hours}:${minutes}`;
       setNewDate(formattedDate);
       setError('');
       
@@ -59,6 +65,7 @@ export default function EditBookingModal({
     setLoading(true);
     setError('');
 
+    // Convert local datetime-local value to Date object
     const selectedDate = new Date(newDate);
     const now = new Date();
 
@@ -70,9 +77,10 @@ export default function EditBookingModal({
     }
 
     try {
+      // Send as ISO string (UTC format)
       const res = await updateReservation(
         reservation._id,
-        { resvDate: newDate },
+        { resvDate: selectedDate.toISOString() },
         token
       );
       

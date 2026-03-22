@@ -38,7 +38,7 @@ export interface Reservation {
   user: User | string;
   shop: Shop | string;
   service: Service | string;
-  status: 'pending' | 'confirmed' | 'canceled' | 'completed';
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
   createdAt: string;
 }
 

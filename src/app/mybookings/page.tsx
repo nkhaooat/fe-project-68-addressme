@@ -42,9 +42,9 @@ export default function MyBookingsPage() {
     try {
       const res = await deleteReservation(id, token!);
       if (res.success) {
-        // Update the reservation status to canceled instead of removing it
+        // Update the reservation status to cancelled instead of removing it
         setReservations(reservations.map((r) => 
-          r._id === id ? { ...r, status: 'canceled' } : r
+          r._id === id ? { ...r, status: 'cancelled' } : r
         ));
       } else {
         alert(res.message || 'Failed to cancel booking');
@@ -60,7 +60,7 @@ export default function MyBookingsPage() {
   };
 
   const canEdit = (reservation: Reservation): boolean => {
-    // Can edit if status is pending or confirmed (not canceled or completed)
+    // Can edit if status is pending or confirmed (not cancelled or completed)
     return reservation.status === 'pending' || reservation.status === 'confirmed';
   };
 
@@ -70,7 +70,7 @@ export default function MyBookingsPage() {
         return 'text-green-400';
       case 'pending':
         return 'text-yellow-400';
-      case 'canceled':
+      case 'cancelled':
         return 'text-red-400';
       default:
         return 'text-[#8A8177]';

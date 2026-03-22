@@ -77,9 +77,9 @@ export default function AdminBookingsPage() {
             });
           }
           
-          // Filter out canceled bookings if showCanceled is false
+          // Filter out cancelled bookings if showCanceled is false
           if (!showCanceled) {
-            filtered = filtered.filter((r: Reservation) => r.status !== 'canceled');
+            filtered = filtered.filter((r: Reservation) => r.status !== 'cancelled');
           }
           
           setReservations(filtered);
@@ -131,9 +131,9 @@ export default function AdminBookingsPage() {
     try {
       const res = await deleteReservation(id, token!);
       if (res.success) {
-        // Update the reservation status to canceled instead of removing it
+        // Update the reservation status to cancelled instead of removing it
         setReservations(reservations.map((r) => 
-          r._id === id ? { ...r, status: 'canceled' } : r
+          r._id === id ? { ...r, status: 'cancelled' } : r
         ));
       } else {
         alert(res.message || 'Failed to cancel');
@@ -149,7 +149,7 @@ export default function AdminBookingsPage() {
         return 'text-green-400';
       case 'pending':
         return 'text-yellow-400';
-      case 'canceled':
+      case 'cancelled':
         return 'text-red-400';
       default:
         return 'text-[#8A8177]';
@@ -237,12 +237,12 @@ export default function AdminBookingsPage() {
                 <option value="">All Status</option>
                 <option value="pending">Pending</option>
                 <option value="confirmed">Confirmed</option>
-                <option value="canceled">Canceled</option>
+                <option value="cancelled">Cancelled</option>
                 <option value="completed">Completed</option>
               </select>
             </div>
             
-            {/* Show Canceled Toggle */}
+            {/* Show Cancelled Toggle */}
             <div className="flex items-end">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -251,7 +251,7 @@ export default function AdminBookingsPage() {
                   onChange={(e) => setShowCanceled(e.target.checked)}
                   className="w-4 h-4 rounded border-[#403A36] bg-[#1A1A1A] text-[#E57A00] focus:ring-[#E57A00]"
                 />
-                <span className="text-[#8A8177] text-sm">Show canceled bookings</span>
+                <span className="text-[#8A8177] text-sm">Show cancelled bookings</span>
               </label>
             </div>
           </div>
@@ -268,7 +268,7 @@ export default function AdminBookingsPage() {
               ) : (
                 'Loading...'
               )}
-              {!showCanceled && ' (canceled bookings hidden)'}
+              {!showCanceled && ' (cancelled bookings hidden)'}
             </p>
           </div>
         </div>
@@ -319,7 +319,7 @@ export default function AdminBookingsPage() {
                     >
                       <option value="pending">Pending</option>
                       <option value="confirmed">Confirmed</option>
-                      <option value="canceled">Canceled</option>
+                      <option value="cancelled">Cancelled</option>
                       <option value="completed">Completed</option>
                     </select>
                   ) : (

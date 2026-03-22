@@ -19,6 +19,7 @@
 |-------------|-----|
 | **Frontend** | https://fe-project-68-addressme.vercel.app/ |
 | **Backend API** | https://be-project-68-bitkrub.onrender.com |
+| **Figma Prototype** | [View on Figma](https://www.figma.com/design/RyVeACUvZUCR9E9dsmbOSk/Message_addressMe?node-id=11-915&t=ZXDyNDPP7iw5JdW6-1) |
 
 ---
 

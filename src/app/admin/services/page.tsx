@@ -85,7 +85,7 @@ export default function AdminServicesPage() {
           // Client-side filter by shop (since we need shop data populated)
           if (shopFilter) {
             filteredData = filteredData.filter((service: Service) => {
-              const serviceShopId = typeof service.shop === 'string' ? service.shop : service.shop._id;
+              const serviceShopId = typeof service.shop === 'string' ? service.shop : String(service.shop._id);
               return serviceShopId === shopFilter;
             });
           }
@@ -270,7 +270,12 @@ export default function AdminServicesPage() {
   };
 
   const getShopName = (shop: string | { _id: string; name: string }) => {
-    return typeof shop === 'object' ? shop.name : shops.find(s => s._id === shop)?.name || 'Unknown Shop';
+    if (typeof shop === 'object' && shop !== null) {
+      return shop.name || 'Unknown Shop';
+    }
+    // Handle string ID comparison - convert both to string for comparison
+    const foundShop = shops.find(s => String(s._id) === String(shop));
+    return foundShop?.name || 'Unknown Shop';
   };
 
   if (user?.role !== 'admin') {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import { getServices, createService, updateService, deleteService, Service, ServiceQueryParams } from '@/libs/services';
@@ -11,6 +11,23 @@ interface PaginationData {
   page: number;
   pages: number;
   limit: number;
+}
+
+// Debounce hook
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
 }
 
 const emptyService: Omit<Service, '_id'> = {
@@ -43,9 +60,19 @@ export default function AdminServicesPage() {
   
   // Pagination & Filter states
   const [currentPage, setCurrentPage] = useState(1);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchInput, setSearchInput] = useState(''); // Raw input value
+  const [searchQuery, setSearchQuery] = useState(''); // Debounced value for API
   const [shopFilter, setShopFilter] = useState('');
   
+  // Debounce search input
+  const debouncedSearchInput = useDebounce(searchInput, 500);
+
+  // Update search query when debounced input changes
+  useEffect(() => {
+    setSearchQuery(debouncedSearchInput);
+    setCurrentPage(1);
+  }, [debouncedSearchInput]);
+
   // Shop search for modal
   const [shopSearchQuery, setShopSearchQuery] = useState('');
   const [isShopDropdownOpen, setIsShopDropdownOpen] = useState(false);
@@ -318,16 +345,18 @@ export default function AdminServicesPage() {
               <input
                 type="text"
                 placeholder="Search across all services..."
-                value={searchQuery}
+                value={searchInput}
                 onChange={(e) => {
-                  setSearchQuery(e.target.value);
+                  setSearchInput(e.target.value);
                   setShopFilter(''); // Clear shop filter when searching
                   setShopFilterSearch('');
-                  setCurrentPage(1);
                 }}
                 className="w-full bg-[#1A1A1A] border border-[#403A36] rounded-lg px-4 py-2 text-[#F0E5D8] focus:border-[#E57A00] focus:outline-none"
               />
-              {searchQuery && (
+              {searchInput !== searchQuery && (
+                <p className="text-[#8A8177] text-xs mt-1">Typing...</p>
+              )}
+              {searchQuery && searchInput === searchQuery && (
                 <p className="text-[#8A8177] text-xs mt-1">Searching across all {pagination?.total || 0} services</p>
               )}
             </div>

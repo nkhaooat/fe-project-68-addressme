@@ -106,6 +106,15 @@ export default function AdminServicesPage() {
     }
   }, [token, user, currentPage, searchQuery, shopFilter]);
 
+  // Debug: log services when they change
+  useEffect(() => {
+    console.log('Services updated:', services.length, 'items');
+    if (services.length > 0) {
+      console.log('First service:', services[0]);
+      console.log('First service shop:', services[0].shop);
+    }
+  }, [services]);
+
   // Close shop dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {

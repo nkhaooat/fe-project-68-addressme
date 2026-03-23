@@ -106,15 +106,6 @@ export default function AdminServicesPage() {
     }
   }, [token, user, currentPage, searchQuery, shopFilter]);
 
-  // Debug: log services when they change
-  useEffect(() => {
-    console.log('Services updated:', services.length, 'items');
-    if (services.length > 0) {
-      console.log('First service:', services[0]);
-      console.log('First service shop:', services[0].shop);
-    }
-  }, [services]);
-
   // Close shop dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -466,7 +457,7 @@ export default function AdminServicesPage() {
                         )}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-[#D4CFC6]">{getShopName(service.shop)}</td>
+                    <td className="px-4 py-3 text-[#D4CFC6]">{typeof service.shop === 'object' ? service.shop.name : getShopName(service.shop)}</td>
                     <td className="px-4 py-3">
                       <span className="px-2 py-1 bg-[#454545] rounded text-[#D4CFC6] text-sm capitalize">
                         {service.area}

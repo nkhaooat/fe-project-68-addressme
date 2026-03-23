@@ -17,6 +17,7 @@ export interface ServiceQueryParams {
   limit?: number;
   sort?: string;
   search?: string;
+  shop?: string;
 }
 
 export async function getServices(params?: ServiceQueryParams) {
@@ -27,6 +28,7 @@ export async function getServices(params?: ServiceQueryParams) {
     if (params.limit) queryParams.set('limit', params.limit.toString());
     if (params.sort) queryParams.set('sort', params.sort);
     if (params.search) queryParams.set('search', params.search);
+    if (params.shop) queryParams.set('shop', params.shop);
   }
 
   const queryString = queryParams.toString();

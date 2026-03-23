@@ -62,7 +62,7 @@ export default function AdminServicesPage() {
     async function fetchData() {
       setLoading(true);
       try {
-        // Fetch services with pagination, search and shops in parallel
+        // Fetch services with pagination, search, shop filter and shops in parallel
         const params: ServiceQueryParams = {
           page: currentPage,
           limit: ITEMS_PER_PAGE,
@@ -74,23 +74,18 @@ export default function AdminServicesPage() {
           params.search = searchQuery.trim();
         }
         
+        // Add server-side shop filter if selected
+        if (shopFilter) {
+          params.shop = shopFilter;
+        }
+        
         const [servicesRes, shopsRes] = await Promise.all([
           getServices(params),
           getShops({ limit: 1000 }) // Fetch more shops for the search
         ]);
         
         if (servicesRes.success) {
-          let filteredData = servicesRes.data;
-          
-          // Client-side filter by shop (since we need shop data populated)
-          if (shopFilter) {
-            filteredData = filteredData.filter((service: Service) => {
-              const serviceShopId = typeof service.shop === 'string' ? service.shop : String(service.shop._id);
-              return serviceShopId === shopFilter;
-            });
-          }
-          
-          setServices(filteredData);
+          setServices(servicesRes.data);
           setPagination(servicesRes.pagination);
         } else {
           setError(servicesRes.message || 'Failed to load services');

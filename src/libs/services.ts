@@ -12,8 +12,25 @@ export interface Service {
   shop: string | { _id: string; name: string };
 }
 
-export async function getServices() {
-  const response = await fetch(`${API_URL}/services`);
+export interface ServiceQueryParams {
+  page?: number;
+  limit?: number;
+  sort?: string;
+}
+
+export async function getServices(params?: ServiceQueryParams) {
+  const queryParams = new URLSearchParams();
+  
+  if (params) {
+    if (params.page) queryParams.set('page', params.page.toString());
+    if (params.limit) queryParams.set('limit', params.limit.toString());
+    if (params.sort) queryParams.set('sort', params.sort);
+  }
+  
+  const queryString = queryParams.toString();
+  const url = queryString ? `${API_URL}/services?${queryString}` : `${API_URL}/services`;
+  
+  const response = await fetch(url);
   return response.json();
 }
 

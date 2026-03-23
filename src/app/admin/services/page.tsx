@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
-import { getServices, createService, updateService, deleteService, Service } from '@/libs/services';
+import { getServices, createService, updateService, deleteService, Service, ServiceQueryParams } from '@/libs/services';
 import { getShops, Shop } from '@/libs/shops';
 
 interface PaginationData {
@@ -41,17 +41,26 @@ export default function AdminServicesPage() {
   const [formData, setFormData] = useState<Omit<Service, '_id'>>(emptyService);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Filter states
+  // Pagination & Filter states
+  const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [shopFilter, setShopFilter] = useState('');
+  
+  const ITEMS_PER_PAGE = 12;
 
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
       try {
-        // Fetch services and shops in parallel
+        // Fetch services with pagination and shops in parallel
+        const params: ServiceQueryParams = {
+          page: currentPage,
+          limit: ITEMS_PER_PAGE,
+          sort: '-createdAt'
+        };
+        
         const [servicesRes, shopsRes] = await Promise.all([
-          getServices(),
+          getServices(params),
           getShops({ limit: 100 })
         ]);
         
@@ -75,14 +84,35 @@ export default function AdminServicesPage() {
     if (token && user?.role === 'admin') {
       fetchData();
     }
-  }, [token, user]);
+  }, [token, user, currentPage]);
 
+  // Client-side filtering for search and shop filter
   const filteredServices = services.filter(service => {
-    const matchesSearch = service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         (service.description && service.description.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesSearch = !searchQuery || 
+      service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (service.description && service.description.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesShop = !shopFilter || (typeof service.shop === 'string' ? service.shop === shopFilter : service.shop._id === shopFilter);
     return matchesSearch && matchesShop;
   });
+
+  // Generate page numbers for pagination
+  const getPageNumbers = () => {
+    const totalPages = pagination?.pages || 1;
+    const pages: (number | string)[] = [];
+    
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      if (currentPage <= 3) {
+        pages.push(1, 2, 3, 4, '...', totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1, '...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        pages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
+      }
+    }
+    return pages;
+  };
 
   const handleOpenAddModal = () => {
     setEditingService(null);
@@ -124,10 +154,16 @@ export default function AdminServicesPage() {
       }
       
       if (res.success) {
-        // Refresh services
-        const servicesRes = await getServices();
+        // Refresh services with current pagination
+        const params: ServiceQueryParams = {
+          page: currentPage,
+          limit: ITEMS_PER_PAGE,
+          sort: '-createdAt'
+        };
+        const servicesRes = await getServices(params);
         if (servicesRes.success) {
           setServices(servicesRes.data);
+          setPagination(servicesRes.pagination);
         }
         handleCloseModal();
       } else {
@@ -215,7 +251,10 @@ export default function AdminServicesPage() {
                 type="text"
                 placeholder="Search by name or description..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setCurrentPage(1);
+                }}
                 className="w-full bg-[#1A1A1A] border border-[#403A36] rounded-lg px-4 py-2 text-[#F0E5D8] focus:border-[#E57A00] focus:outline-none"
               />
             </div>
@@ -223,7 +262,10 @@ export default function AdminServicesPage() {
               <label className="block text-[#8A8177] text-sm mb-2">Filter by Shop</label>
               <select
                 value={shopFilter}
-                onChange={(e) => setShopFilter(e.target.value)}
+                onChange={(e) => {
+                  setShopFilter(e.target.value);
+                  setCurrentPage(1);
+                }}
                 className="w-full bg-[#1A1A1A] border border-[#403A36] rounded-lg px-4 py-2 text-[#F0E5D8] focus:border-[#E57A00] focus:outline-none"
               >
                 <option value="">All Shops</option>
@@ -236,7 +278,15 @@ export default function AdminServicesPage() {
           
           <div className="mt-4 pt-4 border-t border-[#403A36]">
             <p className="text-[#8A8177] text-sm">
-              Showing {filteredServices.length} of {services.length} services
+              {pagination ? (
+                searchQuery || shopFilter ? (
+                  `Showing ${filteredServices.length} filtered services (from ${pagination.total} total)`
+                ) : (
+                  `Showing ${(currentPage - 1) * ITEMS_PER_PAGE + 1} - ${Math.min(currentPage * ITEMS_PER_PAGE, pagination.total)} of ${pagination.total} services`
+                )
+              ) : (
+                'Loading...'
+              )}
             </p>
           </div>
         </div>
@@ -310,6 +360,53 @@ export default function AdminServicesPage() {
               Add Your First Service
             </button>
           </div>
+        )}
+
+        {/* Pagination - hide when searching/filtering since results are client-side filtered */}
+        {pagination && pagination.pages > 1 && !searchQuery && !shopFilter && (
+          <div className="flex justify-center items-center gap-2 mt-12">
+            <button
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="px-4 py-2 bg-[#2B2B2B] border border-[#403A36] rounded-lg text-[#F0E5D8] disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#E57A00] transition-colors"
+            >
+              ← Prev
+            </button>
+
+            <div className="flex gap-1">
+              {getPageNumbers().map((page, index) => (
+                <button
+                  key={index}
+                  onClick={() => typeof page === 'number' && setCurrentPage(page)}
+                  disabled={page === '...'}
+                  className={`w-10 h-10 rounded-lg border transition-colors ${
+                    page === currentPage
+                      ? 'bg-[#E57A00] border-[#E57A00] text-[#1A110A] font-bold'
+                      : page === '...'
+                      ? 'bg-transparent border-transparent text-[#8A8177] cursor-default'
+                      : 'bg-[#2B2B2B] border-[#403A36] text-[#F0E5D8] hover:border-[#E57A00]'
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+            </div>
+
+            <button
+              onClick={() => setCurrentPage(p => Math.min(pagination.pages, p + 1))}
+              disabled={currentPage === pagination.pages}
+              className="px-4 py-2 bg-[#2B2B2B] border border-[#403A36] rounded-lg text-[#F0E5D8] disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#E57A00] transition-colors"
+            >
+              Next →
+            </button>
+          </div>
+        )}
+
+        {/* Message when searching with filtered results */}
+        {(searchQuery || shopFilter) && filteredServices.length > 0 && (
+          <p className="text-center text-[#8A8177] text-sm mt-8">
+            Showing filtered results. Clear filters to see all pages.
+          </p>
         )}
       </div>
 

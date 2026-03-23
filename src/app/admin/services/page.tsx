@@ -46,6 +46,11 @@ export default function AdminServicesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [shopFilter, setShopFilter] = useState('');
   
+  // Shop search for modal
+  const [shopSearchQuery, setShopSearchQuery] = useState('');
+  const [isShopDropdownOpen, setIsShopDropdownOpen] = useState(false);
+  const [filteredShops, setFilteredShops] = useState<Shop[]>([]);
+  
   const ITEMS_PER_PAGE = 12;
 
   useEffect(() => {
@@ -61,7 +66,7 @@ export default function AdminServicesPage() {
         
         const [servicesRes, shopsRes] = await Promise.all([
           getServices(params),
-          getShops({ limit: 100 })
+          getShops({ limit: 1000 }) // Fetch more shops for the search
         ]);
         
         if (servicesRes.success) {
@@ -85,6 +90,21 @@ export default function AdminServicesPage() {
       fetchData();
     }
   }, [token, user, currentPage]);
+
+  // Close shop dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.shop-search-container')) {
+        setIsShopDropdownOpen(false);
+      }
+    }
+    
+    if (isShopDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [isShopDropdownOpen]);
 
   // Client-side filtering for search and shop filter
   const filteredServices = services.filter(service => {
@@ -117,11 +137,16 @@ export default function AdminServicesPage() {
   const handleOpenAddModal = () => {
     setEditingService(null);
     setFormData(emptyService);
+    setShopSearchQuery('');
+    setFilteredShops(shops.slice(0, 10)); // Show first 10 shops initially
+    setIsShopDropdownOpen(false);
     setIsModalOpen(true);
   };
 
   const handleOpenEditModal = (service: Service) => {
     setEditingService(service);
+    const shopId = typeof service.shop === 'string' ? service.shop : service.shop._id;
+    const shopName = getShopName(service.shop);
     setFormData({
       name: service.name,
       area: service.area,
@@ -132,6 +157,8 @@ export default function AdminServicesPage() {
       description: service.description || '',
       shop: service.shop
     });
+    setShopSearchQuery(shopName);
+    setIsShopDropdownOpen(false);
     setIsModalOpen(true);
   };
 
@@ -139,6 +166,33 @@ export default function AdminServicesPage() {
     setIsModalOpen(false);
     setEditingService(null);
     setFormData(emptyService);
+    setShopSearchQuery('');
+    setFilteredShops([]);
+    setIsShopDropdownOpen(false);
+  };
+
+  const handleShopSearch = (query: string) => {
+    setShopSearchQuery(query);
+    if (!editingService) {
+      setFormData(prev => ({ ...prev, shop: '' }));
+    }
+    
+    if (query.trim()) {
+      const filtered = shops
+        .filter(shop => shop.name.toLowerCase().includes(query.toLowerCase()))
+        .slice(0, 10);
+      setFilteredShops(filtered);
+      setIsShopDropdownOpen(true);
+    } else {
+      setFilteredShops(shops.slice(0, 10));
+      setIsShopDropdownOpen(true);
+    }
+  };
+
+  const handleSelectShop = (shop: Shop) => {
+    setFormData(prev => ({ ...prev, shop: shop._id }));
+    setShopSearchQuery(shop.name);
+    setIsShopDropdownOpen(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -442,23 +496,65 @@ export default function AdminServicesPage() {
                     />
                   </div>
 
-                  <div className="md:col-span-2">
+                  <div className="md:col-span-2 relative shop-search-container">
                     <label className="block text-[#8A8177] text-sm mb-1">Shop *</label>
-                    <select
-                      name="shop"
-                      value={typeof formData.shop === 'string' ? formData.shop : formData.shop._id}
-                      onChange={handleInputChange}
-                      required
-                      disabled={!!editingService}
-                      className="w-full bg-[#1A1A1A] border border-[#403A36] rounded-lg px-4 py-2 text-[#F0E5D8] focus:border-[#E57A00] focus:outline-none disabled:opacity-50"
-                    >
-                      <option value="">Select a shop...</option>
-                      {shops.map(shop => (
-                        <option key={shop._id} value={shop._id}>{shop.name}</option>
-                      ))}
-                    </select>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={shopSearchQuery}
+                        onChange={(e) => handleShopSearch(e.target.value)}
+                        onFocus={() => {
+                          if (!editingService) {
+                            setFilteredShops(shops.slice(0, 10));
+                            setIsShopDropdownOpen(true);
+                          }
+                        }}
+                        placeholder="Search for a shop..."
+                        disabled={!!editingService}
+                        className="w-full bg-[#1A1A1A] border border-[#403A36] rounded-lg px-4 py-2 text-[#F0E5D8] focus:border-[#E57A00] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                      />
+                      {!editingService && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFilteredShops(shops.slice(0, 10));
+                            setIsShopDropdownOpen(!isShopDropdownOpen);
+                          }}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8A8177] hover:text-[#D4CFC6]"
+                        >
+                          <svg className={`w-5 h-5 transition-transform ${isShopDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                    
+                    {/* Shop Search Dropdown */}
+                    {isShopDropdownOpen && !editingService && (
+                      <div className="absolute z-10 w-full mt-1 bg-[#1A1A1A] border border-[#403A36] rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                        {filteredShops.length > 0 ? (
+                          filteredShops.map(shop => (
+                            <button
+                              key={shop._id}
+                              type="button"
+                              onClick={() => handleSelectShop(shop)}
+                              className="w-full text-left px-4 py-2 text-[#D4CFC6] hover:bg-[#2B2B2B] hover:text-[#E57A00] transition-colors"
+                            >
+                              {shop.name}
+                              <span className="text-[#8A8177] text-sm ml-2">- {shop.address}</span>
+                            </button>
+                          ))
+                        ) : (
+                          <div className="px-4 py-2 text-[#8A8177]">No shops found</div>
+                        )}
+                      </div>
+                    )}
+                    
                     {editingService && (
                       <p className="text-[#8A8177] text-xs mt-1">Shop cannot be changed when editing</p>
+                    )}
+                    {!editingService && !formData.shop && (
+                      <p className="text-red-400 text-xs mt-1">Please select a shop</p>
                     )}
                   </div>
 

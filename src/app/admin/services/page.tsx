@@ -68,29 +68,29 @@ export default function AdminServicesPage() {
           limit: ITEMS_PER_PAGE,
           sort: '-createdAt'
         };
-        
+
         // Add server-side search if query exists
         if (searchQuery.trim()) {
           params.search = searchQuery.trim();
         }
-        
+
         // Add server-side shop filter if selected
         if (shopFilter) {
           params.shop = shopFilter;
         }
-        
+
         const [servicesRes, shopsRes] = await Promise.all([
           getServices(params),
           getShops({ limit: 1000 }) // Fetch more shops for the search
         ]);
-        
+
         if (servicesRes.success) {
           setServices(servicesRes.data);
           setPagination(servicesRes.pagination);
         } else {
           setError(servicesRes.message || 'Failed to load services');
         }
-        
+
         if (shopsRes.success) {
           setShops(shopsRes.data);
         }
@@ -314,24 +314,29 @@ export default function AdminServicesPage() {
         <div className="bg-[#2B2B2B] border border-[#403A36] rounded-lg p-4 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-[#8A8177] text-sm mb-2">Search Services</label>
+              <label className="block text-[#8A8177] text-sm mb-2">Search Services by Name</label>
               <input
                 type="text"
-                placeholder="Search by name or description..."
+                placeholder="Search across all services..."
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
+                  setShopFilter(''); // Clear shop filter when searching
+                  setShopFilterSearch('');
                   setCurrentPage(1);
                 }}
                 className="w-full bg-[#1A1A1A] border border-[#403A36] rounded-lg px-4 py-2 text-[#F0E5D8] focus:border-[#E57A00] focus:outline-none"
               />
+              {searchQuery && (
+                <p className="text-[#8A8177] text-xs mt-1">Searching across all {pagination?.total || 0} services</p>
+              )}
             </div>
             <div className="relative shop-filter-container">
-              <label className="block text-[#8A8177] text-sm mb-2">Filter by Shop</label>
+              <label className="block text-[#8A8177] text-sm mb-2">Or Select a Shop</label>
               <div className="relative">
                 <input
                   type="text"
-                  placeholder="Search for a shop..."
+                  placeholder="Search for a shop to view its services..."
                   value={shopFilterSearch}
                   onChange={(e) => {
                     const query = e.target.value;
@@ -379,24 +384,10 @@ export default function AdminServicesPage() {
                   </button>
                 )}
               </div>
-              
+
               {/* Shop Filter Dropdown */}
               {isShopFilterDropdownOpen && (
                 <div className="absolute z-10 w-full mt-1 bg-[#1A1A1A] border border-[#403A36] rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShopFilter('');
-                      setShopFilterSearch('');
-                      setIsShopFilterDropdownOpen(false);
-                      setCurrentPage(1);
-                    }}
-                    className={`w-full text-left px-4 py-2 transition-colors ${
-                      shopFilter === '' ? 'text-[#E57A00] bg-[#2B2B2B]' : 'text-[#D4CFC6] hover:bg-[#2B2B2B] hover:text-[#E57A00]'
-                    }`}
-                  >
-                    All Shops
-                  </button>
                   {filteredShopOptions.map(shop => (
                     <button
                       key={shop._id}
@@ -404,6 +395,7 @@ export default function AdminServicesPage() {
                       onClick={() => {
                         setShopFilter(shop._id);
                         setShopFilterSearch(shop.name);
+                        setSearchQuery(''); // Clear search when selecting shop
                         setIsShopFilterDropdownOpen(false);
                         setCurrentPage(1);
                       }}
@@ -419,86 +411,115 @@ export default function AdminServicesPage() {
               )}
             </div>
           </div>
-          
+
           <div className="mt-4 pt-4 border-t border-[#403A36]">
             <p className="text-[#8A8177] text-sm">
               {pagination ? (
-                `Showing ${(currentPage - 1) * ITEMS_PER_PAGE + 1} - ${Math.min(currentPage * ITEMS_PER_PAGE, pagination.total)} of ${pagination.total} services`
+                searchQuery ? (
+                  `Searching "${searchQuery}" - Found ${pagination.total} matching services`
+                ) : shopFilter ? (
+                  `Showing services from ${shops.find(s => s._id === shopFilter)?.name || 'selected shop'} (${pagination.total} total)`
+                ) : (
+                  `Select a shop or enter a search term to view services (${pagination?.total || 0} total in database)`
+                )
               ) : (
                 'Loading...'
               )}
-              {shopFilter && ' (filtered by shop)'}
             </p>
           </div>
         </div>
 
-        {/* Services Table */}
-        <div className="bg-[#2B2B2B] border border-[#403A36] rounded-lg overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-[#1A1A1A]">
-                <tr>
-                  <th className="text-left px-4 py-3 text-[#8A8177] font-medium">Service Name</th>
-                  <th className="text-left px-4 py-3 text-[#8A8177] font-medium">Shop</th>
-                  <th className="text-left px-4 py-3 text-[#8A8177] font-medium">Area</th>
-                  <th className="text-left px-4 py-3 text-[#8A8177] font-medium">Duration</th>
-                  <th className="text-left px-4 py-3 text-[#8A8177] font-medium">Price</th>
-                  <th className="text-left px-4 py-3 text-[#8A8177] font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#403A36]">
-                {services.map((service) => (
-                  <tr key={service._id} className="hover:bg-[#333333]">
-                    <td className="px-4 py-3">
-                      <div>
-                        <p className="text-[#F0E5D8] font-medium">{service.name}</p>
-                        {service.description && (
-                          <p className="text-[#8A8177] text-sm truncate max-w-xs">{service.description}</p>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-[#D4CFC6]">{typeof service.shop === 'object' ? service.shop.name : getShopName(service.shop)}</td>
-                    <td className="px-4 py-3">
-                      <span className="px-2 py-1 bg-[#454545] rounded text-[#D4CFC6] text-sm capitalize">
-                        {service.area}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-[#D4CFC6]">{service.duration} min</td>
-                    <td className="px-4 py-3 text-[#D4CFC6]">฿{service.price}</td>
-                    <td className="px-4 py-3">
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleOpenEditModal(service)}
-                          className="px-3 py-1 bg-[#E57A00] text-[#1A110A] rounded hover:bg-[#c46a00] transition-colors text-sm font-medium"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDelete(service._id, service.name)}
-                          className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition-colors text-sm"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
+        {/* Services Table - Only show when searching or shop selected */}
+        {(searchQuery || shopFilter) && services.length > 0 && (
+          <div className="bg-[#2B2B2B] border border-[#403A36] rounded-lg overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-[#1A1A1A]">
+                  <tr>
+                    <th className="text-left px-4 py-3 text-[#8A8177] font-medium">Service Name</th>
+                    <th className="text-left px-4 py-3 text-[#8A8177] font-medium">Shop</th>
+                    <th className="text-left px-4 py-3 text-[#8A8177] font-medium">Area</th>
+                    <th className="text-left px-4 py-3 text-[#8A8177] font-medium">Duration</th>
+                    <th className="text-left px-4 py-3 text-[#8A8177] font-medium">Price</th>
+                    <th className="text-left px-4 py-3 text-[#8A8177] font-medium">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-[#403A36]">
+                  {services.map((service) => (
+                    <tr key={service._id} className="hover:bg-[#333333]">
+                      <td className="px-4 py-3">
+                        <div>
+                          <p className="text-[#F0E5D8] font-medium">{service.name}</p>
+                          {service.description && (
+                            <p className="text-[#8A8177] text-sm truncate max-w-xs">{service.description}</p>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-[#D4CFC6]">{typeof service.shop === 'object' ? service.shop.name : getShopName(service.shop)}</td>
+                      <td className="px-4 py-3">
+                        <span className="px-2 py-1 bg-[#454545] rounded text-[#D4CFC6] text-sm capitalize">
+                          {service.area}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-[#D4CFC6]">{service.duration} min</td>
+                      <td className="px-4 py-3 text-[#D4CFC6]">฿{service.price}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleOpenEditModal(service)}
+                            className="px-3 py-1 bg-[#E57A00] text-[#1A110A] rounded hover:bg-[#c46a00] transition-colors text-sm font-medium"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDelete(service._id, service.name)}
+                            className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition-colors text-sm"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* Empty State */}
-        {services.length === 0 && !loading && (
+        {/* Empty State - No search or shop selected */}
+        {!searchQuery && !shopFilter && !loading && (
+          <div className="text-center py-16 bg-[#2B2B2B] border border-[#403A36] rounded-lg">
+            <p className="text-[#D4CFC6] text-xl mb-2">👋 Welcome to Service Management</p>
+            <p className="text-[#8A8177] mb-6">Select a shop above to view its services, or search by service name</p>
+            <div className="flex gap-4 justify-center">
+              <button
+                onClick={() => document.querySelector<HTMLInputElement>('.shop-filter-container input')?.focus()}
+                className="px-4 py-2 bg-[#454545] text-[#D4CFC6] rounded hover:bg-[#5a5a5a] transition-colors"
+              >
+                Select a Shop
+              </button>
+              <button
+                onClick={handleOpenAddModal}
+                className="px-4 py-2 bg-[#E57A00] text-[#1A110A] font-bold rounded hover:bg-[#c46a00] transition-colors"
+              >
+                + Add New Service
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Empty State - Search or filter returned no results */}
+        {(searchQuery || shopFilter) && services.length === 0 && !loading && (
           <div className="text-center py-12">
             <p className="text-[#8A8177] text-lg">
-              {searchQuery || shopFilter ? 'No services match your filters' : 'No services found'}
+              {searchQuery ? `No services found matching "${searchQuery}"` : 'No services found for this shop'}
             </p>
             <button
               onClick={handleOpenAddModal}
               className="mt-4 px-4 py-2 bg-[#E57A00] text-[#1A110A] font-bold rounded hover:bg-[#c46a00] transition-colors"
             >
-              Add Your First Service
+              Add New Service
             </button>
           </div>
         )}

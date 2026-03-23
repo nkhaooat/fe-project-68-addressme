@@ -51,6 +51,11 @@ export default function AdminServicesPage() {
   const [isShopDropdownOpen, setIsShopDropdownOpen] = useState(false);
   const [filteredShops, setFilteredShops] = useState<Shop[]>([]);
   
+  // Shop filter search
+  const [shopFilterSearch, setShopFilterSearch] = useState('');
+  const [isShopFilterDropdownOpen, setIsShopFilterDropdownOpen] = useState(false);
+  const [filteredShopOptions, setFilteredShopOptions] = useState<Shop[]>([]);
+  
   const ITEMS_PER_PAGE = 12;
 
   useEffect(() => {
@@ -98,13 +103,16 @@ export default function AdminServicesPage() {
       if (!target.closest('.shop-search-container')) {
         setIsShopDropdownOpen(false);
       }
+      if (!target.closest('.shop-filter-container')) {
+        setIsShopFilterDropdownOpen(false);
+      }
     }
     
-    if (isShopDropdownOpen) {
+    if (isShopDropdownOpen || isShopFilterDropdownOpen) {
       document.addEventListener('mousedown', handleClickOutside);
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
-  }, [isShopDropdownOpen]);
+  }, [isShopDropdownOpen, isShopFilterDropdownOpen]);
 
   // Client-side filtering for search and shop filter
   const filteredServices = services.filter(service => {
@@ -312,21 +320,97 @@ export default function AdminServicesPage() {
                 className="w-full bg-[#1A1A1A] border border-[#403A36] rounded-lg px-4 py-2 text-[#F0E5D8] focus:border-[#E57A00] focus:outline-none"
               />
             </div>
-            <div>
+            <div className="relative shop-filter-container">
               <label className="block text-[#8A8177] text-sm mb-2">Filter by Shop</label>
-              <select
-                value={shopFilter}
-                onChange={(e) => {
-                  setShopFilter(e.target.value);
-                  setCurrentPage(1);
-                }}
-                className="w-full bg-[#1A1A1A] border border-[#403A36] rounded-lg px-4 py-2 text-[#F0E5D8] focus:border-[#E57A00] focus:outline-none"
-              >
-                <option value="">All Shops</option>
-                {shops.map(shop => (
-                  <option key={shop._id} value={shop._id}>{shop.name}</option>
-                ))}
-              </select>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search for a shop..."
+                  value={shopFilterSearch}
+                  onChange={(e) => {
+                    const query = e.target.value;
+                    setShopFilterSearch(query);
+                    if (query.trim()) {
+                      setFilteredShopOptions(
+                        shops.filter(shop => shop.name.toLowerCase().includes(query.toLowerCase())).slice(0, 10)
+                      );
+                    } else {
+                      setFilteredShopOptions(shops.slice(0, 10));
+                    }
+                    setIsShopFilterDropdownOpen(true);
+                  }}
+                  onFocus={() => {
+                    setFilteredShopOptions(shops.slice(0, 10));
+                    setIsShopFilterDropdownOpen(true);
+                  }}
+                  className="w-full bg-[#1A1A1A] border border-[#403A36] rounded-lg px-4 py-2 text-[#F0E5D8] focus:border-[#E57A00] focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFilteredShopOptions(shops.slice(0, 10));
+                    setIsShopFilterDropdownOpen(!isShopFilterDropdownOpen);
+                  }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8A8177] hover:text-[#D4CFC6]"
+                >
+                  <svg className={`w-5 h-5 transition-transform ${isShopFilterDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {shopFilter && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShopFilter('');
+                      setShopFilterSearch('');
+                      setCurrentPage(1);
+                    }}
+                    className="absolute right-10 top-1/2 -translate-y-1/2 text-[#8A8177] hover:text-red-400"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+              
+              {/* Shop Filter Dropdown */}
+              {isShopFilterDropdownOpen && (
+                <div className="absolute z-10 w-full mt-1 bg-[#1A1A1A] border border-[#403A36] rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShopFilter('');
+                      setShopFilterSearch('');
+                      setIsShopFilterDropdownOpen(false);
+                      setCurrentPage(1);
+                    }}
+                    className={`w-full text-left px-4 py-2 transition-colors ${
+                      shopFilter === '' ? 'text-[#E57A00] bg-[#2B2B2B]' : 'text-[#D4CFC6] hover:bg-[#2B2B2B] hover:text-[#E57A00]'
+                    }`}
+                  >
+                    All Shops
+                  </button>
+                  {filteredShopOptions.map(shop => (
+                    <button
+                      key={shop._id}
+                      type="button"
+                      onClick={() => {
+                        setShopFilter(shop._id);
+                        setShopFilterSearch(shop.name);
+                        setIsShopFilterDropdownOpen(false);
+                        setCurrentPage(1);
+                      }}
+                      className={`w-full text-left px-4 py-2 transition-colors ${
+                        shopFilter === shop._id ? 'text-[#E57A00] bg-[#2B2B2B]' : 'text-[#D4CFC6] hover:bg-[#2B2B2B] hover:text-[#E57A00]'
+                      }`}
+                    >
+                      {shop.name}
+                      <span className="text-[#8A8177] text-sm ml-2">- {shop.address}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
           

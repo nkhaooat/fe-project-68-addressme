@@ -5,22 +5,30 @@ import Image from 'next/image';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/redux/store';
 import { logout } from '@/redux/features/authSlice';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useState } from 'react';
 
 export default function TopMenu() {
   const { user, isAuthenticated } = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch();
   const router = useRouter();
+  const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAdminDropdownOpen, setIsAdminDropdownOpen] = useState(false);
 
   const handleLogout = () => {
     dispatch(logout());
     router.push('/');
     setIsMenuOpen(false);
+    setIsAdminDropdownOpen(false);
   };
 
-  const closeMenu = () => setIsMenuOpen(false);
+  const closeMenu = () => {
+    setIsMenuOpen(false);
+    setIsAdminDropdownOpen(false);
+  };
+
+  const isAdminPage = pathname?.startsWith('/admin');
 
   return (
     <nav className="w-full bg-[#2C1E18] border-b border-[#403A36]">
@@ -58,20 +66,63 @@ export default function TopMenu() {
                 </Link>
                 
                 {user?.role === 'admin' && (
-                  <>
-                    <Link
-                      href="/admin/bookings"
-                      className="text-[#E57A00] hover:text-[#c46a00] transition-colors font-medium"
+                  <div className="relative">
+                    <button
+                      onClick={() => setIsAdminDropdownOpen(!isAdminDropdownOpen)}
+                      className={`flex items-center gap-1 font-medium transition-colors ${
+                        isAdminPage ? 'text-[#E57A00]' : 'text-[#D4CFC6] hover:text-[#E57A00]'
+                      }`}
                     >
-                      Bookings
-                    </Link>
-                    <Link
-                      href="/admin/shops"
-                      className="text-[#E57A00] hover:text-[#c46a00] transition-colors font-medium"
-                    >
-                      Shops
-                    </Link>
-                  </>
+                      Admin
+                      <svg
+                        className={`w-4 h-4 transition-transform ${isAdminDropdownOpen ? 'rotate-180' : ''}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    
+                    {/* Admin Dropdown */}
+                    {isAdminDropdownOpen && (
+                      <div className="absolute top-full right-0 mt-2 w-48 bg-[#2B2B2B] border border-[#403A36] rounded-lg shadow-lg py-2 z-50">
+                        <Link
+                          href="/admin/bookings"
+                          onClick={() => setIsAdminDropdownOpen(false)}
+                          className={`block px-4 py-2 transition-colors ${
+                            pathname === '/admin/bookings' 
+                              ? 'text-[#E57A00] bg-[#1A1A1A]' 
+                              : 'text-[#D4CFC6] hover:text-[#E57A00] hover:bg-[#1A1A1A]'
+                          }`}
+                        >
+                          📋 Bookings
+                        </Link>
+                        <Link
+                          href="/admin/shops"
+                          onClick={() => setIsAdminDropdownOpen(false)}
+                          className={`block px-4 py-2 transition-colors ${
+                            pathname === '/admin/shops' 
+                              ? 'text-[#E57A00] bg-[#1A1A1A]' 
+                              : 'text-[#D4CFC6] hover:text-[#E57A00] hover:bg-[#1A1A1A]'
+                          }`}
+                        >
+                          🏪 Shops
+                        </Link>
+                        <Link
+                          href="/admin/services"
+                          onClick={() => setIsAdminDropdownOpen(false)}
+                          className={`block px-4 py-2 transition-colors ${
+                            pathname === '/admin/services' 
+                              ? 'text-[#E57A00] bg-[#1A1A1A]' 
+                              : 'text-[#D4CFC6] hover:text-[#E57A00] hover:bg-[#1A1A1A]'
+                          }`}
+                        >
+                          💆 Services
+                        </Link>
+                      </div>
+                    )}
+                  </div>
                 )}
 
                 <div className="flex items-center gap-3 ml-4 pl-4 border-l border-[#403A36]">
@@ -115,7 +166,7 @@ export default function TopMenu() {
         </div>
 
         {/* Mobile Dropdown Menu */}
-        <div className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${isMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
+        <div className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${isMenuOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
           <div className="py-4 border-t border-[#403A36] flex flex-col gap-4">
             <Link
               href="/shops"
@@ -136,22 +187,32 @@ export default function TopMenu() {
                 </Link>
                 
                 {user?.role === 'admin' && (
-                  <>
-                    <Link
-                      href="/admin/bookings"
-                      onClick={closeMenu}
-                      className="text-[#E57A00] hover:text-[#c46a00] transition-colors font-medium py-2"
-                    >
-                      Bookings
-                    </Link>
-                    <Link
-                      href="/admin/shops"
-                      onClick={closeMenu}
-                      className="text-[#E57A00] hover:text-[#c46a00] transition-colors font-medium py-2"
-                    >
-                      Shops
-                    </Link>
-                  </>
+                  <div className="border-l-2 border-[#E57A00] pl-4">
+                    <p className="text-[#E57A00] font-medium mb-2">Admin</p>
+                    <div className="flex flex-col gap-2">
+                      <Link
+                        href="/admin/bookings"
+                        onClick={closeMenu}
+                        className={`py-2 pl-2 ${pathname === '/admin/bookings' ? 'text-[#E57A00]' : 'text-[#D4CFC6] hover:text-[#E57A00]'}`}
+                      >
+                        📋 Bookings
+                      </Link>
+                      <Link
+                        href="/admin/shops"
+                        onClick={closeMenu}
+                        className={`py-2 pl-2 ${pathname === '/admin/shops' ? 'text-[#E57A00]' : 'text-[#D4CFC6] hover:text-[#E57A00]'}`}
+                      >
+                        🏪 Shops
+                      </Link>
+                      <Link
+                        href="/admin/services"
+                        onClick={closeMenu}
+                        className={`py-2 pl-2 ${pathname === '/admin/services' ? 'text-[#E57A00]' : 'text-[#D4CFC6] hover:text-[#E57A00]'}`}
+                      >
+                        💆 Services
+                      </Link>
+                    </div>
+                  </div>
                 )}
 
                 <div className="border-t border-[#403A36] pt-4 mt-2">

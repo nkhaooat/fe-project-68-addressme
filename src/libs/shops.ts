@@ -12,6 +12,22 @@ export interface ShopQueryParams {
   sortOrder?: 'asc' | 'desc';
 }
 
+export interface Shop {
+  _id: string;
+  name: string;
+  address: string;
+  location: string;
+  tel: string;
+  map: string;
+  openTime: string;
+  closeTime: string;
+  priceRangeMin: number;
+  priceRangeMax: number;
+  rating: number;
+  photo?: string;
+  placeId?: string;
+}
+
 export async function getShops(params?: ShopQueryParams) {
   const queryParams = new URLSearchParams();
 
@@ -41,5 +57,40 @@ export async function getShop(id: string) {
 
 export async function getShopAreas() {
   const response = await fetch(`${API_URL}/shops/areas`);
+  return response.json();
+}
+
+// Admin functions
+export async function createShop(shopData: Omit<Shop, '_id'>, token: string) {
+  const response = await fetch(`${API_URL}/shops`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify(shopData)
+  });
+  return response.json();
+}
+
+export async function updateShop(id: string, shopData: Partial<Shop>, token: string) {
+  const response = await fetch(`${API_URL}/shops/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify(shopData)
+  });
+  return response.json();
+}
+
+export async function deleteShop(id: string, token: string) {
+  const response = await fetch(`${API_URL}/shops/${id}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
   return response.json();
 }

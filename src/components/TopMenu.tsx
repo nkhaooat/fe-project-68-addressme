@@ -58,12 +58,20 @@ export default function TopMenu() {
                 </Link>
                 
                 {user?.role === 'admin' && (
-                  <Link
-                    href="/admin/bookings"
-                    className="text-[#E57A00] hover:text-[#c46a00] transition-colors font-medium"
-                  >
-                    Admin
-                  </Link>
+                  <>
+                    <Link
+                      href="/admin/bookings"
+                      className="text-[#E57A00] hover:text-[#c46a00] transition-colors font-medium"
+                    >
+                      Bookings
+                    </Link>
+                    <Link
+                      href="/admin/shops"
+                      className="text-[#E57A00] hover:text-[#c46a00] transition-colors font-medium"
+                    >
+                      Shops
+                    </Link>
+                  </>
                 )}
 
                 <div className="flex items-center gap-3 ml-4 pl-4 border-l border-[#403A36]">
@@ -128,13 +136,22 @@ export default function TopMenu() {
                 </Link>
                 
                 {user?.role === 'admin' && (
-                  <Link
-                    href="/admin/bookings"
-                    onClick={closeMenu}
-                    className="text-[#E57A00] hover:text-[#c46a00] transition-colors font-medium py-2"
-                  >
-                    Admin
-                  </Link>
+                  <>
+                    <Link
+                      href="/admin/bookings"
+                      onClick={closeMenu}
+                      className="text-[#E57A00] hover:text-[#c46a00] transition-colors font-medium py-2"
+                    >
+                      Bookings
+                    </Link>
+                    <Link
+                      href="/admin/shops"
+                      onClick={closeMenu}
+                      className="text-[#E57A00] hover:text-[#c46a00] transition-colors font-medium py-2"
+                    >
+                      Shops
+                    </Link>
+                  </>
                 )}
 
                 <div className="border-t border-[#403A36] pt-4 mt-2">

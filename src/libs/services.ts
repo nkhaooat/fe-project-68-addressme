@@ -16,20 +16,22 @@ export interface ServiceQueryParams {
   page?: number;
   limit?: number;
   sort?: string;
+  search?: string;
 }
 
 export async function getServices(params?: ServiceQueryParams) {
   const queryParams = new URLSearchParams();
-  
+
   if (params) {
     if (params.page) queryParams.set('page', params.page.toString());
     if (params.limit) queryParams.set('limit', params.limit.toString());
     if (params.sort) queryParams.set('sort', params.sort);
+    if (params.search) queryParams.set('search', params.search);
   }
-  
+
   const queryString = queryParams.toString();
   const url = queryString ? `${API_URL}/services?${queryString}` : `${API_URL}/services`;
-  
+
   const response = await fetch(url);
   return response.json();
 }

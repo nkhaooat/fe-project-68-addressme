@@ -62,12 +62,17 @@ export default function AdminServicesPage() {
     async function fetchData() {
       setLoading(true);
       try {
-        // Fetch services with pagination and shops in parallel
+        // Fetch services with pagination, search and shops in parallel
         const params: ServiceQueryParams = {
           page: currentPage,
           limit: ITEMS_PER_PAGE,
           sort: '-createdAt'
         };
+        
+        // Add server-side search if query exists
+        if (searchQuery.trim()) {
+          params.search = searchQuery.trim();
+        }
         
         const [servicesRes, shopsRes] = await Promise.all([
           getServices(params),
@@ -75,7 +80,17 @@ export default function AdminServicesPage() {
         ]);
         
         if (servicesRes.success) {
-          setServices(servicesRes.data);
+          let filteredData = servicesRes.data;
+          
+          // Client-side filter by shop (since we need shop data populated)
+          if (shopFilter) {
+            filteredData = filteredData.filter((service: Service) => {
+              const serviceShopId = typeof service.shop === 'string' ? service.shop : service.shop._id;
+              return serviceShopId === shopFilter;
+            });
+          }
+          
+          setServices(filteredData);
           setPagination(servicesRes.pagination);
         } else {
           setError(servicesRes.message || 'Failed to load services');
@@ -94,7 +109,7 @@ export default function AdminServicesPage() {
     if (token && user?.role === 'admin') {
       fetchData();
     }
-  }, [token, user, currentPage]);
+  }, [token, user, currentPage, searchQuery, shopFilter]);
 
   // Close shop dropdown when clicking outside
   useEffect(() => {
@@ -113,15 +128,6 @@ export default function AdminServicesPage() {
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
   }, [isShopDropdownOpen, isShopFilterDropdownOpen]);
-
-  // Client-side filtering for search and shop filter
-  const filteredServices = services.filter(service => {
-    const matchesSearch = !searchQuery || 
-      service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (service.description && service.description.toLowerCase().includes(searchQuery.toLowerCase()));
-    const matchesShop = !shopFilter || (typeof service.shop === 'string' ? service.shop === shopFilter : service.shop._id === shopFilter);
-    return matchesSearch && matchesShop;
-  });
 
   // Generate page numbers for pagination
   const getPageNumbers = () => {
@@ -417,14 +423,11 @@ export default function AdminServicesPage() {
           <div className="mt-4 pt-4 border-t border-[#403A36]">
             <p className="text-[#8A8177] text-sm">
               {pagination ? (
-                searchQuery || shopFilter ? (
-                  `Showing ${filteredServices.length} filtered services (from ${pagination.total} total)`
-                ) : (
-                  `Showing ${(currentPage - 1) * ITEMS_PER_PAGE + 1} - ${Math.min(currentPage * ITEMS_PER_PAGE, pagination.total)} of ${pagination.total} services`
-                )
+                `Showing ${(currentPage - 1) * ITEMS_PER_PAGE + 1} - ${Math.min(currentPage * ITEMS_PER_PAGE, pagination.total)} of ${pagination.total} services`
               ) : (
                 'Loading...'
               )}
+              {shopFilter && ' (filtered by shop)'}
             </p>
           </div>
         </div>
@@ -444,7 +447,7 @@ export default function AdminServicesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#403A36]">
-                {filteredServices.map((service) => (
+                {services.map((service) => (
                   <tr key={service._id} className="hover:bg-[#333333]">
                     <td className="px-4 py-3">
                       <div>
@@ -486,7 +489,7 @@ export default function AdminServicesPage() {
         </div>
 
         {/* Empty State */}
-        {filteredServices.length === 0 && !loading && (
+        {services.length === 0 && !loading && (
           <div className="text-center py-12">
             <p className="text-[#8A8177] text-lg">
               {searchQuery || shopFilter ? 'No services match your filters' : 'No services found'}
@@ -500,8 +503,8 @@ export default function AdminServicesPage() {
           </div>
         )}
 
-        {/* Pagination - hide when searching/filtering since results are client-side filtered */}
-        {pagination && pagination.pages > 1 && !searchQuery && !shopFilter && (
+        {/* Pagination - hide when shop filtering since results are client-side filtered */}
+        {pagination && pagination.pages > 1 && !shopFilter && (
           <div className="flex justify-center items-center gap-2 mt-12">
             <button
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
@@ -540,10 +543,10 @@ export default function AdminServicesPage() {
           </div>
         )}
 
-        {/* Message when searching with filtered results */}
-        {(searchQuery || shopFilter) && filteredServices.length > 0 && (
+        {/* Message when shop filtering */}
+        {shopFilter && services.length > 0 && (
           <p className="text-center text-[#8A8177] text-sm mt-8">
-            Showing filtered results. Clear filters to see all pages.
+            Showing filtered results. Clear shop filter to see all pages.
           </p>
         )}
       </div>

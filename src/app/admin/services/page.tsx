@@ -524,8 +524,8 @@ export default function AdminServicesPage() {
           </div>
         )}
 
-        {/* Pagination - hide when shop filtering since results are client-side filtered */}
-        {pagination && pagination.pages > 1 && !shopFilter && (
+        {/* Pagination - only show when searching or shop selected and has multiple pages */}
+        {pagination && pagination.pages > 1 && (searchQuery || shopFilter) && (
           <div className="flex justify-center items-center gap-2 mt-12">
             <button
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))}

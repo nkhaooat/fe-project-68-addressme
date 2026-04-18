@@ -20,6 +20,8 @@ export interface Shop {
   rating?: number;
   photo?: string;
   placeId?: string;
+  description?: string;
+  tiktokLinks?: string[];
 }
 
 export interface Service {

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
-import { getShops, createShop, updateShop, deleteShop, Shop, ShopQueryParams } from '@/libs/shops';
+import { getShops, createShop, updateShop, deleteShop, Shop, ShopQueryParams, addTiktokLinks, removeTiktokLink } from '@/libs/shops';
 import Link from 'next/link';
 
 interface PaginationData {
@@ -25,7 +25,9 @@ const emptyShop: Omit<Shop, '_id'> = {
   priceRangeMax: 0,
   rating: 0,
   photo: '',
-  placeId: ''
+  placeId: '',
+  description: '',
+  tiktokLinks: []
 };
 
 export default function AdminShopsPage() {
@@ -44,6 +46,9 @@ export default function AdminShopsPage() {
   // Pagination & Search states
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // TikTok management states
+  const [newTiktokUrl, setNewTiktokUrl] = useState('');
   
   const ITEMS_PER_PAGE = 12;
 
@@ -99,7 +104,9 @@ export default function AdminShopsPage() {
       priceRangeMax: shop.priceRangeMax,
       rating: shop.rating,
       photo: shop.photo || '',
-      placeId: shop.placeId || ''
+      placeId: shop.placeId || '',
+      description: shop.description || '',
+      tiktokLinks: shop.tiktokLinks || []
     });
     setIsModalOpen(true);
   };
@@ -171,6 +178,44 @@ export default function AdminShopsPage() {
       ...prev,
       [name]: name.includes('price') || name === 'rating' ? parseFloat(value) || 0 : value
     }));
+  };
+
+  const handleAddTiktok = async () => {
+    if (!editingShop || !newTiktokUrl.includes('tiktok.com') || !token) return;
+    
+    try {
+      const data = await addTiktokLinks(editingShop._id, [newTiktokUrl], token);
+      if (data.success) {
+        setFormData(prev => ({
+          ...prev,
+          tiktokLinks: data.data
+        }));
+        setNewTiktokUrl('');
+      } else {
+        alert(data.message || 'Failed to add TikTok link');
+      }
+    } catch {
+      alert('Error adding TikTok link');
+    }
+  };
+
+  const handleRemoveTiktok = async (url: string) => {
+    if (!editingShop || !token) return;
+    if (!confirm('Remove this TikTok link?')) return;
+    
+    try {
+      const data = await removeTiktokLink(editingShop._id, url, token);
+      if (data.success) {
+        setFormData(prev => ({
+          ...prev,
+          tiktokLinks: data.data
+        }));
+      } else {
+        alert(data.message || 'Failed to remove TikTok link');
+      }
+    } catch {
+      alert('Error removing TikTok link');
+    }
   };
 
   // Generate page numbers for pagination
@@ -287,7 +332,12 @@ export default function AdminShopsPage() {
                   <p>📞 {shop.tel}</p>
                   <p>🕐 {shop.openTime} - {shop.closeTime}</p>
                   <p>💰 ฿{shop.priceRangeMin} - ฿{shop.priceRangeMax}</p>
-                  <p>⭐ {shop.rating.toFixed(1)}</p>
+                  <div className="flex items-center gap-3">
+                    <p>⭐ {shop.rating.toFixed(1)}</p>
+                    {shop.tiktokLinks && shop.tiktokLinks.length > 0 && (
+                      <span className="text-[#E57A00]">🎵 {shop.tiktokLinks.length}</span>
+                    )}
+                  </div>
                 </div>
                 
                 <div className="flex gap-2">
@@ -537,6 +587,72 @@ export default function AdminShopsPage() {
                       className="w-full bg-[#1A1A1A] border border-[#403A36] rounded-lg px-4 py-2 text-[#F0E5D8] focus:border-[#E57A00] focus:outline-none"
                     />
                   </div>
+
+                  {/* Description Field */}
+                  <div className="md:col-span-2">
+                    <label className="block text-[#8A8177] text-sm mb-1">Description</label>
+                    <textarea
+                      name="description"
+                      value={formData.description}
+                      onChange={handleInputChange}
+                      rows={3}
+                      placeholder="Brief description of the shop (optional - auto-generated if empty)"
+                      className="w-full bg-[#1A1A1A] border border-[#403A36] rounded-lg px-4 py-2 text-[#F0E5D8] focus:border-[#E57A00] focus:outline-none resize-none"
+                    />
+                  </div>
+
+                  {/* TikTok Links - Edit Mode Only */}
+                  {editingShop && (
+                    <div className="md:col-span-2 border-t border-[#403A36] pt-4 mt-2">
+                      <label className="block text-[#8A8177] text-sm mb-2">🎵 TikTok Videos</label>
+                      
+                      {/* Current TikTok Links */}
+                      <div className="space-y-2 mb-4">
+                        {(formData.tiktokLinks || []).length === 0 ? (
+                          <p className="text-[#8A8177] text-sm italic">No TikTok videos added yet</p>
+                        ) : (
+                          (formData.tiktokLinks || []).map((url, i) => (
+                            <div key={i} className="flex items-center gap-2">
+                              <a
+                                href={url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex-1 text-[#E57A00] text-sm truncate hover:underline"
+                              >
+                                🎵 Video {i + 1}: {url}
+                              </a>
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveTiktok(url)}
+                                className="px-2 py-1 bg-red-600/20 text-red-400 rounded hover:bg-red-600/40 transition-colors text-xs"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          ))
+                        )}
+                      </div>
+
+                      {/* Add New TikTok */}
+                      <div className="flex gap-2">
+                        <input
+                          type="url"
+                          value={newTiktokUrl}
+                          onChange={(e) => setNewTiktokUrl(e.target.value)}
+                          placeholder="https://www.tiktok.com/@username/video/..."
+                          className="flex-1 bg-[#1A1A1A] border border-[#403A36] rounded-lg px-4 py-2 text-[#F0E5D8] focus:border-[#E57A00] focus:outline-none text-sm"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleAddTiktok}
+                          disabled={!newTiktokUrl.includes('tiktok.com')}
+                          className="px-4 py-2 bg-[#E57A00] text-[#1A110A] rounded-lg font-medium hover:bg-[#c46a00] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                        >
+                          Add
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex gap-4 pt-4">

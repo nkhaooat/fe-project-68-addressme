@@ -3,6 +3,7 @@ import { Cinzel, Inter } from "next/font/google";
 import "./globals.css";
 import ReduxProvider from "@/redux/ReduxProvider";
 import TopMenu from "@/components/TopMenu";
+import ChatWidget from "@/components/ChatWidget";
 
 const cinzel = Cinzel({
   subsets: ["latin"],
@@ -31,6 +32,7 @@ export default function RootLayout({
         <ReduxProvider>
           <TopMenu />
           {children}
+          <ChatWidget />
         </ReduxProvider>
       </body>
     </html>

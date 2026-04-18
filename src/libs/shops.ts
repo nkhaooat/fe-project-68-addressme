@@ -26,6 +26,8 @@ export interface Shop {
   rating: number;
   photo?: string;
   placeId?: string;
+  description?: string;
+  tiktokLinks?: string[];
 }
 
 export async function getShops(params?: ShopQueryParams) {
@@ -91,6 +93,56 @@ export async function deleteShop(id: string, token: string) {
     headers: {
       'Authorization': `Bearer ${token}`
     }
+  });
+  return response.json();
+}
+
+// TikTok management
+export async function addTiktokLinks(id: string, links: string[], token: string) {
+  const response = await fetch(`${API_URL}/shops/${id}/tiktok`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({ links })
+  });
+  return response.json();
+}
+
+export async function updateTiktokLinks(id: string, links: string[], token: string) {
+  const response = await fetch(`${API_URL}/shops/${id}/tiktok`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({ links })
+  });
+  return response.json();
+}
+
+export async function removeTiktokLink(id: string, link: string, token: string) {
+  const response = await fetch(`${API_URL}/shops/${id}/tiktok`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({ link })
+  });
+  return response.json();
+}
+
+// Description management
+export async function updateShopDescription(id: string, description: string, token: string) {
+  const response = await fetch(`${API_URL}/shops/${id}/description`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({ description })
   });
   return response.json();
 }

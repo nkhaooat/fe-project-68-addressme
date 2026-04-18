@@ -108,6 +108,14 @@ export default function ShopDetailPage() {
                 </p>
               </div>
             </div>
+            {/* Shop Description */}
+            {shop.description && (
+              <div className="mt-4 pt-4 border-t border-[#403A36]">
+                <p className="text-[#8A8177] mb-1">📝 About</p>
+                <p className="text-[#D4CFC6] text-sm leading-relaxed">{shop.description}</p>
+              </div>
+            )}
+
             <div className="mt-4 pt-4 border-t border-[#403A36]">
               <p className="text-[#8A8177]">
                 Price Range:{' '}
@@ -126,6 +134,26 @@ export default function ShopDetailPage() {
                 >
                   📍 View on Google Maps →
                 </a>
+              </div>
+            )}
+
+            {/* TikTok Videos (US1-1) */}
+            {shop.tiktokLinks && shop.tiktokLinks.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-[#403A36]">
+                <p className="text-[#8A8177] mb-2">🎵 TikTok Videos</p>
+                <div className="flex flex-wrap gap-2">
+                  {shop.tiktokLinks.map((url, i) => (
+                    <a
+                      key={i}
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-[#1A1A1A] border border-[#403A36] rounded-full text-sm text-[#E57A00] hover:border-[#E57A00] transition-colors"
+                    >
+                      🎵 Video {i + 1}
+                    </a>
+                  ))}
+                </div>
               </div>
             )}
           </div>

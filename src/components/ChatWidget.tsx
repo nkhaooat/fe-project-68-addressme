@@ -108,13 +108,31 @@ export default function ChatWidget() {
         .slice(-8)
         .map(({ role, content }) => ({ role, content }));
 
+      // Fetch live weather from client side (GISTDA only allows Thai IPs)
+      let weather = null;
+      try {
+        const wRes = await fetch(
+          'https://pm25.gistda.or.th/rest/getWeatherbyArea?id=103301',
+          { signal: AbortSignal.timeout(4000) }
+        );
+        const wJson = await wRes.json();
+        const d = wJson?.data?.[0];
+        if (d) weather = {
+          temp: d.temperature_2m,
+          wind: d.windspeed_10m_max,
+          rainChance: d.precipitation_probability_max,
+        };
+      } catch {
+        // GISTDA unreachable — continue without weather
+      }
+
       const res = await fetch(`${API_URL}/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ message: text, history }),
+        body: JSON.stringify({ message: text, history, weather }),
       });
 
       const data = await res.json();

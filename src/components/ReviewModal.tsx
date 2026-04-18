@@ -58,7 +58,7 @@ export default function ReviewModal({ reservationId, shopName, serviceName, toke
               onMouseEnter={() => setHovered(star)}
               onMouseLeave={() => setHovered(0)}
               onClick={() => setRating(star)}
-              className="text-3xl transition-transform hover:scale-110"
+              className="text-3xl leading-none w-10 h-10 flex items-center justify-center transition-colors"
             >
               {star <= (hovered || rating) ? '⭐' : '☆'}
             </button>

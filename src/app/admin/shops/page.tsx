@@ -612,19 +612,20 @@ export default function AdminShopsPage() {
                           <p className="text-[#8A8177] text-sm italic">No TikTok videos added yet</p>
                         ) : (
                           (formData.tiktokLinks || []).map((url, i) => (
-                            <div key={i} className="flex items-center gap-2">
+                            <div key={i} className="flex items-center gap-2 bg-[#1A1A1A] border border-[#403A36] rounded-lg px-3 py-2">
+                              <span className="text-[#8A8177] text-sm shrink-0">Video {i + 1}</span>
                               <a
                                 href={url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex-1 text-[#E57A00] text-sm truncate hover:underline"
+                                className="flex-1 text-[#E57A00] text-xs truncate hover:underline"
                               >
-                                🎵 Video {i + 1}: {url}
+                                {url}
                               </a>
                               <button
                                 type="button"
                                 onClick={() => handleRemoveTiktok(url)}
-                                className="px-2 py-1 bg-red-600/20 text-red-400 rounded hover:bg-red-600/40 transition-colors text-xs"
+                                className="px-2 py-1 bg-red-600/20 text-red-400 rounded hover:bg-red-600/40 transition-colors text-xs shrink-0"
                               >
                                 Remove
                               </button>

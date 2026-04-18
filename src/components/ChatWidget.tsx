@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import ReactMarkdown from 'react-markdown';
 import { API_URL } from '@/libs/config';
+import { createReservation } from '@/libs/reservations';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -162,6 +163,39 @@ export default function ChatWidget() {
         : 'Sorry, something went wrong. Please try again.';
 
       setMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
+
+      // Handle booking action from chatbot
+      if (data.success && data.action?.type === 'create_reservation' && token) {
+        const { shopId, serviceId, resvDate } = data.action;
+        try {
+          const resvRes = await createReservation(
+            { shop: shopId, service: serviceId, resvDate },
+            token
+          );
+          if (resvRes.success) {
+            setMessages((prev) => [
+              ...prev,
+              {
+                role: 'assistant',
+                content: `✅ **จองสำเร็จแล้วครับ!**\n\nดูการจองทั้งหมดได้ที่ [My Bookings](/mybookings)`,
+              },
+            ]);
+          } else {
+            setMessages((prev) => [
+              ...prev,
+              {
+                role: 'assistant',
+                content: `❌ **ไม่สามารถจองได้:** ${resvRes.message || 'กรุณาลองใหม่อีกครั้ง'}`,
+              },
+            ]);
+          }
+        } catch {
+          setMessages((prev) => [
+            ...prev,
+            { role: 'assistant', content: '❌ เกิดข้อผิดพลาดในการจอง กรุณาลองใหม่อีกครั้ง' },
+          ]);
+        }
+      }
     } catch {
       setMessages((prev) => [
         ...prev,

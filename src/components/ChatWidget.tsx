@@ -36,9 +36,10 @@ const defaultMessages: Message[] = [
 ];
 
 export default function ChatWidget() {
-  const { token } = useSelector((state: RootState) => state.auth);
+  const { token, isAuthenticated } = useSelector((state: RootState) => state.auth);
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>(defaultMessages);
+  const prevAuthRef = useRef<boolean | null>(null);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -62,7 +63,6 @@ export default function ChatWidget() {
   // Persist chat history to sessionStorage whenever it changes
   useEffect(() => {
     try {
-      // Don't persist if it's just the default greeting
       if (messages.length > 1) {
         sessionStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
       }
@@ -71,10 +71,21 @@ export default function ChatWidget() {
     }
   }, [messages]);
 
+  // Clear history when user logs out
+  useEffect(() => {
+    if (prevAuthRef.current === true && !isAuthenticated) {
+      setMessages(defaultMessages);
+      sessionStorage.removeItem(STORAGE_KEY);
+    }
+    prevAuthRef.current = isAuthenticated;
+  }, [isAuthenticated]);
+
+  // Auto-scroll to bottom on new messages
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, open]);
 
+  // Focus input when opened
   useEffect(() => {
     if (open) {
       setTimeout(() => inputRef.current?.focus(), 100);
@@ -167,7 +178,6 @@ export default function ChatWidget() {
               </div>
             </div>
             <div className="flex items-center gap-1">
-              {/* Clear history button */}
               <button
                 onClick={() => {
                   setMessages(defaultMessages);
@@ -196,7 +206,6 @@ export default function ChatWidget() {
                 key={i}
                 className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
-                {/* Avatar for assistant */}
                 {msg.role === 'assistant' && (
                   <div className="w-7 h-7 rounded-full bg-[#E57A00] flex items-center justify-center text-xs mr-2 mt-1 shrink-0">
                     🕯️

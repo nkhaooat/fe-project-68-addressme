@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/redux/store';
 import ReactMarkdown from 'react-markdown';
 import { API_URL } from '@/libs/config';
 
@@ -24,6 +26,7 @@ function SendIcon({ className }: { className?: string }) {
 }
 
 export default function ChatWidget() {
+  const { token } = useSelector((state: RootState) => state.auth);
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -65,7 +68,10 @@ export default function ChatWidget() {
 
       const res = await fetch(`${API_URL}/chat`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({ message: text, history }),
       });
 

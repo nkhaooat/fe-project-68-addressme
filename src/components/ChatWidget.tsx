@@ -26,6 +26,36 @@ function SendIcon({ className }: { className?: string }) {
 }
 
 const STORAGE_KEY = 'dungeon_chat_history';
+const WEATHER_CACHE_KEY = 'dungeon_weather_cache';
+const WEATHER_CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+
+async function getWeather() {
+  try {
+    // Check cache first
+    const cached = sessionStorage.getItem(WEATHER_CACHE_KEY);
+    if (cached) {
+      const { data, ts } = JSON.parse(cached);
+      if (Date.now() - ts < WEATHER_CACHE_TTL) return data;
+    }
+    // Fetch fresh
+    const res = await fetch(
+      'https://pm25.gistda.or.th/rest/getWeatherbyArea?id=103301',
+      { signal: AbortSignal.timeout(4000) }
+    );
+    const json = await res.json();
+    const d = json?.data?.[0];
+    if (!d) return null;
+    const data = {
+      temp: d.temperature_2m,
+      wind: d.windspeed_10m_max,
+      rainChance: d.precipitation_probability_max,
+    };
+    sessionStorage.setItem(WEATHER_CACHE_KEY, JSON.stringify({ data, ts: Date.now() }));
+    return data;
+  } catch {
+    return null;
+  }
+}
 
 const defaultMessages: Message[] = [
   {
@@ -108,23 +138,10 @@ export default function ChatWidget() {
         .slice(-8)
         .map(({ role, content }) => ({ role, content }));
 
-      // Fetch live weather from client side (GISTDA only allows Thai IPs)
-      let weather = null;
-      try {
-        const wRes = await fetch(
-          'https://pm25.gistda.or.th/rest/getWeatherbyArea?id=103301',
-          { signal: AbortSignal.timeout(4000) }
-        );
-        const wJson = await wRes.json();
-        const d = wJson?.data?.[0];
-        if (d) weather = {
-          temp: d.temperature_2m,
-          wind: d.windspeed_10m_max,
-          rainChance: d.precipitation_probability_max,
-        };
-      } catch {
-        // GISTDA unreachable — continue without weather
-      }
+      // Fetch live weather from client side (cached 10 min, GISTDA Thai IP)
+      // Only include in request if the message seems weather-related
+      const weatherKeywords = /weather|rain|hot|temperature|wind|umbrella|อากาศ|ฝน|ร้อน|ลม|หนาว/i;
+      const weather = weatherKeywords.test(text) ? await getWeather() : null;
 
       const res = await fetch(`${API_URL}/chat`, {
         method: 'POST',

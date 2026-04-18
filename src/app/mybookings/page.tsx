@@ -7,6 +7,8 @@ import { getReservations, deleteReservation } from '@/libs/reservations';
 import { Reservation } from '@/interface';
 import Link from 'next/link';
 import EditBookingModal from '@/components/EditBookingModal';
+import ReviewModal from '@/components/ReviewModal';
+import { API_URL } from '@/libs/config';
 
 export default function MyBookingsPage() {
   const { token } = useSelector((state: RootState) => state.auth);
@@ -14,6 +16,8 @@ export default function MyBookingsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [editingReservation, setEditingReservation] = useState<Reservation | null>(null);
+  const [reviewingReservation, setReviewingReservation] = useState<Reservation | null>(null);
+  const [reviewedIds, setReviewedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     async function fetchReservations() {
@@ -21,6 +25,21 @@ export default function MyBookingsPage() {
         const res = await getReservations(token!, true);
         if (res.success) {
           setReservations(res.data);
+          // Check which completed reservations already have reviews
+          const completed = res.data.filter((r: Reservation) => r.status === 'completed');
+          const checks = await Promise.all(
+            completed.map((r: Reservation) =>
+              fetch(`${API_URL}/reviews/check/${r._id}`, {
+                headers: { Authorization: `Bearer ${token}` },
+              }).then((x) => x.json())
+            )
+          );
+          const alreadyReviewed = new Set<string>(
+            completed
+              .filter((_: Reservation, i: number) => checks[i]?.reviewed)
+              .map((r: Reservation) => r._id as string)
+          );
+          setReviewedIds(alreadyReviewed);
         } else {
           setError(res.message || 'Failed to load reservations');
         }
@@ -156,6 +175,17 @@ export default function MyBookingsPage() {
                         Cancel
                       </button>
                     )}
+                    {reservation.status === 'completed' && !reviewedIds.has(reservation._id) && (
+                      <button
+                        onClick={() => setReviewingReservation(reservation)}
+                        className="px-4 py-2 bg-[#403A36] text-[#F0E5D8] rounded hover:bg-[#E57A00] hover:text-[#1A110A] transition-colors font-bold"
+                      >
+                        ⭐ Review
+                      </button>
+                    )}
+                    {reservation.status === 'completed' && reviewedIds.has(reservation._id) && (
+                      <span className="px-4 py-2 text-[#8A8177] text-sm flex items-center">✓ Reviewed</span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -172,6 +202,32 @@ export default function MyBookingsPage() {
         token={token!}
         isAdmin={false}
       />
+
+      {reviewingReservation && (
+        <ReviewModal
+          reservationId={reviewingReservation._id}
+          shopName={
+            reviewingReservation.shop && typeof reviewingReservation.shop === 'object'
+              ? reviewingReservation.shop.name
+              : 'Shop'
+          }
+          serviceName={
+            reviewingReservation.service && typeof reviewingReservation.service === 'object'
+              ? reviewingReservation.service.name
+              : 'Service'
+          }
+          token={token!}
+          onDone={() => {
+            setReviewedIds((prev) => {
+            const next = new Set(Array.from(prev));
+            next.add(reviewingReservation._id);
+            return next;
+          });
+            setReviewingReservation(null);
+          }}
+          onClose={() => setReviewingReservation(null)}
+        />
+      )}
     </main>
   );
 }

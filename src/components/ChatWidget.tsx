@@ -1,11 +1,26 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { API_URL } from '@/libs/config';
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
+}
+
+// Send icon SVG (paper plane)
+function SendIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className={className}
+    >
+      <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
+    </svg>
+  );
 }
 
 export default function ChatWidget() {
@@ -14,7 +29,7 @@ export default function ChatWidget() {
     {
       role: 'assistant',
       content:
-        "Hi! I'm your Dungeon Inn assistant 🕯️ Ask me about massage shops, services, prices, hours, or TikTok videos!",
+        "Hi! I'm your **Dungeon Inn** assistant 🕯️\n\nAsk me about massage shops, services, prices, hours, or TikTok videos!",
     },
   ]);
   const [input, setInput] = useState('');
@@ -22,12 +37,10 @@ export default function ChatWidget() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-scroll to bottom on new messages
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, open]);
 
-  // Focus input when opened
   useEffect(() => {
     if (open) {
       setTimeout(() => inputRef.current?.focus(), 100);
@@ -45,10 +58,9 @@ export default function ChatWidget() {
     setLoading(true);
 
     try {
-      // Build history excluding the initial greeting
       const history = nextMessages
-        .slice(1) // skip the greeting
-        .slice(-8) // last 4 turns
+        .slice(1)
+        .slice(-8)
         .map(({ role, content }) => ({ role, content }));
 
       const res = await fetch(`${API_URL}/chat`, {
@@ -80,69 +92,105 @@ export default function ChatWidget() {
     }
   };
 
-  // Render message content — detect URLs and make them clickable
-  const renderContent = (text: string) => {
-    // Split on URLs (http/https) and relative booking links
-    const urlRegex = /(https?:\/\/[^\s]+|\/booking\?[^\s]+|\/shops\/[^\s]+)/g;
-    const parts = text.split(urlRegex);
-    return parts.map((part, i) => {
-      if (urlRegex.test(part)) {
-        urlRegex.lastIndex = 0; // reset regex state
-        const isExternal = part.startsWith('http');
-        return (
-          <a
-            key={i}
-            href={part}
-            target={isExternal ? '_blank' : '_self'}
-            rel="noopener noreferrer"
-            className="text-[#E57A00] underline break-all"
-          >
-            {isExternal && part.includes('tiktok') ? '🎵 TikTok' : part}
-          </a>
-        );
-      }
-      return <span key={i}>{part}</span>;
-    });
-  };
-
   return (
     <>
       {/* Floating button */}
       <button
         onClick={() => setOpen((v) => !v)}
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-[#E57A00] text-white shadow-lg flex items-center justify-center text-2xl hover:bg-[#c46a00] transition-colors"
+        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-[#E57A00] text-white shadow-lg flex items-center justify-center hover:bg-[#c46a00] transition-all duration-200 hover:scale-105"
         aria-label="Open chat"
       >
-        {open ? '✕' : '💬'}
+        {open ? (
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+            <path fillRule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clipRule="evenodd" />
+          </svg>
+        ) : (
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+            <path fillRule="evenodd" d="M4.804 21.644A6.707 6.707 0 006 21.75a6.721 6.721 0 003.583-1.029c.774.182 1.584.279 2.417.279 5.322 0 9.75-3.97 9.75-9 0-5.03-4.428-9-9.75-9s-9.75 3.97-9.75 9c0 2.409 1.025 4.587 2.674 6.192.232.226.277.428.254.543a3.73 3.73 0 01-.814 1.686.75.75 0 00.44 1.223 3.98 3.98 0 002-.554z" clipRule="evenodd" />
+          </svg>
+        )}
       </button>
 
       {/* Chat window */}
       {open && (
-        <div className="fixed bottom-24 right-6 z-50 w-[360px] max-w-[calc(100vw-2rem)] flex flex-col bg-[#1A1A1A] border border-[#403A36] rounded-2xl shadow-2xl overflow-hidden">
+        <div className="fixed bottom-24 right-6 z-50 flex flex-col bg-[#1A1A1A] border border-[#403A36] rounded-2xl shadow-2xl overflow-hidden
+          w-[420px] max-w-[calc(100vw-2rem)]
+          sm:w-[480px]
+          md:w-[520px]
+          h-[580px]
+          sm:h-[640px]">
+
           {/* Header */}
-          <div className="bg-[#2B2B2B] px-4 py-3 flex items-center gap-3 border-b border-[#403A36]">
-            <span className="text-xl">🕯️</span>
-            <div>
-              <p className="text-[#F0E5D8] font-bold text-sm">Dungeon Inn Assistant</p>
-              <p className="text-[#8A8177] text-xs">Ask about shops, services & TikTok</p>
+          <div className="bg-[#2B2B2B] px-4 py-3 flex items-center justify-between border-b border-[#403A36] shrink-0">
+            <div className="flex items-center gap-3">
+              <span className="text-xl">🕯️</span>
+              <div>
+                <p className="text-[#F0E5D8] font-bold text-sm">Dungeon Inn Assistant</p>
+                <p className="text-[#8A8177] text-xs">Ask about shops, services & TikTok</p>
+              </div>
             </div>
+            <button
+              onClick={() => setOpen(false)}
+              className="text-[#8A8177] hover:text-[#F0E5D8] transition-colors p-1 rounded-lg hover:bg-[#403A36]"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                <path fillRule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clipRule="evenodd" />
+              </svg>
+            </button>
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3 max-h-[400px]">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
             {messages.map((msg, i) => (
               <div
                 key={i}
                 className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
+                {/* Avatar for assistant */}
+                {msg.role === 'assistant' && (
+                  <div className="w-7 h-7 rounded-full bg-[#E57A00] flex items-center justify-center text-xs mr-2 mt-1 shrink-0">
+                    🕯️
+                  </div>
+                )}
+
                 <div
-                  className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm leading-relaxed ${
+                  className={`max-w-[82%] px-3 py-2.5 rounded-2xl text-sm leading-relaxed ${
                     msg.role === 'user'
-                      ? 'bg-[#E57A00] text-[#1A110A] rounded-br-sm'
+                      ? 'bg-[#E57A00] text-[#1A110A] rounded-br-sm font-medium'
                       : 'bg-[#2B2B2B] text-[#D4CFC6] border border-[#403A36] rounded-bl-sm'
                   }`}
                 >
-                  {renderContent(msg.content)}
+                  {msg.role === 'assistant' ? (
+                    <div className="prose prose-sm max-w-none
+                      prose-p:my-1 prose-p:leading-relaxed
+                      prose-headings:text-[#F0E5D8] prose-headings:font-bold prose-headings:my-1
+                      prose-strong:text-[#F0E5D8] prose-strong:font-semibold
+                      prose-ul:my-1 prose-ul:pl-4 prose-li:my-0.5
+                      prose-ol:my-1 prose-ol:pl-4
+                      prose-a:text-[#E57A00] prose-a:underline prose-a:break-all
+                      prose-code:text-[#E57A00] prose-code:bg-[#1A1A1A] prose-code:px-1 prose-code:rounded
+                      prose-hr:border-[#403A36] prose-hr:my-2
+                      text-[#D4CFC6]">
+                      <ReactMarkdown
+                        components={{
+                          a: ({ href, children }) => (
+                            <a
+                              href={href}
+                              target={href?.startsWith('http') ? '_blank' : '_self'}
+                              rel="noopener noreferrer"
+                              className="text-[#E57A00] underline break-all"
+                            >
+                              {children}
+                            </a>
+                          ),
+                        }}
+                      >
+                        {msg.content}
+                      </ReactMarkdown>
+                    </div>
+                  ) : (
+                    msg.content
+                  )}
                 </div>
               </div>
             ))}
@@ -150,8 +198,11 @@ export default function ChatWidget() {
             {/* Typing indicator */}
             {loading && (
               <div className="flex justify-start">
-                <div className="bg-[#2B2B2B] border border-[#403A36] px-4 py-2 rounded-2xl rounded-bl-sm">
-                  <span className="flex gap-1">
+                <div className="w-7 h-7 rounded-full bg-[#E57A00] flex items-center justify-center text-xs mr-2 mt-1 shrink-0">
+                  🕯️
+                </div>
+                <div className="bg-[#2B2B2B] border border-[#403A36] px-4 py-3 rounded-2xl rounded-bl-sm">
+                  <span className="flex gap-1.5 items-center">
                     {[0, 1, 2].map((i) => (
                       <span
                         key={i}
@@ -168,7 +219,7 @@ export default function ChatWidget() {
           </div>
 
           {/* Input */}
-          <div className="border-t border-[#403A36] p-3 flex gap-2">
+          <div className="border-t border-[#403A36] p-3 flex gap-2 shrink-0 bg-[#1A1A1A]">
             <input
               ref={inputRef}
               type="text"
@@ -177,14 +228,15 @@ export default function ChatWidget() {
               onKeyDown={handleKey}
               placeholder="Ask about shops, prices, TikTok…"
               disabled={loading}
-              className="flex-1 bg-[#2B2B2B] border border-[#403A36] rounded-xl px-3 py-2 text-sm text-[#F0E5D8] placeholder-[#8A8177] focus:outline-none focus:border-[#E57A00] disabled:opacity-50"
+              className="flex-1 bg-[#2B2B2B] border border-[#403A36] rounded-xl px-4 py-2.5 text-sm text-[#F0E5D8] placeholder-[#8A8177] focus:outline-none focus:border-[#E57A00] disabled:opacity-50 transition-colors"
             />
             <button
               onClick={sendMessage}
               disabled={loading || !input.trim()}
-              className="px-3 py-2 bg-[#E57A00] text-[#1A110A] rounded-xl font-bold text-sm hover:bg-[#c46a00] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="w-10 h-10 bg-[#E57A00] text-[#1A110A] rounded-xl flex items-center justify-center hover:bg-[#c46a00] transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:scale-105 shrink-0"
+              aria-label="Send"
             >
-              ↑
+              <SendIcon className="w-4 h-4" />
             </button>
           </div>
         </div>

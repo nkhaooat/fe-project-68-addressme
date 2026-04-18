@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import ReactMarkdown from 'react-markdown';
 import { API_URL } from '@/libs/config';
-import { createReservation } from '@/libs/reservations';
+import { createReservation, deleteReservation } from '@/libs/reservations';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -164,36 +164,65 @@ export default function ChatWidget() {
 
       setMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
 
-      // Handle booking action from chatbot
-      if (data.success && data.action?.type === 'create_reservation' && token) {
-        const { shopId, serviceId, resvDate } = data.action;
-        try {
-          const resvRes = await createReservation(
-            { shop: shopId, service: serviceId, resvDate },
-            token
-          );
-          if (resvRes.success) {
+      // Handle booking/cancel action from chatbot
+      if (data.success && token) {
+        if (data.action?.type === 'create_reservation') {
+          const { shopId, serviceId, resvDate } = data.action;
+          try {
+            const resvRes = await createReservation(
+              { shop: shopId, service: serviceId, resvDate },
+              token
+            );
+            if (resvRes.success) {
+              setMessages((prev) => [
+                ...prev,
+                {
+                  role: 'assistant',
+                  content: `✅ **Booking confirmed!** \n\nView it at [My Bookings](/mybookings)`,
+                },
+              ]);
+            } else {
+              setMessages((prev) => [
+                ...prev,
+                {
+                  role: 'assistant',
+                  content: `❌ **Booking failed:** ${resvRes.message || 'Please try again'}`,
+                },
+              ]);
+            }
+          } catch {
             setMessages((prev) => [
               ...prev,
-              {
-                role: 'assistant',
-                content: `✅ **จองสำเร็จแล้วครับ!**\n\nดูการจองทั้งหมดได้ที่ [My Bookings](/mybookings)`,
-              },
-            ]);
-          } else {
-            setMessages((prev) => [
-              ...prev,
-              {
-                role: 'assistant',
-                content: `❌ **ไม่สามารถจองได้:** ${resvRes.message || 'กรุณาลองใหม่อีกครั้ง'}`,
-              },
+              { role: 'assistant', content: '❌ Error creating booking. Please try again.' },
             ]);
           }
-        } catch {
-          setMessages((prev) => [
-            ...prev,
-            { role: 'assistant', content: '❌ เกิดข้อผิดพลาดในการจอง กรุณาลองใหม่อีกครั้ง' },
-          ]);
+        } else if (data.action?.type === 'cancel_reservation') {
+          const { reservationId } = data.action;
+          try {
+            const cancelRes = await deleteReservation(reservationId, token);
+            if (cancelRes.success) {
+              setMessages((prev) => [
+                ...prev,
+                {
+                  role: 'assistant',
+                  content: `✅ **Reservation cancelled successfully!** \n\nView your bookings at [My Bookings](/mybookings)`,
+                },
+              ]);
+            } else {
+              setMessages((prev) => [
+                ...prev,
+                {
+                  role: 'assistant',
+                  content: `❌ **Cancellation failed:** ${cancelRes.message || 'Please try again'}`,
+                },
+              ]);
+            }
+          } catch {
+            setMessages((prev) => [
+              ...prev,
+              { role: 'assistant', content: '❌ Error cancelling reservation. Please try again.' },
+            ]);
+          }
         }
       }
     } catch {

@@ -25,20 +25,51 @@ function SendIcon({ className }: { className?: string }) {
   );
 }
 
+const STORAGE_KEY = 'dungeon_chat_history';
+
+const defaultMessages: Message[] = [
+  {
+    role: 'assistant',
+    content:
+      "Hi! I'm your **Dungeon Inn** assistant 🕯️\n\nAsk me about massage shops, services, prices, hours, or TikTok videos!",
+  },
+];
+
 export default function ChatWidget() {
   const { token } = useSelector((state: RootState) => state.auth);
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: 'assistant',
-      content:
-        "Hi! I'm your **Dungeon Inn** assistant 🕯️\n\nAsk me about massage shops, services, prices, hours, or TikTok videos!",
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>(defaultMessages);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Restore chat history from sessionStorage on first mount
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed: Message[] = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setMessages(parsed);
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  // Persist chat history to sessionStorage whenever it changes
+  useEffect(() => {
+    try {
+      // Don't persist if it's just the default greeting
+      if (messages.length > 1) {
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+      }
+    } catch {
+      // ignore
+    }
+  }, [messages]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -135,14 +166,27 @@ export default function ChatWidget() {
                 <p className="text-[#8A8177] text-xs">Ask about shops, services & TikTok</p>
               </div>
             </div>
-            <button
-              onClick={() => setOpen(false)}
-              className="text-[#8A8177] hover:text-[#F0E5D8] transition-colors p-1 rounded-lg hover:bg-[#403A36]"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-                <path fillRule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clipRule="evenodd" />
-              </svg>
-            </button>
+            <div className="flex items-center gap-1">
+              {/* Clear history button */}
+              <button
+                onClick={() => {
+                  setMessages(defaultMessages);
+                  sessionStorage.removeItem(STORAGE_KEY);
+                }}
+                title="Clear chat history"
+                className="text-[#8A8177] hover:text-[#F0E5D8] transition-colors p-1 rounded-lg hover:bg-[#403A36] text-xs"
+              >
+                🗑️
+              </button>
+              <button
+                onClick={() => setOpen(false)}
+                className="text-[#8A8177] hover:text-[#F0E5D8] transition-colors p-1 rounded-lg hover:bg-[#403A36]"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                  <path fillRule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
           </div>
 
           {/* Messages */}

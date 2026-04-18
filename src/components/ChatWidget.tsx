@@ -73,7 +73,7 @@ export default function ChatWidget() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   // Restore chat history from sessionStorage on first mount
   useEffect(() => {
@@ -130,6 +130,10 @@ export default function ChatWidget() {
     const nextMessages = [...messages, userMsg];
     setMessages(nextMessages);
     setInput('');
+    // Reset textarea height
+    if (inputRef.current) {
+      inputRef.current.style.height = 'auto';
+    }
     setLoading(true);
 
     try {
@@ -313,21 +317,27 @@ export default function ChatWidget() {
           </div>
 
           {/* Input */}
-          <div className="border-t border-[#403A36] p-3 flex gap-2 shrink-0 bg-[#1A1A1A]">
-            <input
+          <div className="border-t border-[#403A36] p-3 flex gap-2 shrink-0 bg-[#1A1A1A] items-end">
+            <textarea
               ref={inputRef}
-              type="text"
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={(e) => {
+                setInput(e.target.value);
+                // Auto-resize: reset then expand
+                e.target.style.height = 'auto';
+                e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
+              }}
               onKeyDown={handleKey}
               placeholder="Ask about shops, prices, TikTok…"
               disabled={loading}
-              className="flex-1 bg-[#2B2B2B] border border-[#403A36] rounded-xl px-4 py-2.5 text-sm text-[#F0E5D8] placeholder-[#8A8177] focus:outline-none focus:border-[#E57A00] disabled:opacity-50 transition-colors"
+              rows={1}
+              className="flex-1 bg-[#2B2B2B] border border-[#403A36] rounded-xl px-4 py-2.5 text-sm text-[#F0E5D8] placeholder-[#8A8177] focus:outline-none focus:border-[#E57A00] disabled:opacity-50 transition-colors resize-none overflow-y-auto leading-relaxed"
+              style={{ minHeight: '42px', maxHeight: '120px' }}
             />
             <button
               onClick={sendMessage}
               disabled={loading || !input.trim()}
-              className="w-10 h-10 bg-[#E57A00] text-[#1A110A] rounded-xl flex items-center justify-center hover:bg-[#c46a00] transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:scale-105 shrink-0"
+              className="w-10 h-10 bg-[#E57A00] text-[#1A110A] rounded-xl flex items-center justify-center hover:bg-[#c46a00] transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:scale-105 shrink-0 mb-0"
               aria-label="Send"
             >
               <SendIcon className="w-4 h-4" />

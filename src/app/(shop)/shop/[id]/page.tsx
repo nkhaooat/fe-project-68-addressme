@@ -1,11 +1,87 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { getShop } from '@/libs/shops';
 import { getShopServices } from '@/libs/services';
 import { Shop, Service } from '@/interface';
+
+// TikTok logo SVG
+function TikTokIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+      <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.75a8.16 8.16 0 004.77 1.52V6.82a4.85 4.85 0 01-1-.13z"/>
+    </svg>
+  );
+}
+
+// TikTok button: single link or dropdown
+function TikTokButton({ links }: { links: string[] }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  if (links.length === 1) {
+    return (
+      <a
+        href={links[0]}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#1A1A1A] border border-[#403A36] rounded-lg text-sm text-[#D4CFC6] hover:border-[#E57A00] hover:text-[#E57A00] transition-colors"
+      >
+        <TikTokIcon className="w-3.5 h-3.5" />
+        TikTok
+      </a>
+    );
+  }
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#1A1A1A] border border-[#403A36] rounded-lg text-sm text-[#D4CFC6] hover:border-[#E57A00] hover:text-[#E57A00] transition-colors"
+      >
+        <TikTokIcon className="w-3.5 h-3.5" />
+        TikTok
+        <span className="bg-[#E57A00] text-[#1A110A] text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center ml-0.5">
+          {links.length}
+        </span>
+        <svg className={`w-3 h-3 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {open && (
+        <div className="absolute bottom-full mb-2 left-0 bg-[#2B2B2B] border border-[#403A36] rounded-lg overflow-hidden shadow-xl z-10 min-w-[140px]">
+          {links.map((url, i) => (
+            <a
+              key={i}
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2 px-3 py-2 text-sm text-[#D4CFC6] hover:bg-[#403A36] hover:text-[#E57A00] transition-colors"
+            >
+              <TikTokIcon className="w-3 h-3 shrink-0" />
+              Video {i + 1}
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function ShopDetailPage() {
   const params = useParams();
@@ -117,45 +193,33 @@ export default function ShopDetailPage() {
             )}
 
             <div className="mt-4 pt-4 border-t border-[#403A36]">
-              <p className="text-[#8A8177]">
-                Price Range:{' '}
-                <span className="text-[#E57A00] font-bold">
-                  ฿{shop.priceRangeMin} - ฿{shop.priceRangeMax}
-                </span>
-              </p>
-            </div>
-            {shop.map && (
-              <div className="mt-4">
-                <a 
-                  href={shop.map} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-[#E57A00] hover:text-[#c46a00] transition-colors text-sm"
-                >
-                  📍 View on Google Maps →
-                </a>
-              </div>
-            )}
+              <div className="flex items-center justify-between flex-wrap gap-3">
+                {/* Price range */}
+                <p className="text-[#8A8177]">
+                  Price Range:{' '}
+                  <span className="text-[#E57A00] font-bold">
+                    ฿{shop.priceRangeMin} - ฿{shop.priceRangeMax}
+                  </span>
+                </p>
 
-            {/* TikTok Videos (US1-1) */}
-            {shop.tiktokLinks && shop.tiktokLinks.length > 0 && (
-              <div className="mt-4 pt-4 border-t border-[#403A36]">
-                <p className="text-[#8A8177] mb-2">🎵 TikTok Videos</p>
-                <div className="flex flex-wrap gap-2">
-                  {shop.tiktokLinks.map((url, i) => (
+                {/* Right-side actions: Maps + TikTok */}
+                <div className="flex items-center gap-3">
+                  {shop.map && (
                     <a
-                      key={i}
-                      href={url}
+                      href={shop.map}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-[#1A1A1A] border border-[#403A36] rounded-full text-sm text-[#E57A00] hover:border-[#E57A00] transition-colors"
+                      className="text-[#E57A00] hover:text-[#c46a00] transition-colors text-sm"
                     >
-                      🎵 Video {i + 1}
+                      📍 Google Maps →
                     </a>
-                  ))}
+                  )}
+                  {shop.tiktokLinks && shop.tiktokLinks.length > 0 && (
+                    <TikTokButton links={shop.tiktokLinks} />
+                  )}
                 </div>
               </div>
-            )}
+            </div>
           </div>
         </div>
 

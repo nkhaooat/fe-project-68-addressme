@@ -196,6 +196,41 @@ export default function ChatWidget() {
               { role: 'assistant', content: '❌ Error creating booking. Please try again.' },
             ]);
           }
+        } else if (data.action?.type === 'edit_reservation') {
+          const { reservationId, resvDate } = data.action;
+          try {
+            const res = await fetch(`${API_URL}/reservations/${reservationId}`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({ resvDate }),
+            });
+            const editRes = await res.json();
+            if (editRes.success) {
+              setMessages((prev) => [
+                ...prev,
+                {
+                  role: 'assistant',
+                  content: `✅ **Booking updated!** \n\nView it at [My Bookings](/mybookings)`,
+                },
+              ]);
+            } else {
+              setMessages((prev) => [
+                ...prev,
+                {
+                  role: 'assistant',
+                  content: `❌ **Update failed:** ${editRes.message || 'Please try again'}`,
+                },
+              ]);
+            }
+          } catch {
+            setMessages((prev) => [
+              ...prev,
+              { role: 'assistant', content: '❌ Error updating booking. Please try again.' },
+            ]);
+          }
         } else if (data.action?.type === 'cancel_reservation') {
           const { reservationId } = data.action;
           try {

@@ -31,3 +31,33 @@ export async function logout(token: string) {
   });
   return response.json();
 }
+
+export async function forgotPassword(email: string) {
+  const response = await fetch(`${API_URL}/auth/forgotpassword`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+  return response.json();
+}
+
+export async function resetPassword(token: string, password: string) {
+  const response = await fetch(`${API_URL}/auth/resetpassword`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token, password }),
+  });
+  return response.json();
+}
+
+export async function changePassword(currentPassword: string, newPassword: string, token: string) {
+  const response = await fetch(`${API_URL}/auth/changepassword`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ currentPassword, newPassword }),
+  });
+  return response.json();
+}

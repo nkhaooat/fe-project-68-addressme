@@ -125,19 +125,50 @@ export default function ShopsPage() {
 
   const totalPages = pagination?.pages || 1;
 
-  // Generate page numbers for pagination
+  // Generate page numbers for pagination - mobile friendly
   const getPageNumbers = () => {
     const pages: (number | string)[] = [];
     
-    if (totalPages <= 7) {
+    if (totalPages <= 5) {
+      // Show all pages if 5 or fewer
       for (let i = 1; i <= totalPages; i++) pages.push(i);
     } else {
-      if (currentPage <= 3) {
-        pages.push(1, 2, 3, 4, '...', totalPages);
-      } else if (currentPage >= totalPages - 2) {
-        pages.push(1, '...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
-      } else {
-        pages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
+      // Always show first 3 pages
+      pages.push(1, 2, 3);
+      
+      // Show ellipsis if current page is > 4
+      if (currentPage > 4) {
+        pages.push('...');
+      }
+      
+      // Show current page if it's in the middle (not in first 3 or last 3)
+      if (currentPage > 3 && currentPage < totalPages - 2) {
+        // Only add if not already added
+        if (currentPage !== 3) {
+          pages.push(currentPage);
+        }
+        // Add ellipsis before last pages if needed
+        if (currentPage < totalPages - 3) {
+          pages.push('...');
+        }
+      } else if (currentPage === 4) {
+        // Special case: current page is 4
+        pages.push(4);
+        if (totalPages > 7) pages.push('...');
+      } else if (currentPage >= totalPages - 2 && currentPage > 4) {
+        // Show ellipsis before last pages
+        pages.push('...');
+      }
+      
+      // Always show last 3 pages
+      if (totalPages > 3) {
+        // Avoid duplicates
+        const lastThree = [totalPages - 2, totalPages - 1, totalPages];
+        lastThree.forEach(page => {
+          if (!pages.includes(page) && page > 3) {
+            pages.push(page);
+          }
+        });
       }
     }
     return pages;

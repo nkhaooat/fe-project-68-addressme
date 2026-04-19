@@ -42,10 +42,12 @@ export default defineConfig({
     },
   ],
 
-  /* Run local dev server before starting the tests */
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
-  },
+  /* Run local dev server before starting the tests (skip if using external URL) */
+  ...(!process.env.PLAYWRIGHT_BASE_URL ? {
+    webServer: {
+      command: 'npm run dev',
+      url: 'http://localhost:3000',
+      reuseExistingServer: true,
+    },
+  } : {}),
 });

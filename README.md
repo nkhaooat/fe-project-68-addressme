@@ -184,7 +184,8 @@ src/
 
 ## 📝 License
 
-This project is part of the SW Dev Practice 2 course (2110503), Chulalongkorn University.
+This project is part of the Software Engineering course (2110423)
+and Software Engineering Lab (2110426), Chulalongkorn University.
 
 ---
 

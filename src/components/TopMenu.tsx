@@ -8,6 +8,7 @@ import { logout } from '@/redux/features/authSlice';
 import { useRouter, usePathname } from 'next/navigation';
 import { useState, useRef, useEffect } from 'react';
 import { changePassword } from '@/libs/auth';
+import { rebuildEmbedding } from '@/libs/shops';
 
 export default function TopMenu() {
   const { user, isAuthenticated, token } = useSelector((state: RootState) => state.auth);
@@ -17,6 +18,7 @@ export default function TopMenu() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAdminDropdownOpen, setIsAdminDropdownOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+  const [rebuildStatus, setRebuildStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
   // Change Password modal state
   const [showChangePw, setShowChangePw] = useState(false);
@@ -94,6 +96,26 @@ export default function TopMenu() {
   };
 
   const isAdminPage = pathname?.startsWith('/admin');
+
+  const handleRebuildEmbedding = async () => {
+    if (!token || rebuildStatus === 'loading') return;
+    setRebuildStatus('loading');
+    try {
+      const res = await rebuildEmbedding(token);
+      if (res.success) {
+        setRebuildStatus('success');
+        setTimeout(() => setRebuildStatus('idle'), 3000);
+      } else {
+        setRebuildStatus('error');
+        setTimeout(() => setRebuildStatus('idle'), 3000);
+        alert(res.message || 'Failed to rebuild embedding');
+      }
+    } catch {
+      setRebuildStatus('error');
+      setTimeout(() => setRebuildStatus('idle'), 3000);
+      alert('Error rebuilding embedding index');
+    }
+  };
 
   return (
     <>
@@ -186,6 +208,14 @@ export default function TopMenu() {
                           >
                             💆 Services
                           </Link>
+                          <hr className="border-[#403A36] my-1" />
+                          <button
+                            onClick={() => { setIsAdminDropdownOpen(false); handleRebuildEmbedding(); }}
+                            disabled={rebuildStatus === 'loading'}
+                            className="w-full text-left px-4 py-2 transition-colors text-[#D4CFC6] hover:text-[#E57A00] hover:bg-[#1A1A1A] disabled:opacity-50"
+                          >
+                            {rebuildStatus === 'loading' ? '⏳ Rebuilding...' : rebuildStatus === 'success' ? '✅ Rebuilt!' : '🔄 Rebuild Embedding'}
+                          </button>
                         </div>
                       )}
                     </div>
@@ -306,6 +336,13 @@ export default function TopMenu() {
                         >
                           💆 Services
                         </Link>
+                        <button
+                          onClick={() => { closeMenu(); handleRebuildEmbedding(); }}
+                          disabled={rebuildStatus === 'loading'}
+                          className="py-2 pl-2 text-left text-[#D4CFC6] hover:text-[#E57A00] disabled:opacity-50"
+                        >
+                          {rebuildStatus === 'loading' ? '⏳ Rebuilding...' : rebuildStatus === 'success' ? '✅ Rebuilt!' : '🔄 Rebuild Embedding'}
+                        </button>
                       </div>
                     </div>
                   )}

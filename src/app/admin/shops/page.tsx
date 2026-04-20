@@ -310,9 +310,9 @@ export default function AdminShopsPage() {
               key={shop._id}
               className="bg-[#2B2B2B] border border-[#403A36] rounded-lg overflow-hidden"
             >
-              {shop.photo ? (
+              {(shop.photoProxy || shop.photo) ? (
                 <img
-                  src={shop.photo}
+                  src={shop.photoProxy || shop.photo}
                   alt={shop.name}
                   className="w-full h-40 object-cover"
                 />

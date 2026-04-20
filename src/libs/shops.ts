@@ -25,6 +25,7 @@ export interface Shop {
   priceRangeMax: number;
   rating: number;
   photo?: string;
+  photoProxy?: string;
   placeId?: string;
   description?: string;
   tiktokLinks?: string[];
@@ -143,6 +144,18 @@ export async function updateShopDescription(id: string, description: string, tok
       'Authorization': `Bearer ${token}`
     },
     body: JSON.stringify({ description })
+  });
+  return response.json();
+}
+
+// Rebuild chatbot embedding index
+export async function rebuildEmbedding(token: string) {
+  const response = await fetch(`${API_URL}/chat/rebuild`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    }
   });
   return response.json();
 }

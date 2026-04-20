@@ -156,12 +156,16 @@ export default function ShopDetailPage() {
               <img
                 src={shop.photoProxy || shop.photo!}
                 alt={shop.name}
+                data-fallback="0"
                 onError={(e) => {
                   const img = e.currentTarget as HTMLImageElement;
-                  if (img.src !== shop.photo && shop.photo) {
-                    img.src = shop.photo; // fallback to DB photo
+                  const step = parseInt(img.getAttribute('data-fallback') || '0');
+                  if (step === 0 && shop.photo && img.src !== shop.photo) {
+                    img.setAttribute('data-fallback', '1');
+                    img.src = shop.photo;
                   } else {
-                    img.src = '/placeholder-shop.jpg';
+                    // All sources failed — hide the image container entirely
+                    img.style.display = 'none';
                   }
                 }}
                 className="w-full h-full object-cover"

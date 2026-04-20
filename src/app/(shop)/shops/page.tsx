@@ -298,16 +298,27 @@ export default function ShopsPage() {
               className="bg-[#2B2B2B] border border-[#403A36] rounded-lg overflow-hidden hover:border-[#E57A00] transition-colors group"
             >
               <div className="h-48 bg-[#2C1E18] flex items-center justify-center overflow-hidden">
-                {(shop.photoProxy || shop.photo) ? (
+{(shop.photoProxy || shop.photo) ? (
                   <img
                     src={shop.photoProxy || shop.photo!}
                     alt={shop.name}
+                    data-fallback="0"
                     onError={(e) => {
                       const img = e.currentTarget as HTMLImageElement;
-                      if (img.src !== shop.photo && shop.photo) {
-                        img.src = shop.photo; // fallback to DB photo
+                      const step = parseInt(img.getAttribute('data-fallback') || '0');
+                      if (step === 0 && shop.photo && img.src !== shop.photo) {
+                        img.setAttribute('data-fallback', '1');
+                        img.src = shop.photo;
                       } else {
-                        img.src = '/placeholder-shop.jpg';
+                        // All sources failed — hide img and show emoji fallback
+                        img.style.display = 'none';
+                        const parent = img.parentElement;
+                        if (parent && !parent.querySelector('span')) {
+                          const span = document.createElement('span');
+                          span.className = 'text-6xl';
+                          span.textContent = '🏪';
+                          parent.appendChild(span);
+                        }
                       }
                     }}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"

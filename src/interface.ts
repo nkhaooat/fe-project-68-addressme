@@ -19,6 +19,7 @@ export interface Shop {
   priceRangeMax: number;
   rating?: number;
   photo?: string;
+  photoProxy?: string; // backend-provided proxy to Google Places Photos with fallback
   placeId?: string;
   description?: string;
   tiktokLinks?: string[];

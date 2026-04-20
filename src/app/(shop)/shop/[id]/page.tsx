@@ -151,11 +151,19 @@ export default function ShopDetailPage() {
         {/* Shop Header */}
         <div className="bg-[#2B2B2B] border border-[#403A36] rounded-lg overflow-hidden mb-8">
           {/* Shop Photo */}
-          {shop.photo && (
+          {(shop.photoProxy || shop.photo) && (
             <div className="h-64 w-full overflow-hidden">
-              <img 
-                src={shop.photo} 
+              <img
+                src={shop.photoProxy || shop.photo!}
                 alt={shop.name}
+                onError={(e) => {
+                  const img = e.currentTarget as HTMLImageElement;
+                  if (img.src !== shop.photo && shop.photo) {
+                    img.src = shop.photo; // fallback to DB photo
+                  } else {
+                    img.src = '/placeholder-shop.jpg';
+                  }
+                }}
                 className="w-full h-full object-cover"
               />
             </div>

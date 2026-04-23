@@ -340,6 +340,13 @@ export default function ShopsPage() {
                       <span className="text-sm font-bold">{shop.rating}</span>
                     </div>
                   )}
+                  {(shop.platformReviewCount ?? 0) > 0 && (
+                    <div className="flex items-center gap-1 text-[#E57A00] shrink-0 ml-1">
+                      <span>⭐</span>
+                      <span className="text-sm font-bold">{shop.platformRating}</span>
+                      <span className="text-xs">({shop.platformReviewCount})</span>
+                    </div>
+                  )}
                 </div>
                 <p className="text-[#8A8177] text-sm mb-2">{shop.address}</p>
                 <p className="text-[#A88C6B] text-sm mb-4">{shop.location}</p>

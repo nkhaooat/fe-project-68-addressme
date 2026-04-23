@@ -5,7 +5,8 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { getShop } from '@/libs/shops';
 import { getShopServices } from '@/libs/services';
-import { Shop, Service } from '@/interface';
+import { getShopReviews } from '@/libs/reviews';
+import { Shop, Service, Review } from '@/interface';
 
 // TikTok logo SVG
 function TikTokIcon({ className }: { className?: string }) {
@@ -89,15 +90,19 @@ export default function ShopDetailPage() {
   
   const [shop, setShop] = useState<Shop | null>(null);
   const [services, setServices] = useState<Service[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [avgRating, setAvgRating] = useState(0);
+  const [reviewCount, setReviewCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const [shopRes, servicesRes] = await Promise.all([
+        const [shopRes, servicesRes, reviewsRes] = await Promise.all([
           getShop(shopId),
           getShopServices(shopId),
+          getShopReviews(shopId),
         ]);
 
         if (shopRes.success) {
@@ -108,6 +113,12 @@ export default function ShopDetailPage() {
 
         if (servicesRes.success) {
           setServices(servicesRes.data);
+        }
+
+        if (reviewsRes.success) {
+          setReviews(reviewsRes.data);
+          setAvgRating(reviewsRes.avgRating);
+          setReviewCount(reviewsRes.reviewCount);
         }
       } catch {
         setError('Error loading shop details');
@@ -175,12 +186,24 @@ export default function ShopDetailPage() {
           <div className="p-8">
             <div className="flex justify-between items-start mb-4">
               <h1 className="text-3xl font-bold text-[#F0E5D8]">{shop.name}</h1>
-              {shop.rating && (
-                <div className="flex items-center bg-[#1A1A1A] px-3 py-1 rounded-full">
-                  <span className="text-yellow-400 mr-1">⭐</span>
-                  <span className="text-[#F0E5D8] font-bold">{shop.rating}</span>
-                </div>
-              )}
+              <div className="flex items-center gap-3">
+                {/* Google rating (always shown) */}
+                {shop.rating && (
+                  <div className="flex items-center bg-[#1A1A1A] px-3 py-1 rounded-full">
+                    <span className="text-yellow-400 mr-1">⭐</span>
+                    <span className="text-[#F0E5D8] font-bold">{shop.rating}</span>
+                    <span className="text-[#8A8177] text-xs ml-1">Google</span>
+                  </div>
+                )}
+                {/* Platform rating (shown only when reviews exist) */}
+                {reviewCount > 0 && (
+                  <div className="flex items-center bg-[#1A1A1A] px-3 py-1 rounded-full">
+                    <span className="text-yellow-400 mr-1">⭐</span>
+                    <span className="text-[#E57A00] font-bold">{avgRating}</span>
+                    <span className="text-[#8A8177] text-xs ml-1">({reviewCount})</span>
+                  </div>
+                )}
+              </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-[#D4CFC6]">
               <div>
@@ -234,6 +257,40 @@ export default function ShopDetailPage() {
             </div>
           </div>
         </div>
+
+        {/* Reviews Section */}
+        {reviews.length > 0 && (
+          <>
+            <h2 className="text-2xl font-bold text-[#F0E5D8] mb-6">Reviews</h2>
+            <div className="space-y-4 mb-8">
+              {reviews.map((review) => {
+                const userName = typeof review.user === 'object' ? review.user.name : 'Anonymous';
+                const serviceName = typeof review.service === 'object' ? review.service.name : '';
+                const date = new Date(review.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+
+                return (
+                  <div key={review._id} className="bg-[#2B2B2B] border border-[#403A36] rounded-lg p-5">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <p className="text-[#F0E5D8] font-semibold">{userName}</p>
+                        {serviceName && <p className="text-[#8A8177] text-xs">{serviceName}</p>}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: 5 }, (_, i) => (
+                          <span key={i} className={i < review.rating ? 'text-yellow-400' : 'text-[#403A36]'}>★</span>
+                        ))}
+                        <span className="text-[#8A8177] text-xs ml-1">{date}</span>
+                      </div>
+                    </div>
+                    {review.comment && (
+                      <p className="text-[#D4CFC6] text-sm leading-relaxed">{review.comment}</p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
 
         {/* Services */}
         <h2 className="text-2xl font-bold text-[#F0E5D8] mb-6">Available Services</h2>

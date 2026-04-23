@@ -22,6 +22,8 @@ export interface Shop {
   photoProxy?: string; // backend-provided proxy to Google Places Photos with fallback
   placeId?: string;
   hasGooglePhoto?: boolean;  // EPIC 3: true if Google Place photo is available
+  platformRating?: number;   // EPIC 5: average review rating from platform users
+  platformReviewCount?: number; // EPIC 5: number of platform reviews
   description?: string;
   tiktokLinks?: string[];
 }
@@ -62,6 +64,25 @@ export interface RegisterData {
   email: string;
   telephone: string;
   password: string;
+}
+
+export interface Review {
+  _id: string;
+  reservation: string;
+  user: { _id: string; name: string } | string;
+  shop: string;
+  service: { _id: string; name: string } | string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+}
+
+export interface ShopReviewsResponse {
+  success: boolean;
+  count: number;
+  avgRating: number;
+  reviewCount: number;
+  data: Review[];
 }
 
 export interface ApiResponse<T> {

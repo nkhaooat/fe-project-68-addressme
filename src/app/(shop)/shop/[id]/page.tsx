@@ -289,28 +289,57 @@ export default function ShopDetailPage() {
               </button>
             </div>
 
-            {/* Auto-scrolling carousel */}
-            <div className="relative mb-8 overflow-hidden">
-              <div
-                className="flex gap-4 animate-scroll-reviews"
-                style={{
-                  animation: 'scrollReviews 20s linear infinite',
-                  width: 'max-content',
-                }}
-                onMouseEnter={e => e.currentTarget.style.animationPlayState = 'paused'}
-                onMouseLeave={e => e.currentTarget.style.animationPlayState = 'running'}
-              >
-                {/* Duplicate reviews for seamless loop */}
-                {[...reviews, ...reviews].map((review, idx) => {
+            {/* Review display: carousel for 3+, static for 1-2 */}
+            {reviews.length >= 3 ? (
+              <div className="relative mb-8 overflow-hidden">
+                <div
+                  className="flex gap-4"
+                  style={{
+                    animation: 'scrollReviews 20s linear infinite',
+                    width: 'max-content',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.animationPlayState = 'paused'}
+                  onMouseLeave={e => e.currentTarget.style.animationPlayState = 'running'}
+                >
+                  {[...reviews, ...reviews].map((review, idx) => {
+                    const userName = typeof review.user === 'object' ? review.user.name : 'Anonymous';
+                    const serviceName = typeof review.service === 'object' ? review.service.name : '';
+                    const date = new Date(review.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+
+                    return (
+                      <div
+                        key={`${review._id}-${idx}`}
+                        className="bg-[#2B2B2B] border border-[#403A36] rounded-lg p-5 w-72 flex-shrink-0"
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <p className="text-[#F0E5D8] font-semibold text-sm">{userName}</p>
+                            {serviceName && <p className="text-[#8A8177] text-xs">{serviceName}</p>}
+                          </div>
+                          <div className="flex items-center gap-0.5">
+                            {Array.from({ length: 5 }, (_, i) => (
+                              <span key={i} className={`text-xs ${i < review.rating ? 'text-yellow-400' : 'text-[#403A36]'}`}>★</span>
+                            ))}
+                          </div>
+                        </div>
+                        {review.comment && (
+                          <p className="text-[#D4CFC6] text-sm leading-relaxed line-clamp-3">{review.comment}</p>
+                        )}
+                        <p className="text-[#8A8177] text-xs mt-2">{date}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div className="flex gap-4 mb-8">
+                {reviews.map((review) => {
                   const userName = typeof review.user === 'object' ? review.user.name : 'Anonymous';
                   const serviceName = typeof review.service === 'object' ? review.service.name : '';
                   const date = new Date(review.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 
                   return (
-                    <div
-                      key={`${review._id}-${idx}`}
-                      className="bg-[#2B2B2B] border border-[#403A36] rounded-lg p-5 w-72 flex-shrink-0"
-                    >
+                    <div key={review._id} className="bg-[#2B2B2B] border border-[#403A36] rounded-lg p-5 flex-1 min-w-0">
                       <div className="flex justify-between items-start mb-2">
                         <div>
                           <p className="text-[#F0E5D8] font-semibold text-sm">{userName}</p>
@@ -323,14 +352,14 @@ export default function ShopDetailPage() {
                         </div>
                       </div>
                       {review.comment && (
-                        <p className="text-[#D4CFC6] text-sm leading-relaxed line-clamp-3">{review.comment}</p>
+                        <p className="text-[#D4CFC6] text-sm leading-relaxed">{review.comment}</p>
                       )}
                       <p className="text-[#8A8177] text-xs mt-2">{date}</p>
                     </div>
                   );
                 })}
               </div>
-            </div>
+            )}
           </>
         )}
 

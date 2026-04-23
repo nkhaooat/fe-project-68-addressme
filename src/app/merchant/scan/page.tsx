@@ -53,12 +53,24 @@ export default function MerchantScanPage() {
         { facingMode: 'environment' },
         { fps: 10, qrbox: { width: 250, height: 250 } },
         async (decodedText: string) => {
-          // QR decoded — stop scanner and verify
+          // QR code may contain a URL like /qr/{token} — extract just the token
+          let qrToken = decodedText;
+          try {
+            const url = new URL(decodedText);
+            // Extract last path segment as token (e.g., /qr/abc123 → abc123)
+            const segments = url.pathname.split('/').filter(Boolean);
+            if (segments.length >= 2 && segments[segments.length - 2] === 'qr') {
+              qrToken = segments[segments.length - 1];
+            }
+          } catch {
+            // Not a URL — use as-is (raw token)
+          }
+          // Stop scanner and verify
           try {
             await scanner.stop();
           } catch {}
           html5QrRef.current = null;
-          await verifyToken(decodedText);
+          await verifyToken(qrToken);
         },
         () => {} // ignore scan failures
       );

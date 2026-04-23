@@ -99,7 +99,16 @@ export default function MerchantDashboardPage() {
     setScanning(true);
     setScanResult(null);
     try {
-      const res = await merchantScanQR(token!, scanToken.trim());
+      // Extract token from URL if pasted as full URL
+      let qrToken = scanToken.trim();
+      try {
+        const url = new URL(qrToken);
+        const segments = url.pathname.split('/').filter(Boolean);
+        if (segments.length >= 2 && segments[segments.length - 2] === 'qr') {
+          qrToken = segments[segments.length - 1];
+        }
+      } catch {}
+      const res = await merchantScanQR(token!, qrToken);
       setScanResult(res);
       if (res.success) {
         // Refresh reservations

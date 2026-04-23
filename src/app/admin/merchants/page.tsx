@@ -29,25 +29,30 @@ export default function AdminMerchantsPage() {
   useEffect(() => {
     if (user?.role !== 'admin') return;
     fetchMerchants();
-  }, [token, statusFilter]);
+  }, [token]);
 
   async function fetchMerchants() {
     setLoading(true);
     try {
-      const res = await getMerchants(token!, statusFilter || undefined);
+      // Always fetch ALL merchants — filter client-side for accurate counts
+      const res = await getMerchants(token!);
       if (res.success) setAllMerchants(res.data);
     } catch {}
     setLoading(false);
   }
 
-  // Filter by email search
+  // Filter by status + email search (client-side)
   const filteredMerchants = useMemo(() => {
-    if (!searchQuery.trim()) return allMerchants;
-    const q = searchQuery.toLowerCase().trim();
-    return allMerchants.filter(m =>
-      m.email.toLowerCase().includes(q) || m.name.toLowerCase().includes(q)
-    );
-  }, [allMerchants, searchQuery]);
+    let list = allMerchants;
+    if (statusFilter !== '') list = list.filter(m => m.merchantStatus === statusFilter);
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      list = list.filter(m =>
+        m.email.toLowerCase().includes(q) || m.name.toLowerCase().includes(q)
+      );
+    }
+    return list;
+  }, [allMerchants, statusFilter, searchQuery]);
 
   // Pagination
   const totalPages = Math.max(1, Math.ceil(filteredMerchants.length / PAGE_SIZE));

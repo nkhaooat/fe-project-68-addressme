@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -24,8 +24,13 @@ export default function RegisterMerchantPage() {
     shopId: '',
   });
   const [shops, setShops] = useState<ShopOption[]>([]);
+  const [shopSearchQuery, setShopSearchQuery] = useState('');
+  const [isShopDropdownOpen, setIsShopDropdownOpen] = useState(false);
+  const [filteredShops, setFilteredShops] = useState<ShopOption[]>([]);
+  const [selectedShopName, setSelectedShopName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const shopDropdownRef = useRef<HTMLDivElement>(null);
   const dispatch = useDispatch();
   const router = useRouter();
 
@@ -40,7 +45,41 @@ export default function RegisterMerchantPage() {
     fetchShops();
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (shopDropdownRef.current && !shopDropdownRef.current.contains(e.target as Node)) {
+        setIsShopDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  function handleShopSearch(query: string) {
+    setShopSearchQuery(query);
+    setFormData(f => ({ ...f, shopId: '' }));
+    setSelectedShopName('');
+    if (query.trim()) {
+      const q = query.toLowerCase().trim();
+      const filtered = shops.filter(s =>
+        s.name.toLowerCase().includes(q) || s.address.toLowerCase().includes(q)
+      );
+      setFilteredShops(filtered.slice(0, 10));
+    } else {
+      setFilteredShops(shops.slice(0, 10));
+    }
+    setIsShopDropdownOpen(true);
+  }
+
+  function handleSelectShop(shop: ShopOption) {
+    setFormData(f => ({ ...f, shopId: shop._id }));
+    setSelectedShopName(shop.name);
+    setShopSearchQuery(shop.name);
+    setIsShopDropdownOpen(false);
+  }
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -92,7 +131,7 @@ export default function RegisterMerchantPage() {
       <div className="w-full max-w-md">
         <div className="bg-[#2B2B2B] border border-[#403A36] rounded-lg p-8">
           <h1 className="text-3xl font-bold text-[#F0E5D8] text-center mb-2">
-            🏪 Merchant Sign Up
+            Merchant Sign Up
           </h1>
           <p className="text-[#8A8177] text-center mb-8">
             Register to manage your shop on Dungeon Inn
@@ -126,34 +165,98 @@ export default function RegisterMerchantPage() {
                 placeholder="0812345678" required />
             </div>
 
-            <div>
+            {/* Shop search bar */}
+            <div ref={shopDropdownRef} className="relative">
               <label className="block text-[#A88C6B] text-sm font-bold mb-2">Your Shop</label>
-              <select name="shopId" value={formData.shopId} onChange={handleChange}
-                className="w-full px-4 py-3 bg-[#1A1A1A] border border-[#403A36] rounded text-[#D4CFC6] focus:outline-none focus:border-[#E57A00]">
-                <option value="">— Select your shop —</option>
-                {shops.map((shop) => (
-                  <option key={shop._id} value={shop._id}>{shop.name} — {shop.address}</option>
-                ))}
-              </select>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={shopSearchQuery}
+                  onChange={(e) => handleShopSearch(e.target.value)}
+                  onFocus={() => {
+                    if (!formData.shopId) {
+                      setFilteredShops(shops.slice(0, 10));
+                      setIsShopDropdownOpen(true);
+                    }
+                  }}
+                  placeholder="Search for a shop..."
+                  className="w-full bg-[#1A1A1A] border border-[#403A36] rounded px-4 py-3 text-[#D4CFC6] focus:outline-none focus:border-[#E57A00]"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!formData.shopId) {
+                      setFilteredShops(shops.slice(0, 10));
+                      setIsShopDropdownOpen(!isShopDropdownOpen);
+                    }
+                  }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8A8177] hover:text-[#D4CFC6]"
+                >
+                  <svg className={`w-5 h-5 transition-transform ${isShopDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Dropdown */}
+              {isShopDropdownOpen && !formData.shopId && (
+                <div className="absolute z-10 w-full mt-1 bg-[#1A1A1A] border border-[#403A36] rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                  {filteredShops.length > 0 ? (
+                    filteredShops.map(shop => (
+                      <button
+                        key={shop._id}
+                        type="button"
+                        onClick={() => handleSelectShop(shop)}
+                        className="w-full text-left px-4 py-2 text-[#D4CFC6] hover:bg-[#2B2B2B] hover:text-[#E57A00] transition-colors"
+                      >
+                        {shop.name}
+                        <span className="text-[#8A8177] text-sm ml-2">- {shop.address}</span>
+                      </button>
+                    ))
+                  ) : (
+                    <div className="px-4 py-2 text-[#8A8177]">No shops found</div>
+                  )}
+                </div>
+              )}
+
+              {/* Selected shop badge */}
+              {formData.shopId && selectedShopName && (
+                <div className="mt-2 flex items-center gap-2 bg-[#1A1A1A] border border-[#403A36] rounded px-3 py-2">
+                  <span className="text-[#E57A00] font-semibold">{selectedShopName}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFormData(f => ({ ...f, shopId: '' }));
+                      setSelectedShopName('');
+                      setShopSearchQuery('');
+                      setFilteredShops(shops.slice(0, 10));
+                      setIsShopDropdownOpen(true);
+                    }}
+                    className="text-[#8A8177] hover:text-red-400 ml-auto"
+                  >
+                    Clear
+                  </button>
+                </div>
+              )}
             </div>
 
             <div>
               <label className="block text-[#A88C6B] text-sm font-bold mb-2">Password</label>
               <input type="password" name="password" value={formData.password} onChange={handleChange}
                 className="w-full px-4 py-3 bg-[#1A1A1A] border border-[#403A36] rounded text-[#D4CFC6] focus:outline-none focus:border-[#E57A00]"
-                placeholder="••••••••" required />
+                placeholder="Min 6 characters" required />
             </div>
 
             <div>
               <label className="block text-[#A88C6B] text-sm font-bold mb-2">Confirm Password</label>
               <input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange}
                 className="w-full px-4 py-3 bg-[#1A1A1A] border border-[#403A36] rounded text-[#D4CFC6] focus:outline-none focus:border-[#E57A00]"
-                placeholder="••••••••" required />
+                placeholder="Re-enter password" required />
             </div>
 
             <button type="submit" disabled={loading}
               className="w-full py-3 bg-[#E57A00] text-[#1A110A] font-bold rounded hover:bg-[#c46a00] transition-colors disabled:opacity-50">
-              {loading ? 'Creating Merchant Account...' : '🏪 Register as Merchant'}
+              {loading ? 'Creating Merchant Account...' : 'Register as Merchant'}
             </button>
           </form>
 

@@ -175,6 +175,12 @@ export default function RegisterPage() {
               Sign in
             </Link>
           </p>
+          <p className="text-center mt-2 text-[#8A8177]">
+            Shop owner?{' '}
+            <Link href="/register/merchant" className="text-[#E57A00] hover:underline">
+              Register as Merchant
+            </Link>
+          </p>
         </div>
       </div>
     </main>

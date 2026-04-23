@@ -61,3 +61,62 @@ export async function changePassword(currentPassword: string, newPassword: strin
   });
   return response.json();
 }
+
+export async function registerMerchant(name: string, email: string, telephone: string, password: string, shopId: string) {
+  const response = await fetch(`${API_URL}/auth/register/merchant`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, email, telephone, password, shopId }),
+  });
+  return response.json();
+}
+
+export async function getMerchants(token: string, status?: string) {
+  const url = status ? `${API_URL}/admin/merchants?status=${status}` : `${API_URL}/admin/merchants`;
+  const response = await fetch(url, {
+    headers: { 'Authorization': `Bearer ${token}` },
+  });
+  return response.json();
+}
+
+export async function approveMerchant(id: string, token: string) {
+  const response = await fetch(`${API_URL}/admin/merchants/${id}/approve`, {
+    method: 'PATCH',
+    headers: { 'Authorization': `Bearer ${token}` },
+  });
+  return response.json();
+}
+
+export async function rejectMerchant(id: string, token: string) {
+  const response = await fetch(`${API_URL}/admin/merchants/${id}/reject`, {
+    method: 'PATCH',
+    headers: { 'Authorization': `Bearer ${token}` },
+  });
+  return response.json();
+}
+
+export async function getMerchantDashboard(token: string) {
+  const response = await fetch(`${API_URL}/merchant/dashboard`, {
+    headers: { 'Authorization': `Bearer ${token}` },
+  });
+  return response.json();
+}
+
+export async function getMerchantReservations(token: string) {
+  const response = await fetch(`${API_URL}/merchant/reservations`, {
+    headers: { 'Authorization': `Bearer ${token}` },
+  });
+  return response.json();
+}
+
+export async function merchantScanQR(token: string, qrToken: string) {
+  const response = await fetch(`${API_URL}/merchant/qr/scan`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ token: qrToken }),
+  });
+  return response.json();
+}

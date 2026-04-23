@@ -153,6 +153,23 @@ export default function TopMenu() {
                     My Bookings
                   </Link>
                   
+                  {user?.role === 'merchant' && user?.merchantStatus === 'approved' && (
+                    <Link
+                      href="/merchant"
+                      className={pathname === '/merchant' ? 'font-medium text-[#E57A00]' : 'font-medium text-[#D4CFC6] hover:text-[#E57A00]'}
+                    >
+                      Merchant Dashboard
+                    </Link>
+                  )}
+                  {user?.role === 'merchant' && user?.merchantStatus !== 'approved' && (
+                    <Link
+                      href="/merchant"
+                      className="font-medium text-yellow-400 hover:text-[#E57A00]"
+                    >
+                      Pending Approval
+                    </Link>
+                  )}
+                  
                   {user?.role === 'admin' && (
                     <div className="relative">
                       <button
@@ -218,6 +235,13 @@ export default function TopMenu() {
                             }`}
                           >
                             🏷️ Promotions
+                          </Link>
+                          <Link
+                            href="/admin/merchants"
+                            onClick={() => setIsAdminDropdownOpen(false)}
+                            className={pathname === '/admin/merchants' ? 'block px-4 py-2 text-[#E57A00] bg-[#1A1A1A]' : 'block px-4 py-2 text-[#D4CFC6] hover:text-[#E57A00] hover:bg-[#1A1A1A]'}
+                          >
+                            Merchants
                           </Link>
                           <hr className="border-[#403A36] my-1" />
                           <button
@@ -322,6 +346,25 @@ export default function TopMenu() {
                     My Bookings
                   </Link>
                   
+                  {user?.role === 'merchant' && user?.merchantStatus === 'approved' && (
+                    <Link
+                      href="/merchant"
+                      onClick={closeMenu}
+                      className="text-[#D4CFC6] hover:text-[#E57A00] transition-colors font-medium py-2"
+                    >
+                      Merchant Dashboard
+                    </Link>
+                  )}
+                  {user?.role === 'merchant' && user?.merchantStatus !== 'approved' && (
+                    <Link
+                      href="/merchant"
+                      onClick={closeMenu}
+                      className="text-yellow-400 hover:text-[#E57A00] transition-colors font-medium py-2"
+                    >
+                      Pending Approval
+                    </Link>
+                  )}
+                  
                   {user?.role === 'admin' && (
                     <div className="border-l-2 border-[#E57A00] pl-4">
                       <p className="text-[#E57A00] font-medium mb-2">Admin</p>
@@ -353,6 +396,13 @@ export default function TopMenu() {
                           className={`py-2 pl-2 ${pathname === '/admin/promotions' ? 'text-[#E57A00]' : 'text-[#D4CFC6] hover:text-[#E57A00]'}`}
                         >
                           🏷️ Promotions
+                        </Link>
+                        <Link
+                          href="/admin/merchants"
+                          onClick={closeMenu}
+                          className={`py-2 pl-2 ${pathname === '/admin/merchants' ? 'text-[#E57A00]' : 'text-[#D4CFC6] hover:text-[#E57A00]'}`}
+                        >
+                          Merchants
                         </Link>
                         <button
                           onClick={() => { closeMenu(); handleRebuildEmbedding(); }}

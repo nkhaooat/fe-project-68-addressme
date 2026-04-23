@@ -3,7 +3,9 @@ export interface User {
   name: string;
   email: string;
   telephone: string;
-  role: 'user' | 'admin';
+  role: 'user' | 'admin' | 'merchant';
+  merchantStatus?: 'pending' | 'approved' | 'rejected';
+  merchantShop?: string | Shop;
 }
 
 export interface Shop {

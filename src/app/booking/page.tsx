@@ -7,6 +7,7 @@ import { RootState } from '@/redux/store';
 import { getShop } from '@/libs/shops';
 import { getService } from '@/libs/services';
 import { createReservation } from '@/libs/reservations';
+import { QRCodeSVG } from 'qrcode.react';
 import { validatePromotion } from '@/libs/promotions';
 import { Shop, Service } from '@/interface';
 import Link from 'next/link';
@@ -75,6 +76,7 @@ export default function BookingPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [qrData, setQrData] = useState<{qrToken: string; reservationId: string} | null>(null);
   const [timeError, setTimeError] = useState('');
 
   // EPIC 4: Promotion state
@@ -201,9 +203,10 @@ export default function BookingPage() {
 
       if (res.success) {
         setSuccess(res.message || 'Booking created successfully!');
-        setTimeout(() => {
-          router.push('/mybookings');
-        }, 2000);
+        if (res.data?.qrToken) {
+          setQrData({ qrToken: res.data.qrToken, reservationId: res.data._id });
+        }
+        // Don't auto-redirect — let user see QR and download
       } else {
         setError(res.message || 'Failed to create booking');
       }
@@ -237,9 +240,49 @@ export default function BookingPage() {
           </div>
         )}
 
-        {success && (
+        {success && !qrData && (
           <div className="bg-green-900/50 border border-green-500 text-green-200 px-4 py-3 rounded mb-6">
             {success}
+          </div>
+        )}
+
+        {/* US 6-2: QR Code success modal after booking */}
+        {qrData && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+            <div className="bg-[#2B2B2B] border border-[#403A36] rounded-xl p-8 max-w-md w-full text-center">
+              <h2 className="text-2xl font-bold text-[#F0E5D8] mb-2">🎉 Booking Confirmed!</h2>
+              <p className="text-[#8A8177] mb-6">Check your email for confirmation details.</p>
+              <div className="bg-white p-4 rounded-lg inline-block mb-4">
+                <QRCodeSVG
+                  value={`${typeof window !== 'undefined' ? window.location.origin : ''}/api/v1/qr/verify/${qrData.qrToken}`}
+                  size={200}
+                  level="M"
+                />
+              </div>
+              <p className="text-[#D4CFC6] text-sm mb-6">Show this QR code at the shop</p>
+              <div className="flex gap-3 justify-center">
+                <button
+                  onClick={() => {
+                    const canvas = document.querySelector('canvas');
+                    if (canvas) {
+                      const link = document.createElement('a');
+                      link.download = `dungeon-inn-qr-${qrData.reservationId}.png`;
+                      link.href = canvas.toDataURL('image/png');
+                      link.click();
+                    }
+                  }}
+                  className="px-6 py-2 bg-[#E57A00] text-[#1A110A] font-bold rounded hover:bg-[#c46a00] transition-colors"
+                >
+                  📥 Download QR
+                </button>
+                <button
+                  onClick={() => router.push('/mybookings')}
+                  className="px-6 py-2 bg-[#403A36] text-[#F0E5D8] rounded hover:bg-[#E57A00] hover:text-[#1A110A] transition-colors font-bold"
+                >
+                  My Bookings →
+                </button>
+              </div>
+            </div>
           </div>
         )}
 

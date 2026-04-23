@@ -51,6 +51,8 @@ export interface Reservation {
   finalPrice?: number;
   slipImageUrl?: string | null;
   paymentStatus?: 'none' | 'waiting_verification' | 'approved' | 'rejected';
+  qrToken?: string;
+  qrActive?: boolean;
   createdAt: string;
 }
 

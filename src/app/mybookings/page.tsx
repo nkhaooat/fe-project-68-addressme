@@ -9,6 +9,7 @@ import { Reservation } from '@/interface';
 import Link from 'next/link';
 import EditBookingModal from '@/components/EditBookingModal';
 import ReviewModal from '@/components/ReviewModal';
+import { QRCodeSVG } from 'qrcode.react';
 import { API_URL } from '@/libs/config';
 
 export default function MyBookingsPage() {
@@ -20,6 +21,7 @@ export default function MyBookingsPage() {
   const [reviewingReservation, setReviewingReservation] = useState<Reservation | null>(null);
   const [reviewedIds, setReviewedIds] = useState<Set<string>>(new Set());
   const [uploadingId, setUploadingId] = useState<string | null>(null);
+  const [qrReservation, setQrReservation] = useState<Reservation | null>(null);
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   useEffect(() => {
@@ -225,7 +227,16 @@ export default function MyBookingsPage() {
                     )}
                   </div>
                   <div className="flex flex-col gap-2 items-end">
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-wrap justify-end">
+                      {/* US 6-3: Show QR button */}
+                      {reservation.qrToken && reservation.qrActive && reservation.status !== 'cancelled' && reservation.status !== 'completed' && (
+                        <button
+                          onClick={() => setQrReservation(reservation)}
+                          className="px-4 py-2 bg-[#1A1A1A] border border-[#403A36] text-[#F0E5D8] rounded hover:border-[#E57A00] transition-colors text-sm"
+                        >
+                          📱 Show QR
+                        </button>
+                      )}
                       {canEdit(reservation) && (
                         <button
                           onClick={() => setEditingReservation(reservation)}
@@ -318,6 +329,51 @@ export default function MyBookingsPage() {
           }}
           onClose={() => setReviewingReservation(null)}
         />
+      )}
+      {/* US 6-3: QR Code Modal */}
+      {qrReservation && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#2B2B2B] border border-[#403A36] rounded-xl p-8 max-w-md w-full text-center">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-[#F0E5D8]">Your QR Code</h2>
+              <button onClick={() => setQrReservation(null)} className="text-[#8A8177] hover:text-[#F0E5D8] text-xl">✕</button>
+            </div>
+            {qrReservation.qrActive ? (
+              <>
+                <div className="bg-white p-4 rounded-lg inline-block mb-4">
+                  <QRCodeSVG
+                    value={`${typeof window !== 'undefined' ? window.location.origin : ''}/api/v1/qr/verify/${qrReservation.qrToken}`}
+                    size={200}
+                    level="M"
+                  />
+                </div>
+                <p className="text-[#D4CFC6] text-sm mb-2">Show this QR code at the shop</p>
+                <p className="text-[#8A8177] text-xs mb-4">
+                  {qrReservation.shop && typeof qrReservation.shop === 'object' ? qrReservation.shop.name : 'Shop'} — {new Date(qrReservation.resvDate).toLocaleString()}
+                </p>
+                <button
+                  onClick={() => {
+                    const canvas = document.querySelector('#qr-modal canvas') as HTMLCanvasElement;
+                    if (canvas) {
+                      const link = document.createElement('a');
+                      link.download = `dungeon-inn-qr-${qrReservation._id}.png`;
+                      link.href = canvas.toDataURL('image/png');
+                      link.click();
+                    }
+                  }}
+                  className="px-6 py-2 bg-[#E57A00] text-[#1A110A] font-bold rounded hover:bg-[#c46a00] transition-colors"
+                >
+                  📥 Download QR
+                </button>
+              </>
+            ) : (
+              <div className="py-8">
+                <p className="text-red-400 text-lg mb-2">⛔ QR Code Void</p>
+                <p className="text-[#8A8177] text-sm">This QR code is no longer valid.</p>
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </main>
   );

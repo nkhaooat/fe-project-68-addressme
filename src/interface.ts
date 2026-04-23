@@ -21,6 +21,7 @@ export interface Shop {
   photo?: string;
   photoProxy?: string; // backend-provided proxy to Google Places Photos with fallback
   placeId?: string;
+  hasGooglePhoto?: boolean;  // EPIC 3: true if Google Place photo is available
   description?: string;
   tiktokLinks?: string[];
 }

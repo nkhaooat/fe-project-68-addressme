@@ -307,15 +307,17 @@ export default function ShopsPage() {
                       const img = e.currentTarget as HTMLImageElement;
                       const step = parseInt(img.getAttribute('data-fallback') || '0');
                       if (step === 0 && shop.photo && img.src !== shop.photo) {
+                        // EPIC 3: Google API failed → fall back to MongoDB photo
                         img.setAttribute('data-fallback', '1');
                         img.src = shop.photo;
-                      } else {
-                        // All sources failed — hide img and show emoji fallback
+                      } else if (step < 2) {
+                        // EPIC 3: All sources failed → show emoji placeholder
+                        img.setAttribute('data-fallback', '2');
                         img.style.display = 'none';
                         const parent = img.parentElement;
-                        if (parent && !parent.querySelector('span')) {
+                        if (parent && !parent.querySelector('span.fallback-emoji')) {
                           const span = document.createElement('span');
-                          span.className = 'text-6xl';
+                          span.className = 'text-6xl fallback-emoji';
                           span.textContent = '🏪';
                           parent.appendChild(span);
                         }

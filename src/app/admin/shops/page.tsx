@@ -314,6 +314,27 @@ export default function AdminShopsPage() {
                 <img
                   src={shop.photoProxy || shop.photo}
                   alt={shop.name}
+                  data-fallback="0"
+                  onError={(e) => {
+                    const img = e.currentTarget as HTMLImageElement;
+                    const step = parseInt(img.getAttribute('data-fallback') || '0');
+                    if (step === 0 && shop.photo && img.src !== shop.photo) {
+                      // EPIC 3: Google API failed → fall back to MongoDB photo
+                      img.setAttribute('data-fallback', '1');
+                      img.src = shop.photo;
+                    } else if (step < 2) {
+                      // EPIC 3: All sources failed → show placeholder
+                      img.setAttribute('data-fallback', '2');
+                      img.style.display = 'none';
+                      const parent = img.parentElement;
+                      if (parent && !parent.querySelector('span.fallback-admin')) {
+                        const span = document.createElement('span');
+                        span.className = 'flex items-center justify-center h-full text-[#8A8177] fallback-admin';
+                        span.textContent = 'No Image';
+                        parent.appendChild(span);
+                      }
+                    }
+                  }}
                   className="w-full h-40 object-cover"
                 />
               ) : (

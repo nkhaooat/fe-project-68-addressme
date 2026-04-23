@@ -63,14 +63,13 @@ export default function QRPage() {
           <h1 className="text-xl font-bold text-red-400 mb-2">Invalid QR Code</h1>
           <p className="text-[#8A8177]">{booking?.message || 'This QR code is not valid.'}</p>
           {booking?.message?.includes('Not authorized') && (
-            <p className="text-[#8A8177] text-sm mt-2">Please log in with the account that made this booking.</p>
+            <button
+              onClick={() => router.push('/login')}
+              className="mt-4 px-6 py-2 bg-[#E57A00] text-[#1A110A] font-bold rounded hover:bg-[#c46a00] transition-colors"
+            >
+              Log In
+            </button>
           )}
-          <button
-            onClick={() => router.push('/login')}
-            className="mt-4 px-6 py-2 bg-[#E57A00] text-[#1A110A] font-bold rounded hover:bg-[#c46a00] transition-colors"
-          >
-            Log In
-          </button>
         </div>
       </main>
     );

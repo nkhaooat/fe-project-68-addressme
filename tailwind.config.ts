@@ -26,8 +26,8 @@ const config: Config = {
         foreground: "var(--foreground)",
       },
       fontFamily: {
-        'dungeon': ['Cinzel', 'Georgia', 'serif'],
-        'body': ['Inter', 'system-ui', 'sans-serif'],
+        'dungeon': ['var(--font-cinzel)', 'Georgia', 'serif'],
+        'body': ['var(--font-inter)', 'system-ui', 'sans-serif'],
       },
     },
   },

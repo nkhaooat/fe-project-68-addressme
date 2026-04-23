@@ -349,38 +349,46 @@ export default function MerchantDashboardPage() {
 
         {/* Scan QR tab */}
         {tab === 'scan' && (
-          <div className="bg-[#2B2B2B] border border-[#403A36] rounded-lg p-6 max-w-lg mx-auto">
-            <h3 className="text-lg font-bold text-[#F0E5D8] mb-4 text-center">📱 Scan Customer QR Code</h3>
-            <p className="text-[#8A8177] text-sm text-center mb-4">Enter the QR token from the customer&apos;s phone</p>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={scanToken}
-                onChange={(e) => setScanToken(e.target.value)}
-                placeholder="Paste QR token here..."
-                className="flex-1 px-4 py-3 bg-[#1A1A1A] border border-[#403A36] rounded text-[#D4CFC6] focus:outline-none focus:border-[#E57A00]"
-              />
-              <button onClick={handleScan} disabled={scanning || !scanToken.trim()}
-                className="px-6 py-3 bg-[#E57A00] text-[#1A110A] font-bold rounded hover:bg-[#c46a00] transition-colors disabled:opacity-50">
-                {scanning ? '...' : 'Verify'}
-              </button>
+          <div className="space-y-6">
+            {/* Camera scanner link */}
+            <div className="bg-[#2B2B2B] border border-[#403A36] rounded-lg p-6 text-center">
+              <div className="text-4xl mb-3">📷</div>
+              <h3 className="text-lg font-bold text-[#F0E5D8] mb-2">Camera Scanner</h3>
+              <p className="text-[#8A8177] text-sm mb-4">Use your device camera to scan customer QR codes</p>
+              <a href="/merchant/scan"
+                className="inline-block px-8 py-3 bg-[#E57A00] text-[#1A110A] font-bold rounded hover:bg-[#c46a00] transition-colors">
+                Open Camera Scanner
+              </a>
             </div>
-            {scanResult && (
-              <div className={`mt-4 p-4 rounded-lg text-center ${
-                scanResult.success
-                  ? 'bg-green-900/30 border border-green-600 text-green-400'
-                  : 'bg-red-900/30 border border-red-600 text-red-400'
-              }`}>
-                <p className="font-bold">{scanResult.success ? '✅ Verified!' : '❌ Failed'}</p>
-                <p className="text-sm mt-1">{scanResult.message}</p>
-                {scanResult.data && (
-                  <div className="mt-2 text-sm text-[#D4CFC6]">
-                    <p>{scanResult.data.user?.name} — {scanResult.data.service?.name}</p>
-                    <p>📅 {scanResult.data.resvDate ? new Date(scanResult.data.resvDate).toLocaleString() : ''}</p>
-                  </div>
-                )}
+
+            {/* Manual token input fallback */}
+            <div className="bg-[#2B2B2B] border border-[#403A36] rounded-lg p-6">
+              <h3 className="text-lg font-bold text-[#F0E5D8] mb-2 text-center">Manual Token Input</h3>
+              <p className="text-[#8A8177] text-sm text-center mb-4">Or paste the QR token manually</p>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={scanToken}
+                  onChange={(e) => setScanToken(e.target.value)}
+                  placeholder="Paste QR token here..."
+                  className="flex-1 px-4 py-3 bg-[#1A1A1A] border border-[#403A36] rounded text-[#D4CFC6] focus:outline-none focus:border-[#E57A00]"
+                />
+                <button onClick={handleScan} disabled={scanning || !scanToken.trim()}
+                  className="px-6 py-3 bg-[#E57A00] text-[#1A110A] font-bold rounded hover:bg-[#c46a00] transition-colors disabled:opacity-50">
+                  {scanning ? '...' : 'Verify'}
+                </button>
               </div>
-            )}
+              {scanResult && (
+                <div className={`mt-4 p-4 rounded-lg text-center ${
+                  scanResult.success
+                    ? 'bg-green-900/30 border border-green-600 text-green-400'
+                    : 'bg-red-900/30 border border-red-600 text-red-400'
+                }`}>
+                  <p className="font-bold">{scanResult.success ? 'Verified!' : 'Failed'}</p>
+                  <p className="text-sm mt-1">{scanResult.message}</p>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>

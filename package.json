@@ -19,6 +19,7 @@
     "@reduxjs/toolkit": "^2.11.2",
     "@tailwindcss/typography": "^0.5.19",
     "dayjs": "^1.11.20",
+    "html5-qrcode": "^2.3.8",
     "next": "^16.2.4",
     "qrcode.react": "^4.2.0",
     "react": "^18",

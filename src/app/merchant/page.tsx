@@ -3,8 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useRouter } from 'next/navigation';
+import { useDispatch } from 'react-redux';
 import { RootState } from '@/redux/store';
-import { getMerchantDashboard, getMerchantReservations, merchantScanQR } from '@/libs/auth';
+import { getMerchantDashboard, getMerchantReservations, merchantScanQR, getMe } from '@/libs/auth';
+import { setCredentials } from '@/redux/features/authSlice';
 
 interface ShopData {
   _id: string;
@@ -29,6 +31,7 @@ interface ReservationData {
 
 export default function MerchantDashboardPage() {
   const { token, user } = useSelector((state: RootState) => state.auth);
+  const dispatch = useDispatch();
   const router = useRouter();
   const [shop, setShop] = useState<ShopData | null>(null);
   const [stats, setStats] = useState({ totalReservations: 0, pendingReservations: 0, todayReservations: 0 });
@@ -41,6 +44,20 @@ export default function MerchantDashboardPage() {
 
   useEffect(() => {
     if (!token) { router.push('/login'); return; }
+
+    // Always refetch latest user status (admin may have approved/rejected since last login)
+    async function refreshUser() {
+      try {
+        const res = await getMe(token!);
+        if (res.success && res.data) {
+          dispatch(setCredentials({ user: res.data, token: token! }));
+        }
+      } catch {}
+    }
+    refreshUser();
+  }, [token]);
+
+  useEffect(() => {
     if (user?.role !== 'merchant') {
       if (user?.role === 'admin') { router.push('/admin'); return; }
       router.push('/');

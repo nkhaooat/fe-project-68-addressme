@@ -228,17 +228,23 @@ export default function MerchantDashboardPage() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-6">
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-1">
           {(['overview', 'reservations', 'scan'] as const).map((t) => (
             <button key={t} onClick={() => setTab(t)}
-              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+              className={`flex-shrink-0 px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
                 tab === t
                   ? 'bg-[#E57A00] text-[#1A110A]'
                   : 'bg-[#2B2B2B] text-[#8A8177] border border-[#403A36] hover:border-[#E57A00]'
               }`}>
-              {t === 'overview' ? '📊 Overview' : t === 'reservations' ? '📅 Reservations' : '📱 Scan QR'}
+              {t === 'overview' ? 'Overview' : t === 'reservations' ? 'Reservations' : 'Scan QR'}
             </button>
           ))}
+          <a href="/merchant/shop" className="flex-shrink-0 px-4 py-2 rounded-lg text-sm font-semibold bg-[#2B2B2B] text-[#8A8177] border border-[#403A36] hover:border-[#E57A00] transition-colors">
+            My Shop
+          </a>
+          <a href="/merchant/services" className="flex-shrink-0 px-4 py-2 rounded-lg text-sm font-semibold bg-[#2B2B2B] text-[#8A8177] border border-[#403A36] hover:border-[#E57A00] transition-colors">
+            Services
+          </a>
         </div>
 
         {/* Overview tab */}

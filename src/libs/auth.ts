@@ -120,3 +120,36 @@ export async function merchantScanQR(token: string, qrToken: string) {
   });
   return response.json();
 }
+
+export async function getMerchantServices(token: string) {
+  const response = await fetch(`${API_URL}/merchant/services`, {
+    headers: { 'Authorization': `Bearer ${token}` },
+  });
+  return response.json();
+}
+
+export async function createMerchantService(token: string, data: any) {
+  const response = await fetch(`${API_URL}/merchant/services`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+    body: JSON.stringify(data),
+  });
+  return response.json();
+}
+
+export async function updateMerchantService(token: string, id: string, data: any) {
+  const response = await fetch(`${API_URL}/merchant/services/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+    body: JSON.stringify(data),
+  });
+  return response.json();
+}
+
+export async function deleteMerchantService(token: string, id: string) {
+  const response = await fetch(`${API_URL}/merchant/services/${id}`, {
+    method: 'DELETE',
+    headers: { 'Authorization': `Bearer ${token}` },
+  });
+  return response.json();
+}

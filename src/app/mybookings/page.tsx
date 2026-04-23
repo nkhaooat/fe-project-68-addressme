@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import { getReservations, deleteReservation } from '@/libs/reservations';
+import { uploadSlip } from '@/libs/promotions';
 import { Reservation } from '@/interface';
 import Link from 'next/link';
 import EditBookingModal from '@/components/EditBookingModal';
@@ -18,6 +19,8 @@ export default function MyBookingsPage() {
   const [editingReservation, setEditingReservation] = useState<Reservation | null>(null);
   const [reviewingReservation, setReviewingReservation] = useState<Reservation | null>(null);
   const [reviewedIds, setReviewedIds] = useState<Set<string>>(new Set());
+  const [uploadingId, setUploadingId] = useState<string | null>(null);
+  const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   useEffect(() => {
     async function fetchReservations() {
@@ -25,7 +28,6 @@ export default function MyBookingsPage() {
         const res = await getReservations(token!, true);
         if (res.success) {
           setReservations(res.data);
-          // Check which completed reservations already have reviews
           const completed = res.data.filter((r: Reservation) => r.status === 'completed');
           const checks = await Promise.all(
             completed.map((r: Reservation) =>
@@ -61,7 +63,6 @@ export default function MyBookingsPage() {
     try {
       const res = await deleteReservation(id, token!);
       if (res.success) {
-        // Update the reservation status to cancelled instead of removing it
         setReservations(reservations.map((r) => 
           r._id === id ? { ...r, status: 'cancelled' } : r
         ));
@@ -78,21 +79,54 @@ export default function MyBookingsPage() {
     setEditingReservation(null);
   };
 
+  // EPIC 4: Handle slip upload
+  const handleSlipUpload = async (reservationId: string, file: File) => {
+    setUploadingId(reservationId);
+    try {
+      const res = await uploadSlip(reservationId, file, token!);
+      if (res.success) {
+        setReservations(reservations.map((r) => 
+          r._id === reservationId ? { ...r, ...res.data } : r
+        ));
+      } else {
+        alert(res.message || 'Failed to upload slip');
+      }
+    } catch {
+      alert('Error uploading slip');
+    } finally {
+      setUploadingId(null);
+    }
+  };
+
   const canEdit = (reservation: Reservation): boolean => {
-    // Can edit if status is pending or confirmed (not cancelled or completed)
     return reservation.status === 'pending' || reservation.status === 'confirmed';
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'confirmed':
-        return 'text-green-400';
-      case 'pending':
-        return 'text-yellow-400';
-      case 'cancelled':
-        return 'text-red-400';
-      default:
-        return 'text-[#8A8177]';
+      case 'confirmed': return 'text-green-400';
+      case 'pending': return 'text-yellow-400';
+      case 'cancelled': return 'text-red-400';
+      default: return 'text-[#8A8177]';
+    }
+  };
+
+  const getPaymentStatusColor = (ps?: string) => {
+    switch (ps) {
+      case 'approved': return 'text-green-400';
+      case 'waiting_verification': return 'text-yellow-400';
+      case 'rejected': return 'text-red-400';
+      default: return 'text-[#8A8177]';
+    }
+  };
+
+  const getPaymentStatusLabel = (ps?: string) => {
+    switch (ps) {
+      case 'approved': return 'Payment Approved';
+      case 'waiting_verification': return 'Waiting for Verification';
+      case 'rejected': return 'Payment Rejected';
+      case 'none': return 'No Payment';
+      default: return 'No Payment';
     }
   };
 
@@ -135,7 +169,7 @@ export default function MyBookingsPage() {
                 className="bg-[#2B2B2B] border border-[#403A36] rounded-lg p-6"
               >
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                  <div>
+                  <div className="flex-1">
                     <h3 className="text-xl font-bold text-[#F0E5D8]">
                       {reservation.service && typeof reservation.service === 'object'
                         ? reservation.service.name
@@ -154,37 +188,94 @@ export default function MyBookingsPage() {
                     <p className="text-[#8A8177] text-sm mt-1">
                       📅 {new Date(reservation.resvDate).toLocaleString()}
                     </p>
+                    
+                    {/* Price with discount */}
+                    {reservation.originalPrice != null && (
+                      <p className="text-[#E57A00] text-sm mt-1">
+                        {(reservation.discountAmount ?? 0) > 0 ? (
+                          <>
+                            <span className="line-through text-[#8A8177]">฿{reservation.originalPrice}</span>
+                            {' → '}<span className="font-bold">฿{reservation.finalPrice}</span>
+                            {reservation.promotionCode && (
+                              <span className="text-green-400 ml-1">({reservation.promotionCode})</span>
+                            )}
+                          </>
+                        ) : (
+                          <>฿{reservation.originalPrice}</>
+                        )}
+                      </p>
+                    )}
+
                     <p className={`text-sm mt-2 font-bold ${getStatusColor(reservation.status)}`}>
                       Status: {reservation.status.charAt(0).toUpperCase() + reservation.status.slice(1)}
                     </p>
+
+                    {/* EPIC 4: Payment status & slip upload */}
+                    {reservation.paymentStatus && reservation.paymentStatus !== 'none' && (
+                      <p className={`text-sm mt-1 ${getPaymentStatusColor(reservation.paymentStatus)}`}>
+                        💳 {getPaymentStatusLabel(reservation.paymentStatus)}
+                      </p>
+                    )}
+                    {reservation.slipImageUrl && (
+                      <img
+                        src={`${API_URL.replace('/api/v1', '')}${reservation.slipImageUrl}`}
+                        alt="Payment slip"
+                        className="mt-2 h-20 rounded border border-[#403A36] object-cover"
+                      />
+                    )}
                   </div>
-                  <div className="flex gap-2">
-                    {canEdit(reservation) && (
-                      <button
-                        onClick={() => setEditingReservation(reservation)}
-                        className="px-4 py-2 bg-[#E57A00] text-[#1A110A] font-bold rounded hover:bg-[#c46a00] transition-colors"
-                      >
-                        Edit
-                      </button>
-                    )}
-                    {reservation.status !== 'completed' && reservation.status !== 'cancelled' && (
-                      <button
-                        onClick={() => handleDelete(reservation._id)}
-                        className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
-                      >
-                        Cancel
-                      </button>
-                    )}
-                    {reservation.status === 'completed' && !reviewedIds.has(reservation._id) && (
-                      <button
-                        onClick={() => setReviewingReservation(reservation)}
-                        className="px-4 py-2 bg-[#403A36] text-[#F0E5D8] rounded hover:bg-[#E57A00] hover:text-[#1A110A] transition-colors font-bold"
-                      >
-                        ⭐ Review
-                      </button>
-                    )}
-                    {reservation.status === 'completed' && reviewedIds.has(reservation._id) && (
-                      <span className="px-4 py-2 text-[#8A8177] text-sm flex items-center">✓ Reviewed</span>
+                  <div className="flex flex-col gap-2 items-end">
+                    <div className="flex gap-2">
+                      {canEdit(reservation) && (
+                        <button
+                          onClick={() => setEditingReservation(reservation)}
+                          className="px-4 py-2 bg-[#E57A00] text-[#1A110A] font-bold rounded hover:bg-[#c46a00] transition-colors"
+                        >
+                          Edit
+                        </button>
+                      )}
+                      {reservation.status !== 'completed' && reservation.status !== 'cancelled' && (
+                        <button
+                          onClick={() => handleDelete(reservation._id)}
+                          className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      )}
+                      {reservation.status === 'completed' && !reviewedIds.has(reservation._id) && (
+                        <button
+                          onClick={() => setReviewingReservation(reservation)}
+                          className="px-4 py-2 bg-[#403A36] text-[#F0E5D8] rounded hover:bg-[#E57A00] hover:text-[#1A110A] transition-colors font-bold"
+                        >
+                          ⭐ Review
+                        </button>
+                      )}
+                      {reservation.status === 'completed' && reviewedIds.has(reservation._id) && (
+                        <span className="px-4 py-2 text-[#8A8177] text-sm flex items-center">✓ Reviewed</span>
+                      )}
+                    </div>
+
+                    {/* EPIC 4: Upload slip button */}
+                    {reservation.paymentStatus === 'none' && reservation.status !== 'cancelled' && reservation.status !== 'completed' && (
+                      <div>
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp,application/pdf"
+                          ref={(el) => { fileInputRefs.current[reservation._id] = el; }}
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleSlipUpload(reservation._id, file);
+                          }}
+                        />
+                        <button
+                          onClick={() => fileInputRefs.current[reservation._id]?.click()}
+                          disabled={uploadingId === reservation._id}
+                          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors disabled:opacity-50 text-sm"
+                        >
+                          {uploadingId === reservation._id ? 'Uploading...' : '📎 Upload Slip'}
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>

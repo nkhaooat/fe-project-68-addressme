@@ -208,6 +208,17 @@ export default function TopMenu() {
                           >
                             💆 Services
                           </Link>
+                          <Link
+                            href="/admin/promotions"
+                            onClick={() => setIsAdminDropdownOpen(false)}
+                            className={`block px-4 py-2 transition-colors ${
+                              pathname === '/admin/promotions' 
+                                ? 'text-[#E57A00] bg-[#1A1A1A]' 
+                                : 'text-[#D4CFC6] hover:text-[#E57A00] hover:bg-[#1A1A1A]'
+                            }`}
+                          >
+                            🏷️ Promotions
+                          </Link>
                           <hr className="border-[#403A36] my-1" />
                           <button
                             onClick={() => { setIsAdminDropdownOpen(false); handleRebuildEmbedding(); }}
@@ -335,6 +346,13 @@ export default function TopMenu() {
                           className={`py-2 pl-2 ${pathname === '/admin/services' ? 'text-[#E57A00]' : 'text-[#D4CFC6] hover:text-[#E57A00]'}`}
                         >
                           💆 Services
+                        </Link>
+                        <Link
+                          href="/admin/promotions"
+                          onClick={closeMenu}
+                          className={`py-2 pl-2 ${pathname === '/admin/promotions' ? 'text-[#E57A00]' : 'text-[#D4CFC6] hover:text-[#E57A00]'}`}
+                        >
+                          🏷️ Promotions
                         </Link>
                         <button
                           onClick={() => { closeMenu(); handleRebuildEmbedding(); }}

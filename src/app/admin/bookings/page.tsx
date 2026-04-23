@@ -4,9 +4,11 @@ import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import { getReservations, updateReservation, deleteReservation } from '@/libs/reservations';
+import { verifySlip } from '@/libs/promotions';
 import { Reservation } from '@/interface';
 import Link from 'next/link';
 import EditBookingModal from '@/components/EditBookingModal';
+import { API_URL } from '@/libs/config';
 
 interface PaginationData {
   total: number;
@@ -41,6 +43,10 @@ export default function AdminBookingsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [newStatus, setNewStatus] = useState('');
   const [editingReservation, setEditingReservation] = useState<Reservation | null>(null);
+  
+  // EPIC 4: Payment filter
+  const [paymentFilter, setPaymentFilter] = useState('');
+  const [verifyingId, setVerifyingId] = useState<string | null>(null);
   
   // Pagination & Search states
   const [currentPage, setCurrentPage] = useState(1);
@@ -81,6 +87,11 @@ export default function AdminBookingsPage() {
           if (!showCanceled) {
             filtered = filtered.filter((r: Reservation) => r.status !== 'cancelled');
           }
+
+          // EPIC 4: Filter by payment status
+          if (paymentFilter) {
+            filtered = filtered.filter((r: Reservation) => r.paymentStatus === paymentFilter);
+          }
           
           setReservations(filtered);
           // Handle both old and new pagination format
@@ -104,7 +115,7 @@ export default function AdminBookingsPage() {
     if (token && user?.role === 'admin') {
       fetchReservations();
     }
-  }, [token, user, currentPage, statusFilter, debouncedSearchUser, showCanceled]);
+  }, [token, user, currentPage, statusFilter, debouncedSearchUser, showCanceled, paymentFilter]);
 
   const handleUpdateStatus = async (id: string) => {
     try {
@@ -153,6 +164,41 @@ export default function AdminBookingsPage() {
         return 'text-red-400';
       default:
         return 'text-[#8A8177]';
+    }
+  };
+
+  const getPaymentStatusColor = (ps?: string) => {
+    switch (ps) {
+      case 'approved': return 'text-green-400';
+      case 'waiting_verification': return 'text-yellow-400';
+      case 'rejected': return 'text-red-400';
+      default: return 'text-[#8A8177]';
+    }
+  };
+
+  const getPaymentStatusLabel = (ps?: string) => {
+    switch (ps) {
+      case 'approved': return 'Approved';
+      case 'waiting_verification': return 'Waiting';
+      case 'rejected': return 'Rejected';
+      default: return 'None';
+    }
+  };
+
+  // EPIC 4: Verify slip
+  const handleVerifySlip = async (id: string, action: 'approve' | 'reject') => {
+    setVerifyingId(id);
+    try {
+      const res = await verifySlip(id, action, token!);
+      if (res.success) {
+        setReservations(reservations.map((r) => (r._id === id ? { ...r, ...res.data } : r)));
+      } else {
+        alert(res.message || 'Failed to verify slip');
+      }
+    } catch {
+      alert('Error verifying slip');
+    } finally {
+      setVerifyingId(null);
     }
   };
 
@@ -255,6 +301,24 @@ export default function AdminBookingsPage() {
               </label>
             </div>
           </div>
+
+          {/* EPIC 4: Payment Status Filter */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pt-4 border-t border-[#403A36]">
+            <div>
+              <label className="block text-[#8A8177] text-sm mb-2">Payment Status</label>
+              <select
+                value={paymentFilter}
+                onChange={(e) => setPaymentFilter(e.target.value)}
+                className="w-full bg-[#1A1A1A] border border-[#403A36] rounded-lg px-4 py-2 text-[#F0E5D8] focus:border-[#E57A00] focus:outline-none"
+              >
+                <option value="">All</option>
+                <option value="waiting_verification">Waiting for Verification</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+                <option value="none">No Payment</option>
+              </select>
+            </div>
+          </div>
           
           {/* Results count */}
           <div className="mt-4 pt-4 border-t border-[#403A36]">
@@ -327,6 +391,37 @@ export default function AdminBookingsPage() {
                       {reservation.status.charAt(0).toUpperCase() + reservation.status.slice(1)}
                     </p>
                   )}
+                  {/* EPIC 4: Payment status & slip */}
+                  {reservation.paymentStatus && reservation.paymentStatus !== 'none' && (
+                    <p className={`text-sm mt-1 ${getPaymentStatusColor(reservation.paymentStatus)}`}>
+                      💳 {getPaymentStatusLabel(reservation.paymentStatus)}
+                    </p>
+                  )}
+                  {reservation.slipImageUrl && (
+                    <div className="mt-2">
+                      <img
+                        src={`${API_URL.replace('/api/v1', '')}${reservation.slipImageUrl}`}
+                        alt="Payment slip"
+                        className="h-24 rounded border border-[#403A36] object-cover"
+                      />
+                    </div>
+                  )}
+                  {/* EPIC 4: Price with discount */}
+                  {reservation.originalPrice != null && (
+                    <p className="text-sm mt-1 text-[#E57A00]">
+                      {(reservation.discountAmount ?? 0) > 0 ? (
+                        <>
+                          <span className="line-through text-[#8A8177]">฿{reservation.originalPrice}</span>
+                          {' → '}<span className="font-bold">฿{reservation.finalPrice}</span>
+                          {reservation.promotionCode && (
+                            <span className="text-green-400 ml-1">({reservation.promotionCode})</span>
+                          )}
+                        </>
+                      ) : (
+                        <>฿{reservation.originalPrice}</>
+                      )}
+                    </p>
+                  )}
                 </div>
                 <div className="flex gap-2 items-end">
                   {editingId === reservation._id ? (
@@ -368,6 +463,25 @@ export default function AdminBookingsPage() {
                         >
                           Cancel Booking
                         </button>
+                      )}
+                      {/* EPIC 4: Approve/Reject slip buttons */}
+                      {reservation.paymentStatus === 'waiting_verification' && (
+                        <>
+                          <button
+                            onClick={() => handleVerifySlip(reservation._id, 'approve')}
+                            disabled={verifyingId === reservation._id}
+                            className="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors disabled:opacity-50"
+                          >
+                            ✓ Approve
+                          </button>
+                          <button
+                            onClick={() => handleVerifySlip(reservation._id, 'reject')}
+                            disabled={verifyingId === reservation._id}
+                            className="px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors disabled:opacity-50"
+                          >
+                            ✗ Reject
+                          </button>
+                        </>
                       )}
                     </>
                   )}

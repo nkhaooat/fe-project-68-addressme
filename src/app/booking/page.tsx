@@ -7,6 +7,7 @@ import { RootState } from '@/redux/store';
 import { getShop } from '@/libs/shops';
 import { getService } from '@/libs/services';
 import { createReservation } from '@/libs/reservations';
+import { validatePromotion } from '@/libs/promotions';
 import { Shop, Service } from '@/interface';
 import Link from 'next/link';
 
@@ -17,29 +18,16 @@ function parseTimeToMinutes(time: string): number {
 }
 
 // Check if selected time is within shop hours
-// Handles overnight hours (e.g., 21:00 - 02:00) and midnight closing (e.g., 09:00 - 00:00)
 function isWithinShopHours(time: string, openTime: string, closeTime: string): boolean {
   const selectedValue = parseTimeToMinutes(time);
   const openValue = parseTimeToMinutes(openTime);
   let closeValue = parseTimeToMinutes(closeTime);
-
-  // Handle midnight (00:00) as end of day (24:00)
-  if (closeValue === 0) {
-    closeValue = 24 * 60; // 1440 minutes = 24:00
-  }
-
-  // Check if hours span midnight (close time is earlier than open time)
-  if (closeValue < openValue) {
-    // Overnight hours: valid if after open OR before close
-    return selectedValue >= openValue || selectedValue <= closeValue;
-  }
-
-  // Normal hours: valid if between open and close
+  if (closeValue === 0) closeValue = 24 * 60;
+  if (closeValue < openValue) return selectedValue >= openValue || selectedValue <= closeValue;
   return selectedValue >= openValue && selectedValue <= closeValue;
 }
 
 // Check if service duration fits within shop hours
-// Returns { valid: boolean, endTime: string, error?: string }
 function checkServiceDuration(
   startTime: string,
   durationMinutes: number,
@@ -49,69 +37,25 @@ function checkServiceDuration(
   const startValue = parseTimeToMinutes(startTime);
   const openValue = parseTimeToMinutes(openTime);
   let closeValue = parseTimeToMinutes(closeTime);
-
-  // Handle midnight (00:00) as end of day (24:00)
-  if (closeValue === 0) {
-    closeValue = 24 * 60;
-  }
-
+  if (closeValue === 0) closeValue = 24 * 60;
   const endValue = startValue + durationMinutes;
   const endHour = Math.floor(endValue / 60) % 24;
   const endMin = endValue % 60;
   const endTime = `${String(endHour).padStart(2, '0')}:${String(endMin).padStart(2, '0')}`;
-
-  // Check if hours span midnight
   if (closeValue < openValue) {
-    // Overnight hours: service must fit within the overnight window
-    // Valid start times: between open and (close - duration)
-    // OR if service wraps past midnight, it must end before close
     const maxStartForSameDay = closeValue - durationMinutes;
-
     if (startValue >= openValue) {
-      // Starting after open (same day)
-      if (endValue <= 24 * 60) {
-        // Ends same day, must be before midnight
-        return { valid: true, endTime };
-      } else {
-        // Wraps to next day, must end before close
-        const nextDayEnd = endValue - 24 * 60;
-        if (nextDayEnd <= closeValue) {
-          return { valid: true, endTime };
-        }
-        return {
-          valid: false,
-          endTime,
-          error: `Service ends at ${endTime} but shop closes at ${closeTime}`,
-        };
-      }
+      if (endValue <= 24 * 60) return { valid: true, endTime };
+      const nextDayEnd = endValue - 24 * 60;
+      if (nextDayEnd <= closeValue) return { valid: true, endTime };
+      return { valid: false, endTime, error: `Service ends at ${endTime} but shop closes at ${closeTime}` };
     } else if (startValue <= closeValue) {
-      // Starting before close (next day portion)
-      if (endValue <= closeValue) {
-        return { valid: true, endTime };
-      }
-      return {
-        valid: false,
-        endTime,
-        error: `Service ends at ${endTime} but shop closes at ${closeTime}`,
-      };
+      if (endValue <= closeValue) return { valid: true, endTime };
+      return { valid: false, endTime, error: `Service ends at ${endTime} but shop closes at ${closeTime}` };
     }
-
-    return {
-      valid: false,
-      endTime,
-      error: `Invalid time for overnight hours`,
-    };
+    return { valid: false, endTime, error: `Invalid time for overnight hours` };
   }
-
-  // Normal hours (same day)
-  if (endValue > closeValue) {
-    return {
-      valid: false,
-      endTime,
-      error: `Service ends at ${endTime} but shop closes at ${closeTime}`,
-    };
-  }
-
+  if (endValue > closeValue) return { valid: false, endTime, error: `Service ends at ${endTime} but shop closes at ${closeTime}` };
   return { valid: true, endTime };
 }
 
@@ -133,6 +77,20 @@ export default function BookingPage() {
   const [success, setSuccess] = useState('');
   const [timeError, setTimeError] = useState('');
 
+  // EPIC 4: Promotion state
+  const [promoCode, setPromoCode] = useState('');
+  const [promoValidating, setPromoValidating] = useState(false);
+  const [promoApplied, setPromoApplied] = useState<{
+    code: string;
+    name: string;
+    discountType: string;
+    discountValue: number;
+    discountAmount: number;
+    originalPrice: number;
+    finalPrice: number;
+  } | null>(null);
+  const [promoError, setPromoError] = useState('');
+
   useEffect(() => {
     if (!isAuthenticated) {
       router.push('/login');
@@ -146,7 +104,6 @@ export default function BookingPage() {
             getShop(shopId),
             getService(serviceId),
           ]);
-
           if (shopRes.success) setShop(shopRes.data);
           if (serviceRes.success) setService(serviceRes.data);
         }
@@ -156,27 +113,17 @@ export default function BookingPage() {
         setLoading(false);
       }
     }
-
     fetchData();
   }, [shopId, serviceId, isAuthenticated, router]);
 
-  // Validate time and service duration when shop, time, or service changes
   useEffect(() => {
     if (shop && resvTime) {
       if (!isWithinShopHours(resvTime, shop.openTime, shop.closeTime)) {
         setTimeError(`Please select a time between ${shop.openTime} and ${shop.closeTime}`);
       } else if (service && service.duration > 0) {
-        const durationCheck = checkServiceDuration(
-          resvTime,
-          service.duration,
-          shop.openTime,
-          shop.closeTime
-        );
-        if (!durationCheck.valid) {
-          setTimeError(durationCheck.error || 'Service duration exceeds shop hours');
-        } else {
-          setTimeError('');
-        }
+        const durationCheck = checkServiceDuration(resvTime, service.duration, shop.openTime, shop.closeTime);
+        if (!durationCheck.valid) setTimeError(durationCheck.error || 'Service duration exceeds shop hours');
+        else setTimeError('');
       } else {
         setTimeError('');
       }
@@ -184,6 +131,32 @@ export default function BookingPage() {
       setTimeError('');
     }
   }, [shop, service, resvTime]);
+
+  const handleApplyPromo = async () => {
+    if (!promoCode.trim() || !service || !token) return;
+    setPromoValidating(true);
+    setPromoError('');
+    setPromoApplied(null);
+
+    try {
+      const res = await validatePromotion(promoCode.trim(), service.price, token);
+      if (res.success) {
+        setPromoApplied(res.data);
+      } else {
+        setPromoError(res.message || 'Invalid promotion code');
+      }
+    } catch {
+      setPromoError('Error validating promotion code');
+    } finally {
+      setPromoValidating(false);
+    }
+  };
+
+  const handleRemovePromo = () => {
+    setPromoApplied(null);
+    setPromoCode('');
+    setPromoError('');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -201,12 +174,7 @@ export default function BookingPage() {
     }
 
     if (shop && service && service.duration > 0) {
-      const durationCheck = checkServiceDuration(
-        resvTime,
-        service.duration,
-        shop.openTime,
-        shop.closeTime
-      );
+      const durationCheck = checkServiceDuration(resvTime, service.duration, shop.openTime, shop.closeTime);
       if (!durationCheck.valid) {
         setError(durationCheck.error || 'Service duration exceeds shop hours');
         return;
@@ -218,11 +186,18 @@ export default function BookingPage() {
     try {
       const resvDateTime = new Date(`${resvDate}T${resvTime}`).toISOString();
       
-      const res = await createReservation({
+      const body: { resvDate: string; shop: string; service: string; promotionCode?: string } = {
         resvDate: resvDateTime,
         shop: shopId!,
         service: serviceId!,
-      }, token!);
+      };
+
+      // EPIC 4: Add promotion code if applied
+      if (promoApplied) {
+        body.promotionCode = promoApplied.code;
+      }
+
+      const res = await createReservation(body, token!);
 
       if (res.success) {
         setSuccess(res.message || 'Booking created successfully!');
@@ -246,6 +221,8 @@ export default function BookingPage() {
       </main>
     );
   }
+
+  const displayPrice = promoApplied ? promoApplied.finalPrice : (service?.price || 0);
 
   return (
     <main className="min-h-screen bg-[#1A1A1A] py-8">
@@ -286,16 +263,39 @@ export default function BookingPage() {
               <p className="text-[#E57A00]">฿{service.price} • {service.duration} mins</p>
             </div>
           )}
+
+          {/* EPIC 4: Price Breakdown */}
+          {service && (
+            <div className="border-t border-[#403A36] pt-4 mt-4">
+              <h3 className="text-lg font-semibold text-[#F0E5D8] mb-3">Price</h3>
+              <div className="space-y-2">
+                <div className="flex justify-between text-[#D4CFC6]">
+                  <span>Original Price</span>
+                  <span>฿{service.price}</span>
+                </div>
+                {promoApplied && (
+                  <>
+                    <div className="flex justify-between text-green-400">
+                      <span>Discount ({promoApplied.discountType === 'flat' ? `฿${promoApplied.discountValue} off` : `${promoApplied.discountValue}% off`})</span>
+                      <span>-฿{promoApplied.discountAmount}</span>
+                    </div>
+                    <div className="border-t border-[#403A36] pt-2 flex justify-between text-[#E57A00] font-bold text-lg">
+                      <span>Final Price</span>
+                      <span>฿{promoApplied.finalPrice}</span>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-[#2B2B2B] border border-[#403A36] rounded-lg p-6">
+        <form onSubmit={handleSubmit} className="bg-[#2B2B2B] border border-[#403A36] rounded-lg p-6 mb-6">
           <h2 className="text-xl font-bold text-[#F0E5D8] mb-6">Select Date & Time</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
-              <label className="block text-[#A88C6B] text-sm font-bold mb-2">
-                Date
-              </label>
+              <label className="block text-[#A88C6B] text-sm font-bold mb-2">Date</label>
               <input
                 type="date"
                 value={resvDate}
@@ -305,7 +305,6 @@ export default function BookingPage() {
                 required
               />
             </div>
-
             <div>
               <label className="block text-[#A88C6B] text-sm font-bold mb-2">
                 Time
@@ -322,12 +321,66 @@ export default function BookingPage() {
                 className="w-full px-4 py-3 bg-[#1A1A1A] border border-[#403A36] rounded text-[#D4CFC6] focus:outline-none focus:border-[#E57A00]"
                 required
               />
-              {timeError && (
-                <p className="text-red-400 text-sm mt-2">{timeError}</p>
-              )}
+              {timeError && <p className="text-red-400 text-sm mt-2">{timeError}</p>}
             </div>
           </div>
+        </form>
 
+        {/* EPIC 4: Promotion Code Section */}
+        <div className="bg-[#2B2B2B] border border-[#403A36] rounded-lg p-6 mb-6">
+          <h2 className="text-xl font-bold text-[#F0E5D8] mb-4">Promotion Code</h2>
+          
+          {promoApplied ? (
+            <div className="bg-green-900/30 border border-green-600 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-green-400 font-bold">✅ {promoApplied.name}</span>
+                <button
+                  type="button"
+                  onClick={handleRemovePromo}
+                  className="text-red-400 text-sm hover:text-red-300"
+                >
+                  Remove
+                </button>
+              </div>
+              <p className="text-[#D4CFC6] text-sm">
+                Code: <span className="font-mono">{promoApplied.code}</span> — {promoApplied.discountType === 'flat' ? `฿${promoApplied.discountValue} off` : `${promoApplied.discountValue}% off`}
+              </p>
+              <p className="text-green-400 text-sm mt-1">
+                You save ฿{promoApplied.discountAmount}!
+              </p>
+            </div>
+          ) : (
+            <div>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={promoCode}
+                  onChange={(e) => { setPromoCode(e.target.value.toUpperCase()); setPromoError(''); }}
+                  placeholder="Enter promotion code"
+                  className="flex-1 px-4 py-3 bg-[#1A1A1A] border border-[#403A36] rounded text-[#D4CFC6] focus:outline-none focus:border-[#E57A00] uppercase font-mono"
+                  disabled={!service}
+                />
+                <button
+                  type="button"
+                  onClick={handleApplyPromo}
+                  disabled={promoValidating || !promoCode.trim() || !service}
+                  className="px-6 py-3 bg-[#E57A00] text-[#1A110A] font-bold rounded hover:bg-[#c46a00] transition-colors disabled:opacity-50"
+                >
+                  {promoValidating ? 'Checking...' : 'Apply'}
+                </button>
+              </div>
+              {promoError && <p className="text-red-400 text-sm mt-2">{promoError}</p>}
+              {!service && <p className="text-[#8A8177] text-sm mt-2">Select a service first to apply promotion</p>}
+            </div>
+          )}
+        </div>
+
+        {/* Submit */}
+        <form onSubmit={handleSubmit} className="bg-[#2B2B2B] border border-[#403A36] rounded-lg p-6">
+          <div className="flex items-center justify-between mb-6">
+            <span className="text-[#8A8177]">Total</span>
+            <span className="text-2xl font-bold text-[#E57A00]">฿{displayPrice}</span>
+          </div>
           <div className="flex gap-4">
             <Link
               href={`/shop/${shopId}`}
@@ -340,7 +393,7 @@ export default function BookingPage() {
               disabled={submitting || !!timeError}
               className="flex-1 py-3 bg-[#E57A00] text-[#1A110A] font-bold rounded hover:bg-[#c46a00] transition-colors disabled:opacity-50"
             >
-              {submitting ? 'Booking...' : 'Confirm Booking'}
+              {submitting ? 'Booking...' : `Confirm Booking ฿${displayPrice}`}
             </button>
           </div>
         </form>

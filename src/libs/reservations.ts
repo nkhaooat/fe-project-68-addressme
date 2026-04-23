@@ -30,6 +30,7 @@ export async function createReservation(data: {
   resvDate: string;
   shop: string;
   service: string;
+  promotionCode?: string;
 }, token: string) {
   const response = await fetch(`${API_URL}/reservations`, {
     method: 'POST',

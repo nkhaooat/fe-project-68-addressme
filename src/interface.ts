@@ -43,6 +43,12 @@ export interface Reservation {
   shop: Shop | string;
   service: Service | string;
   status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
+  promotionCode?: string | null;
+  discountAmount?: number;
+  originalPrice?: number;
+  finalPrice?: number;
+  slipImageUrl?: string | null;
+  paymentStatus?: 'none' | 'waiting_verification' | 'approved' | 'rejected';
   createdAt: string;
 }
 

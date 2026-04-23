@@ -187,18 +187,19 @@ export default function ShopDetailPage() {
             <div className="flex justify-between items-start mb-4">
               <h1 className="text-3xl font-bold text-[#F0E5D8]">{shop.name}</h1>
               <div className="flex items-center gap-3">
-                {/* Google rating (always shown) */}
                 {shop.rating && (
                   <div className="flex items-center bg-[#1A1A1A] px-3 py-1 rounded-full">
-                    <img src="https://www.google.com/favicon.ico" alt="Google" className="w-3.5 h-3.5 mr-1" />
+                    <span className="text-yellow-400 mr-1">⭐</span>
                     <span className="text-[#F0E5D8] font-bold">{shop.rating}</span>
+                    <img src="https://www.google.com/favicon.ico" alt="Google" className="w-3.5 h-3.5 ml-1" />
                   </div>
                 )}
                 {/* Platform rating (shown only when reviews exist) */}
                 {reviewCount > 0 && (
                   <div className="flex items-center bg-[#1A1A1A] px-3 py-1 rounded-full">
-                    <img src="/logo.png" alt="Dungeon Inn" className="w-3.5 h-3.5 mr-1" />
+                    <span className="text-yellow-400 mr-1">⭐</span>
                     <span className="text-[#E57A00] font-bold">{avgRating}</span>
+                    <img src="/logo.png" alt="Dungeon Inn" className="w-3.5 h-3.5 ml-1" />
                     <span className="text-[#8A8177] text-xs ml-1">({reviewCount})</span>
                   </div>
                 )}

@@ -336,15 +336,16 @@ export default function ShopsPage() {
                   </h2>
                   {shop.rating && (
                     <div className="flex items-center gap-1 text-yellow-400 shrink-0">
-                      <img src="https://www.google.com/favicon.ico" alt="Google" className="w-3 h-3" />
+                      <span>⭐</span>
                       <span className="text-sm font-bold">{shop.rating}</span>
+                      <img src="https://www.google.com/favicon.ico" alt="Google" className="w-3 h-3" />
                     </div>
                   )}
                   {(shop.platformReviewCount ?? 0) > 0 && (
                     <div className="flex items-center gap-1 text-[#E57A00] shrink-0 ml-1">
-                      <img src="/logo.png" alt="Dungeon Inn" className="w-3 h-3" />
+                      <span>⭐</span>
                       <span className="text-sm font-bold">{shop.platformRating}</span>
-                      <span className="text-xs">({shop.platformReviewCount})</span>
+                      <img src="/logo.png" alt="Dungeon Inn" className="w-3 h-3" />
                     </div>
                   )}
                 </div>

@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/redux/store';
 import { QRCodeSVG } from 'qrcode.react';
 
 interface BookingInfo {
@@ -18,17 +20,28 @@ interface BookingInfo {
 
 export default function QRPage() {
   const { token } = useParams();
+  const router = useRouter();
+  const { token: authToken, user } = useSelector((state: RootState) => state.auth);
   const [booking, setBooking] = useState<BookingInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!token) return;
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/qr/verify/${token}`)
+
+    // Not logged in → redirect to login, then back here
+    if (!authToken) {
+      router.push(`/login?redirect=/qr/${token}`);
+      return;
+    }
+
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/qr/verify/${token}`, {
+      headers: { Authorization: `Bearer ${authToken}` },
+    })
       .then(r => r.json())
       .then(data => setBooking(data))
       .catch(() => setBooking({ success: false, message: 'Failed to verify QR code' }))
       .finally(() => setLoading(false));
-  }, [token]);
+  }, [token, authToken, router]);
 
   const qrUrl = typeof window !== 'undefined'
     ? `${window.location.origin}/qr/${token}`
@@ -49,6 +62,15 @@ export default function QRPage() {
           <p className="text-4xl mb-4">⛔</p>
           <h1 className="text-xl font-bold text-red-400 mb-2">Invalid QR Code</h1>
           <p className="text-[#8A8177]">{booking?.message || 'This QR code is not valid.'}</p>
+          {booking?.message?.includes('Not authorized') && (
+            <p className="text-[#8A8177] text-sm mt-2">Please log in with the account that made this booking.</p>
+          )}
+          <button
+            onClick={() => router.push('/login')}
+            className="mt-4 px-6 py-2 bg-[#E57A00] text-[#1A110A] font-bold rounded hover:bg-[#c46a00] transition-colors"
+          >
+            Log In
+          </button>
         </div>
       </main>
     );

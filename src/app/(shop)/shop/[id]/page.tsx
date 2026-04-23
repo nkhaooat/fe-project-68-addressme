@@ -190,15 +190,14 @@ export default function ShopDetailPage() {
                 {/* Google rating (always shown) */}
                 {shop.rating && (
                   <div className="flex items-center bg-[#1A1A1A] px-3 py-1 rounded-full">
-                    <span className="text-yellow-400 mr-1">⭐</span>
+                    <img src="https://www.google.com/favicon.ico" alt="Google" className="w-3.5 h-3.5 mr-1" />
                     <span className="text-[#F0E5D8] font-bold">{shop.rating}</span>
-                    <span className="text-[#8A8177] text-xs ml-1">Google</span>
                   </div>
                 )}
                 {/* Platform rating (shown only when reviews exist) */}
                 {reviewCount > 0 && (
                   <div className="flex items-center bg-[#1A1A1A] px-3 py-1 rounded-full">
-                    <span className="text-yellow-400 mr-1">⭐</span>
+                    <img src="/logo.png" alt="Dungeon Inn" className="w-3.5 h-3.5 mr-1" />
                     <span className="text-[#E57A00] font-bold">{avgRating}</span>
                     <span className="text-[#8A8177] text-xs ml-1">({reviewCount})</span>
                   </div>

@@ -93,6 +93,11 @@ export default function ShopDetailPage() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [avgRating, setAvgRating] = useState(0);
   const [reviewCount, setReviewCount] = useState(0);
+  const [showAllReviews, setShowAllReviews] = useState(false);
+  const [allReviews, setAllReviews] = useState<Review[]>([]);
+  const [reviewPage, setReviewPage] = useState(1);
+  const reviewPageSize = 5;
+  const reviewPages = Math.ceil(reviewCount / reviewPageSize);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -131,6 +136,20 @@ export default function ShopDetailPage() {
       fetchData();
     }
   }, [shopId]);
+
+  // Fetch paginated reviews for "All Reviews" modal
+  useEffect(() => {
+    if (!showAllReviews || !shopId) return;
+    async function fetchAllReviews() {
+      try {
+        const res = await getShopReviews(shopId);
+        if (res.success) {
+          setAllReviews(res.data);
+        }
+      } catch {}
+    }
+    fetchAllReviews();
+  }, [showAllReviews, shopId, reviewPage]);
 
   if (loading) {
     return (
@@ -184,24 +203,23 @@ export default function ShopDetailPage() {
             </div>
           )}
           <div className="p-8">
-            <div className="flex justify-between items-start mb-4">
+            <div className="flex justify-between items-center mb-4">
               <h1 className="text-3xl font-bold text-[#F0E5D8]">{shop.name}</h1>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 flex-shrink-0">
                 {shop.rating && (
-                  <div className="flex items-center bg-[#1A1A1A] px-3 py-1 rounded-full">
-                    <span className="text-yellow-400 mr-1">⭐</span>
+                  <span className="inline-flex items-center gap-1 bg-[#1A1A1A] px-2.5 py-0.5 rounded-full text-sm whitespace-nowrap">
+                    <span className="text-yellow-400">⭐</span>
                     <span className="text-[#F0E5D8] font-bold">{shop.rating}</span>
-                    <img src="https://www.google.com/favicon.ico" alt="Google" className="w-3.5 h-3.5 ml-1" />
-                  </div>
+                    <img src="https://www.google.com/favicon.ico" alt="Google" className="w-3.5 h-3.5" />
+                  </span>
                 )}
-                {/* Platform rating (shown only when reviews exist) */}
                 {reviewCount > 0 && (
-                  <div className="flex items-center bg-[#1A1A1A] px-3 py-1 rounded-full">
-                    <span className="text-yellow-400 mr-1">⭐</span>
+                  <span className="inline-flex items-center gap-1 bg-[#1A1A1A] px-2.5 py-0.5 rounded-full text-sm whitespace-nowrap">
+                    <span className="text-yellow-400">⭐</span>
                     <span className="text-[#E57A00] font-bold">{avgRating}</span>
-                    <img src="/logo.png" alt="Dungeon Inn" className="w-3.5 h-3.5 ml-1" />
-                    <span className="text-[#8A8177] text-xs ml-1">({reviewCount})</span>
-                  </div>
+                    <img src="/logo.png" alt="Dungeon Inn" className="w-3.5 h-3.5" />
+                    <span className="text-[#8A8177] text-xs">({reviewCount})</span>
+                  </span>
                 )}
               </div>
             </div>
@@ -261,35 +279,118 @@ export default function ShopDetailPage() {
         {/* Reviews Section */}
         {reviews.length > 0 && (
           <>
-            <h2 className="text-2xl font-bold text-[#F0E5D8] mb-6">Reviews</h2>
-            <div className="space-y-4 mb-8">
-              {reviews.map((review) => {
-                const userName = typeof review.user === 'object' ? review.user.name : 'Anonymous';
-                const serviceName = typeof review.service === 'object' ? review.service.name : '';
-                const date = new Date(review.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold text-[#F0E5D8]">Reviews</h2>
+              <button
+                onClick={() => setShowAllReviews(true)}
+                className="text-[#E57A00] hover:text-[#c46a00] text-sm font-semibold transition-colors"
+              >
+                All Reviews ({reviewCount}) →
+              </button>
+            </div>
 
-                return (
-                  <div key={review._id} className="bg-[#2B2B2B] border border-[#403A36] rounded-lg p-5">
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <p className="text-[#F0E5D8] font-semibold">{userName}</p>
-                        {serviceName && <p className="text-[#8A8177] text-xs">{serviceName}</p>}
+            {/* Auto-scrolling carousel */}
+            <div className="relative mb-8 overflow-hidden">
+              <div
+                className="flex gap-4 animate-scroll-reviews"
+                style={{
+                  animation: 'scrollReviews 20s linear infinite',
+                  width: 'max-content',
+                }}
+                onMouseEnter={e => e.currentTarget.style.animationPlayState = 'paused'}
+                onMouseLeave={e => e.currentTarget.style.animationPlayState = 'running'}
+              >
+                {/* Duplicate reviews for seamless loop */}
+                {[...reviews, ...reviews].map((review, idx) => {
+                  const userName = typeof review.user === 'object' ? review.user.name : 'Anonymous';
+                  const serviceName = typeof review.service === 'object' ? review.service.name : '';
+                  const date = new Date(review.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+
+                  return (
+                    <div
+                      key={`${review._id}-${idx}`}
+                      className="bg-[#2B2B2B] border border-[#403A36] rounded-lg p-5 w-72 flex-shrink-0"
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <p className="text-[#F0E5D8] font-semibold text-sm">{userName}</p>
+                          {serviceName && <p className="text-[#8A8177] text-xs">{serviceName}</p>}
+                        </div>
+                        <div className="flex items-center gap-0.5">
+                          {Array.from({ length: 5 }, (_, i) => (
+                            <span key={i} className={`text-xs ${i < review.rating ? 'text-yellow-400' : 'text-[#403A36]'}`}>★</span>
+                          ))}
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1">
-                        {Array.from({ length: 5 }, (_, i) => (
-                          <span key={i} className={i < review.rating ? 'text-yellow-400' : 'text-[#403A36]'}>★</span>
-                        ))}
-                        <span className="text-[#8A8177] text-xs ml-1">{date}</span>
-                      </div>
+                      {review.comment && (
+                        <p className="text-[#D4CFC6] text-sm leading-relaxed line-clamp-3">{review.comment}</p>
+                      )}
+                      <p className="text-[#8A8177] text-xs mt-2">{date}</p>
                     </div>
-                    {review.comment && (
-                      <p className="text-[#D4CFC6] text-sm leading-relaxed">{review.comment}</p>
-                    )}
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           </>
+        )}
+
+        {/* All Reviews Modal */}
+        {showAllReviews && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+            <div className="bg-[#2B2B2B] border border-[#403A36] rounded-xl w-full max-w-2xl max-h-[80vh] flex flex-col">
+              <div className="flex items-center justify-between p-5 border-b border-[#403A36]">
+                <h2 className="text-xl font-bold text-[#F0E5D8]">All Reviews ({reviewCount})</h2>
+                <button onClick={() => setShowAllReviews(false)} className="text-[#8A8177] hover:text-[#F0E5D8] text-xl">✕</button>
+              </div>
+              <div className="overflow-y-auto p-5 space-y-4 flex-1">
+                {allReviews.map((review) => {
+                  const userName = typeof review.user === 'object' ? review.user.name : 'Anonymous';
+                  const serviceName = typeof review.service === 'object' ? review.service.name : '';
+                  const date = new Date(review.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+
+                  return (
+                    <div key={review._id} className="bg-[#1A1A1A] border border-[#403A36] rounded-lg p-5">
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <p className="text-[#F0E5D8] font-semibold">{userName}</p>
+                          {serviceName && <p className="text-[#8A8177] text-xs">{serviceName}</p>}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {Array.from({ length: 5 }, (_, i) => (
+                            <span key={i} className={i < review.rating ? 'text-yellow-400' : 'text-[#403A36]'}>★</span>
+                          ))}
+                          <span className="text-[#8A8177] text-xs ml-1">{date}</span>
+                        </div>
+                      </div>
+                      {review.comment && (
+                        <p className="text-[#D4CFC6] text-sm leading-relaxed">{review.comment}</p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              {/* Pagination */}
+              {reviewPages > 1 && (
+                <div className="flex items-center justify-center gap-2 p-4 border-t border-[#403A36]">
+                  <button
+                    onClick={() => setReviewPage(p => Math.max(1, p - 1))}
+                    disabled={reviewPage === 1}
+                    className="px-3 py-1 bg-[#1A1A1A] border border-[#403A36] rounded text-[#D4CFC6] text-sm disabled:opacity-30 hover:border-[#E57A00] transition-colors"
+                  >
+                    ← Prev
+                  </button>
+                  <span className="text-[#8A8177] text-sm">{reviewPage} / {reviewPages}</span>
+                  <button
+                    onClick={() => setReviewPage(p => Math.min(reviewPages, p + 1))}
+                    disabled={reviewPage === reviewPages}
+                    className="px-3 py-1 bg-[#1A1A1A] border border-[#403A36] rounded text-[#D4CFC6] text-sm disabled:opacity-30 hover:border-[#E57A00] transition-colors"
+                  >
+                    Next →
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
         )}
 
         {/* Services */}

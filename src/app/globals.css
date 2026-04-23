@@ -34,6 +34,12 @@ h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-cinzel), Georgia, serif;
 }
 
+/* Review carousel scroll animation */
+@keyframes scrollReviews {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
 /* Custom scrollbar for dark theme */
 ::-webkit-scrollbar {
   width: 10px;

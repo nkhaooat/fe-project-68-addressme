@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { useRouter } from 'next/navigation';
 import { useDispatch } from 'react-redux';
@@ -41,6 +41,10 @@ export default function MerchantDashboardPage() {
   const [scanResult, setScanResult] = useState<{ success: boolean; message: string; data?: any } | null>(null);
   const [scanning, setScanning] = useState(false);
   const [tab, setTab] = useState<'overview' | 'reservations' | 'scan'>('overview');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [resPage, setResPage] = useState(1);
+  const RES_PAGE_SIZE = 6;
 
   useEffect(() => {
     if (!token) { router.push('/login'); return; }
@@ -110,6 +114,31 @@ export default function MerchantDashboardPage() {
   }
 
   // Pending state
+  // Reset page on filter/search change
+  useEffect(() => { setResPage(1); }, [statusFilter, searchQuery]);
+
+  // Filter reservations
+  const filteredReservations = useMemo(() => {
+    let list = reservations;
+    if (statusFilter !== 'all') list = list.filter(r => r.status === statusFilter);
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      list = list.filter(r =>
+        r.user.email.toLowerCase().includes(q) || r.user.name.toLowerCase().includes(q)
+      );
+    }
+    return list;
+  }, [reservations, statusFilter, searchQuery]);
+
+  const resTotalPages = Math.max(1, Math.ceil(filteredReservations.length / RES_PAGE_SIZE));
+  const paginatedReservations = filteredReservations.slice((resPage - 1) * RES_PAGE_SIZE, resPage * RES_PAGE_SIZE);
+
+  const resStatusCounts = useMemo(() => {
+    const counts: Record<string, number> = { all: reservations.length };
+    for (const r of reservations) counts[r.status] = (counts[r.status] || 0) + 1;
+    return counts;
+  }, [reservations]);
+
   if (!loading && user?.merchantStatus === 'pending') {
     return (
       <main className="min-h-screen bg-[#1A1A1A] flex items-center justify-center px-4">
@@ -229,28 +258,93 @@ export default function MerchantDashboardPage() {
 
         {/* Reservations tab */}
         {tab === 'reservations' && (
-          <div className="space-y-3">
-            {reservations.length === 0 ? (
-              <div className="text-[#8A8177] text-center py-16">No reservations yet</div>
-            ) : (
-              reservations.map((r) => (
-                <div key={r._id} className="bg-[#2B2B2B] border border-[#403A36] rounded-lg p-4">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="text-[#F0E5D8] font-bold">{r.user.name}</p>
-                      <p className="text-[#A88C6B] text-sm">{r.user.email} · {r.user.telephone}</p>
-                      <p className="text-[#D4CFC6] text-sm mt-1">
-                        {r.service.name} — ฿{r.service.price} · 📅 {new Date(r.resvDate).toLocaleString()}
-                      </p>
-                    </div>
-                    <span className={`text-sm font-bold ${statusColor(r.status)}`}>
-                      {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
+          <>
+            {/* Search */}
+            <div className="mb-4">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search by email or name..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-[#2B2B2B] border border-[#403A36] rounded-lg px-4 py-3 pl-10 text-[#D4CFC6] placeholder-[#8A8177] focus:border-[#E57A00] focus:outline-none transition-colors"
+                />
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8A8177]">{'\uD83D\uDD0D'}</span>
+              </div>
+            </div>
+
+            {/* Status tabs */}
+            <div className="flex gap-1 mb-6 overflow-x-auto pb-1">
+              {['all', 'pending', 'confirmed', 'completed', 'cancelled'].map((s) => (
+                <button key={s} onClick={() => setStatusFilter(s)}
+                  className={`flex-shrink-0 px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                    statusFilter === s
+                      ? 'bg-[#E57A00] text-[#1A110A]'
+                      : 'bg-[#2B2B2B] text-[#8A8177] border border-[#403A36] hover:border-[#E57A00]'
+                  }`}>
+                  {s === 'all' ? 'All' : s.charAt(0).toUpperCase() + s.slice(1)}
+                  {resStatusCounts[s] !== undefined && (
+                    <span className={`ml-1.5 text-xs ${statusFilter === s ? 'text-[#1A110A]/70' : 'text-[#5A544E]'}`}>
+                      {resStatusCounts[s]}
                     </span>
-                  </div>
+                  )}
+                </button>
+              ))}
+            </div>
+
+            {filteredReservations.length === 0 ? (
+              <div className="text-[#8A8177] text-center py-16">
+                {reservations.length === 0 ? 'No reservations yet' : 'No reservations match your filter'}
+              </div>
+            ) : (
+              <>
+                <div className="space-y-3">
+                  {paginatedReservations.map((r) => (
+                    <div key={r._id} className="bg-[#2B2B2B] border border-[#403A36] rounded-lg p-4">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <p className="text-[#F0E5D8] font-bold">{r.user.name}</p>
+                          <p className="text-[#A88C6B] text-sm">{r.user.email} · {r.user.telephone}</p>
+                          <p className="text-[#D4CFC6] text-sm mt-1">
+                            {r.service.name} - ฿{r.service.price} · {new Date(r.resvDate).toLocaleString()}
+                          </p>
+                        </div>
+                        <span className={`text-sm font-bold ${statusColor(r.status)}`}>
+                          {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))
+
+                {/* Pagination */}
+                {resTotalPages > 1 && (
+                  <div className="flex items-center justify-center gap-2 mt-8">
+                    <button onClick={() => setResPage(p => Math.max(1, p - 1))} disabled={resPage === 1}
+                      className="px-3 py-2 bg-[#2B2B2B] border border-[#403A36] rounded text-[#D4CFC6] text-sm disabled:opacity-30 hover:border-[#E57A00] transition-colors">
+                      Prev
+                    </button>
+                    <div className="flex gap-1">
+                      {Array.from({ length: resTotalPages }, (_, i) => i + 1).map(page => (
+                        <button key={page} onClick={() => setResPage(page)}
+                          className={`w-9 h-9 rounded text-sm font-semibold transition-colors ${
+                            resPage === page
+                              ? 'bg-[#E57A00] text-[#1A110A]'
+                              : 'bg-[#2B2B2B] border border-[#403A36] text-[#D4CFC6] hover:border-[#E57A00]'
+                          }`}>
+                          {page}
+                        </button>
+                      ))}
+                    </div>
+                    <button onClick={() => setResPage(p => Math.min(resTotalPages, p + 1))} disabled={resPage === resTotalPages}
+                      className="px-3 py-2 bg-[#2B2B2B] border border-[#403A36] rounded text-[#D4CFC6] text-sm disabled:opacity-30 hover:border-[#E57A00] transition-colors">
+                      Next
+                    </button>
+                  </div>
+                )}
+              </>
             )}
-          </div>
+          </>
         )}
 
         {/* Scan QR tab */}

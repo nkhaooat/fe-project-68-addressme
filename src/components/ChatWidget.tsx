@@ -263,7 +263,7 @@ export default function ChatWidget() {
     } catch {
       setMessages((prev) => [
         ...prev,
-        { role: 'assistant', content: 'Connection error. Please try again.' },
+        { role: 'assistant', content: 'Connection error. Please try again. การเชื่อมต่อผิดพลาด กรุณาลองใหม่ครับ' },
       ]);
     } finally {
       setLoading(false);
@@ -311,7 +311,7 @@ export default function ChatWidget() {
               <span className="text-xl">🕯️</span>
               <div>
                 <p className="text-[#F0E5D8] font-bold text-sm">Dungeon Inn Assistant</p>
-                <p className="text-[#8A8177] text-xs">Ask about shops, services & TikTok</p>
+                <p className="text-[#8A8177] text-xs">Ask about shops, bookings, merchants & more</p>
               </div>
             </div>
             <div className="flex items-center gap-1">
@@ -414,6 +414,23 @@ export default function ChatWidget() {
             <div ref={bottomRef} />
           </div>
 
+          {/* Quick suggestions (only when no messages besides default) */}
+          {messages.length <= 1 && (
+            <div className="px-3 pb-2 flex gap-1.5 overflow-x-auto shrink-0">
+              {[
+                'Shops near Phaya Thai',
+                'How to become a merchant?',
+                'My bookings',
+                'TikTok videos',
+              ].map((q) => (
+                <button key={q} onClick={() => { setInput(q); }}
+                  className="flex-shrink-0 px-3 py-1.5 bg-[#2B2B2B] border border-[#403A36] rounded-full text-[#A88C6B] text-xs hover:border-[#E57A00] hover:text-[#D4CFC6] transition-colors">
+                  {q}
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* Input */}
           <div className="border-t border-[#403A36] p-3 flex gap-2 shrink-0 bg-[#1A1A1A] items-end">
             <textarea
@@ -426,7 +443,7 @@ export default function ChatWidget() {
                 e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
               }}
               onKeyDown={handleKey}
-              placeholder="Ask about shops, prices, TikTok…"
+              placeholder="Ask about shops, bookings, merchants…"
               disabled={loading}
               rows={1}
               className="flex-1 bg-[#2B2B2B] border border-[#403A36] rounded-xl px-4 py-2.5 text-sm text-[#F0E5D8] placeholder-[#8A8177] focus:outline-none focus:border-[#E57A00] disabled:opacity-50 transition-colors resize-none overflow-y-auto leading-relaxed"

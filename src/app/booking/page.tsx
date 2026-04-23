@@ -254,7 +254,7 @@ export default function BookingPage() {
               <p className="text-[#8A8177] mb-6">Check your email for confirmation details.</p>
               <div className="bg-white p-4 rounded-lg inline-block mb-4">
                 <QRCodeSVG
-                  value={`${typeof window !== 'undefined' ? window.location.origin : ''}/api/v1/qr/verify/${qrData.qrToken}`}
+                  value={`${typeof window !== 'undefined' ? window.location.origin : ''}/qr/${qrData.qrToken}`}
                   size={200}
                   level="M"
                 />

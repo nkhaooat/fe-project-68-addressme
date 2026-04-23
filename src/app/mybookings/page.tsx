@@ -342,7 +342,7 @@ export default function MyBookingsPage() {
               <>
                 <div className="bg-white p-4 rounded-lg inline-block mb-4">
                   <QRCodeSVG
-                    value={`${typeof window !== 'undefined' ? window.location.origin : ''}/api/v1/qr/verify/${qrReservation.qrToken}`}
+                    value={`${typeof window !== 'undefined' ? window.location.origin : ''}/qr/${qrReservation.qrToken}`}
                     size={200}
                     level="M"
                   />

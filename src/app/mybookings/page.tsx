@@ -12,6 +12,7 @@ import ReviewModal from '@/components/ReviewModal';
 import { QRCodeSVG } from 'qrcode.react';
 import ErrorBanner from '@/components/ErrorBanner';
 import { API_URL } from '@/libs/config';
+import { getStatusColor, getPaymentStatusColor, getPaymentStatusLabel } from '@/utils/reservationStatus';
 
 const STATUS_TABS = [
   { key: 'all', label: 'All', emoji: '' },
@@ -145,34 +146,6 @@ export default function MyBookingsPage() {
 
   const canEdit = (reservation: Reservation): boolean => {
     return reservation.status === 'pending' || reservation.status === 'confirmed';
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'confirmed': return 'text-green-400';
-      case 'pending': return 'text-yellow-400';
-      case 'cancelled': return 'text-red-400';
-      default: return 'text-dungeon-secondary';
-    }
-  };
-
-  const getPaymentStatusColor = (ps?: string) => {
-    switch (ps) {
-      case 'approved': return 'text-green-400';
-      case 'waiting_verification': return 'text-yellow-400';
-      case 'rejected': return 'text-red-400';
-      default: return 'text-dungeon-secondary';
-    }
-  };
-
-  const getPaymentStatusLabel = (ps?: string) => {
-    switch (ps) {
-      case 'approved': return 'Payment Approved';
-      case 'waiting_verification': return 'Waiting for Verification';
-      case 'rejected': return 'Payment Rejected';
-      case 'none': return 'No Payment';
-      default: return 'No Payment';
-    }
   };
 
   // Count per status

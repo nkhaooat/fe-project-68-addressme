@@ -13,54 +13,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { validatePromotion } from '@/libs/promotions';
 import { Shop, Service } from '@/interface';
 import Link from 'next/link';
-
-// Parse time string to minutes since midnight
-function parseTimeToMinutes(time: string): number {
-  const [hour, min] = time.split(':').map(Number);
-  return hour * 60 + min;
-}
-
-// Check if selected time is within shop hours
-function isWithinShopHours(time: string, openTime: string, closeTime: string): boolean {
-  const selectedValue = parseTimeToMinutes(time);
-  const openValue = parseTimeToMinutes(openTime);
-  let closeValue = parseTimeToMinutes(closeTime);
-  if (closeValue === 0) closeValue = 24 * 60;
-  if (closeValue < openValue) return selectedValue >= openValue || selectedValue <= closeValue;
-  return selectedValue >= openValue && selectedValue <= closeValue;
-}
-
-// Check if service duration fits within shop hours
-function checkServiceDuration(
-  startTime: string,
-  durationMinutes: number,
-  openTime: string,
-  closeTime: string
-): { valid: boolean; endTime: string; error?: string } {
-  const startValue = parseTimeToMinutes(startTime);
-  const openValue = parseTimeToMinutes(openTime);
-  let closeValue = parseTimeToMinutes(closeTime);
-  if (closeValue === 0) closeValue = 24 * 60;
-  const endValue = startValue + durationMinutes;
-  const endHour = Math.floor(endValue / 60) % 24;
-  const endMin = endValue % 60;
-  const endTime = `${String(endHour).padStart(2, '0')}:${String(endMin).padStart(2, '0')}`;
-  if (closeValue < openValue) {
-    const maxStartForSameDay = closeValue - durationMinutes;
-    if (startValue >= openValue) {
-      if (endValue <= 24 * 60) return { valid: true, endTime };
-      const nextDayEnd = endValue - 24 * 60;
-      if (nextDayEnd <= closeValue) return { valid: true, endTime };
-      return { valid: false, endTime, error: `Service ends at ${endTime} but shop closes at ${closeTime}` };
-    } else if (startValue <= closeValue) {
-      if (endValue <= closeValue) return { valid: true, endTime };
-      return { valid: false, endTime, error: `Service ends at ${endTime} but shop closes at ${closeTime}` };
-    }
-    return { valid: false, endTime, error: `Invalid time for overnight hours` };
-  }
-  if (endValue > closeValue) return { valid: false, endTime, error: `Service ends at ${endTime} but shop closes at ${closeTime}` };
-  return { valid: true, endTime };
-}
+import { isWithinShopHours, checkServiceDuration } from '@/utils/shopHours';
 
 export default function BookingPage() {
   const searchParams = useSearchParams();

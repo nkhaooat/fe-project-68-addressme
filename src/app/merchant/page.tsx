@@ -370,10 +370,10 @@ export default function MerchantDashboardPage() {
               <div className="text-4xl mb-3">📷</div>
               <h3 className="text-lg font-bold text-dungeon-header-text mb-2">Camera Scanner</h3>
               <p className="text-dungeon-secondary text-sm mb-4">Use your device camera to scan customer QR codes</p>
-              <a href="/merchant/scan"
+              <button onClick={() => setTab('scan')}
                 className="inline-block px-8 py-3 bg-dungeon-accent text-dungeon-dark-text font-bold rounded hover:bg-dungeon-accent-dark transition-colors">
                 Open Camera Scanner
-              </a>
+              </button>
             </div>
 
             {/* Manual token input fallback */}

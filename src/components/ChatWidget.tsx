@@ -6,6 +6,8 @@ import { RootState } from '@/redux/store';
 import ReactMarkdown from 'react-markdown';
 import { API_URL } from '@/libs/config';
 import { createReservation, deleteReservation } from '@/libs/reservations';
+import { getShop } from '@/libs/shops';
+import { validateReservationTime } from '@/utils/shopHours';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -169,6 +171,24 @@ export default function ChatWidget() {
         if (data.action?.type === 'create_reservation') {
           const { shopId, serviceId, resvDate } = data.action;
           try {
+            // Validate shop hours before creating reservation
+            const shopRes = await getShop(shopId);
+            if (shopRes.success && shopRes.data?.openTime && shopRes.data?.closeTime) {
+              const validation = validateReservationTime(
+                resvDate, shopRes.data.openTime, shopRes.data.closeTime
+              );
+              if (!validation.ok) {
+                setMessages((prev) => [
+                  ...prev,
+                  {
+                    role: 'assistant',
+                    content: `❌ **Cannot book:** ${validation.error}\n\nShop hours: ${shopRes.data.openTime} - ${shopRes.data.closeTime}. Please choose a time within operating hours.`,
+                  },
+                ]);
+                return;
+              }
+            }
+
             const resvRes = await createReservation(
               { shop: shopId, service: serviceId, resvDate },
               token
@@ -199,6 +219,31 @@ export default function ChatWidget() {
         } else if (data.action?.type === 'edit_reservation') {
           const { reservationId, resvDate } = data.action;
           try {
+            // Fetch reservation to get shop info for hours validation
+            const resvInfoRes = await fetch(`${API_URL}/reservations/${reservationId}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            const resvInfo = await resvInfoRes.json();
+            if (resvInfo.success && resvInfo.data?.shop) {
+              const shopId = typeof resvInfo.data.shop === 'object' ? resvInfo.data.shop._id : resvInfo.data.shop;
+              const shopRes = await getShop(shopId);
+              if (shopRes.success && shopRes.data?.openTime && shopRes.data?.closeTime) {
+                const validation = validateReservationTime(
+                  resvDate, shopRes.data.openTime, shopRes.data.closeTime
+                );
+                if (!validation.ok) {
+                  setMessages((prev) => [
+                    ...prev,
+                    {
+                      role: 'assistant',
+                      content: `❌ **Cannot reschedule:** ${validation.error}\n\nShop hours: ${shopRes.data.openTime} - ${shopRes.data.closeTime}. Please choose a time within operating hours.`,
+                    },
+                  ]);
+                  return;
+                }
+              }
+            }
+
             const res = await fetch(`${API_URL}/reservations/${reservationId}`, {
               method: 'PUT',
               headers: {

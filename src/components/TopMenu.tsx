@@ -8,7 +8,6 @@ import { logout } from '@/redux/features/authSlice';
 import { useRouter, usePathname } from 'next/navigation';
 import { useState, useRef, useEffect } from 'react';
 import { changePassword } from '@/libs/auth';
-import { rebuildEmbedding } from '@/libs/shops';
 
 export default function TopMenu() {
   const { user, isAuthenticated, token } = useSelector((state: RootState) => state.auth);
@@ -18,15 +17,14 @@ export default function TopMenu() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAdminDropdownOpen, setIsAdminDropdownOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
-  const [rebuildStatus, setRebuildStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [pwStatus, setPwStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [pwMessage, setPwMessage] = useState('');
 
   // Change Password modal state
   const [showChangePw, setShowChangePw] = useState(false);
   const [currentPw, setCurrentPw] = useState('');
   const [newPw, setNewPw] = useState('');
   const [confirmPw, setConfirmPw] = useState('');
-  const [pwStatus, setPwStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-  const [pwMessage, setPwMessage] = useState('');
 
   const userDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -96,26 +94,6 @@ export default function TopMenu() {
   };
 
   const isAdminPage = pathname?.startsWith('/admin');
-
-  const handleRebuildEmbedding = async () => {
-    if (!token || rebuildStatus === 'loading') return;
-    setRebuildStatus('loading');
-    try {
-      const res = await rebuildEmbedding(token);
-      if (res.success) {
-        setRebuildStatus('success');
-        setTimeout(() => setRebuildStatus('idle'), 3000);
-      } else {
-        setRebuildStatus('error');
-        setTimeout(() => setRebuildStatus('idle'), 3000);
-        alert(res.message || 'Failed to rebuild embedding');
-      }
-    } catch {
-      setRebuildStatus('error');
-      setTimeout(() => setRebuildStatus('idle'), 3000);
-      alert('Error rebuilding embedding index');
-    }
-  };
 
   return (
     <>
@@ -243,14 +221,6 @@ export default function TopMenu() {
                           >
                             Merchants
                           </Link>
-                          <hr className="border-dungeon-outline my-1" />
-                          <button
-                            onClick={() => { setIsAdminDropdownOpen(false); handleRebuildEmbedding(); }}
-                            disabled={rebuildStatus === 'loading'}
-                            className="w-full text-left px-4 py-2 transition-colors text-dungeon-primary hover:text-dungeon-accent hover:bg-dungeon-canvas disabled:opacity-50"
-                          >
-                            {rebuildStatus === 'loading' ? '⏳ Rebuilding...' : rebuildStatus === 'success' ? '✅ Rebuilt!' : '🔄 Rebuild Embedding'}
-                          </button>
                         </div>
                       )}
                     </div>
@@ -404,13 +374,6 @@ export default function TopMenu() {
                         >
                           Merchants
                         </Link>
-                        <button
-                          onClick={() => { closeMenu(); handleRebuildEmbedding(); }}
-                          disabled={rebuildStatus === 'loading'}
-                          className="py-2 pl-2 text-left text-dungeon-primary hover:text-dungeon-accent disabled:opacity-50"
-                        >
-                          {rebuildStatus === 'loading' ? '⏳ Rebuilding...' : rebuildStatus === 'success' ? '✅ Rebuilt!' : '🔄 Rebuild Embedding'}
-                        </button>
                       </div>
                     </div>
                   )}

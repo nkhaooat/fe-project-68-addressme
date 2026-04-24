@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
-import { getShops, createShop, updateShop, deleteShop, Shop, ShopQueryParams, addTiktokLinks, removeTiktokLink } from '@/libs/shops';
+import { getShops, createShop, updateShop, deleteShop, Shop, ShopQueryParams, addTiktokLinks, removeTiktokLink, rebuildEmbedding } from '@/libs/shops';
 import Pagination from '@/components/Pagination';
 import ErrorBanner from '@/components/ErrorBanner';
 import AccessDenied from '@/components/AccessDenied';
@@ -33,8 +33,27 @@ export default function AdminShopsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [newTiktokUrl, setNewTiktokUrl] = useState('');
+  const [rebuildStatus, setRebuildStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
   const ITEMS_PER_PAGE = 12;
+
+  const handleRebuildEmbedding = async () => {
+    if (!token || rebuildStatus === 'loading') return;
+    setRebuildStatus('loading');
+    try {
+      const res = await rebuildEmbedding(token);
+      if (res.success) {
+        setRebuildStatus('success');
+        setTimeout(() => setRebuildStatus('idle'), 3000);
+      } else {
+        setRebuildStatus('error');
+        setTimeout(() => setRebuildStatus('idle'), 3000);
+      }
+    } catch {
+      setRebuildStatus('error');
+      setTimeout(() => setRebuildStatus('idle'), 3000);
+    }
+  };
 
   useEffect(() => {
     async function fetchShops() {
@@ -219,6 +238,23 @@ export default function AdminShopsPage() {
         onClose={handleCloseModal}
         onSubmit={handleSubmit}
       />
+
+      {/* Developer tools */}
+      <div className="mt-8 pt-6 border-t border-dungeon-outline">
+        <details className="text-dungeon-secondary text-sm">
+          <summary className="cursor-pointer hover:text-dungeon-primary transition-colors">Developer Tools</summary>
+          <div className="mt-3 flex items-center gap-3">
+            <button
+              onClick={handleRebuildEmbedding}
+              disabled={rebuildStatus === 'loading'}
+              className="px-4 py-2 bg-dungeon-surface border border-dungeon-outline rounded-lg text-dungeon-primary hover:border-dungeon-accent transition-colors disabled:opacity-50 text-sm"
+            >
+              {rebuildStatus === 'loading' ? 'Rebuilding...' : rebuildStatus === 'success' ? 'Rebuilt!' : 'Rebuild Embedding Index'}
+            </button>
+            {rebuildStatus === 'error' && <span className="text-red-400 text-xs">Failed</span>}
+          </div>
+        </details>
+      </div>
     </main>
   );
 }

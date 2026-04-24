@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Reservation, Shop } from '@/interface';
 import { updateReservation } from '@/libs/reservations';
 import { getShop } from '@/libs/shops';
+import { validateReservationTime } from '@/utils/shopHours';
 
 interface EditBookingModalProps {
   reservation: Reservation;
@@ -60,145 +61,19 @@ export default function EditBookingModal({
     }
   };
 
-  const isWithinShopHours = (date: Date): boolean => {
-    if (!shop || !shop.openTime || !shop.closeTime) return true;
-
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-    const timeValue = hours * 60 + minutes;
-
-    const [openHour, openMin] = shop.openTime.split(':').map(Number);
-    const [closeHour, closeMin] = shop.closeTime.split(':').map(Number);
-
-    const openValue = openHour * 60 + (openMin || 0);
-    let closeValue = closeHour * 60 + (closeMin || 0);
-
-    // Handle midnight (00:00) as end of day (24:00)
-    if (closeValue === 0) {
-      closeValue = 24 * 60; // 1440 minutes = 24:00
-    }
-
-    // Check if hours span midnight (close time is earlier than open time)
-    if (closeValue < openValue) {
-      // Overnight hours: valid if after open OR before close
-      // e.g., 21:00-02:00: 23:00 is valid (after 21:00), 01:00 is valid (before 02:00)
-      return timeValue >= openValue || timeValue <= closeValue;
-    }
-
-    // Normal hours: valid if between open and close
-    return timeValue >= openValue && timeValue <= closeValue;
-  };
-
-  // Parse time string to minutes since midnight
-  const parseTimeToMinutes = (time: string): number => {
-    const [hour, min] = time.split(':').map(Number);
-    return hour * 60 + min;
-  };
-
-  // Check if service duration fits within shop hours
-  // Returns { valid: boolean, endTime: string, error?: string }
-  const checkServiceDuration = (
-    startDate: Date,
-    durationMinutes: number
-  ): { valid: boolean; endTime: string; error?: string } => {
-    if (!shop || !shop.openTime || !shop.closeTime) {
-      return { valid: true, endTime: '' };
-    }
-
-    const startValue = startDate.getHours() * 60 + startDate.getMinutes();
-    const openValue = parseTimeToMinutes(shop.openTime);
-    let closeValue = parseTimeToMinutes(shop.closeTime);
-
-    // Handle midnight (00:00) as end of day (24:00)
-    if (closeValue === 0) {
-      closeValue = 24 * 60;
-    }
-
-    const endValue = startValue + durationMinutes;
-    const endHour = Math.floor(endValue / 60) % 24;
-    const endMin = endValue % 60;
-    const endTime = `${String(endHour).padStart(2, '0')}:${String(endMin).padStart(2, '0')}`;
-
-    // Check if hours span midnight
-    if (closeValue < openValue) {
-      // Overnight hours
-      if (startValue >= openValue) {
-        // Starting after open (same day)
-        if (endValue <= 24 * 60) {
-          // Ends same day, must be before midnight
-          return { valid: true, endTime };
-        } else {
-          // Wraps to next day, must end before close
-          const nextDayEnd = endValue - 24 * 60;
-          if (nextDayEnd <= closeValue) {
-            return { valid: true, endTime };
-          }
-          return {
-            valid: false,
-            endTime,
-            error: `Service ends at ${endTime} but shop closes at ${shop.closeTime}`,
-          };
-        }
-      } else if (startValue <= closeValue) {
-        // Starting before close (next day portion)
-        if (endValue <= closeValue) {
-          return { valid: true, endTime };
-        }
-        return {
-          valid: false,
-          endTime,
-          error: `Service ends at ${endTime} but shop closes at ${shop.closeTime}`,
-        };
-      }
-
-      return {
-        valid: false,
-        endTime,
-        error: `Invalid time for overnight hours`,
-      };
-    }
-
-    // Normal hours (same day)
-    if (endValue > closeValue) {
-      return {
-        valid: false,
-        endTime,
-        error: `Service ends at ${endTime} but shop closes at ${shop.closeTime}`,
-      };
-    }
-
-    return { valid: true, endTime };
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
-    // Convert local datetime-local value to Date object
     const selectedDate = new Date(newDate);
-    const now = new Date();
-
-    // Check if date is in the future
-    if (selectedDate <= now) {
-      setError('Please select a future date and time');
-      setLoading(false);
-      return;
-    }
-
-    // Check if within shop hours
-    if (!isWithinShopHours(selectedDate)) {
-      setError(`Shop is only open from ${shop?.openTime} to ${shop?.closeTime}`);
-      setLoading(false);
-      return;
-    }
-
-    // Check if service duration fits within shop hours
     const serviceDuration = typeof reservation.service === 'object' ? reservation.service.duration : 0;
-    if (serviceDuration > 0) {
-      const durationCheck = checkServiceDuration(selectedDate, serviceDuration);
-      if (!durationCheck.valid) {
-        setError(durationCheck.error || 'Service duration exceeds shop hours');
+
+    // Validate against shop hours using shared utility
+    if (shop?.openTime && shop?.closeTime) {
+      const validation = validateReservationTime(selectedDate, shop.openTime, shop.closeTime, serviceDuration > 0 ? serviceDuration : undefined);
+      if (!validation.ok) {
+        setError(validation.error!);
         setLoading(false);
         return;
       }

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { Reservation } from '@/interface';
 import { API_URL } from '@/libs/config';
+import { getStatusColor, getPaymentStatusColor, getPaymentStatusLabel } from '@/utils/reservationStatus';
 
 interface BookingCardProps {
   reservation: Reservation;
@@ -15,33 +16,6 @@ interface BookingCardProps {
   onEditDate: (reservation: Reservation) => void;
   onDelete: (id: string) => void;
   onVerifySlip: (id: string, action: 'approve' | 'reject') => void;
-}
-
-function getStatusColor(status: string) {
-  switch (status) {
-    case 'confirmed': return 'text-green-400';
-    case 'pending': return 'text-yellow-400';
-    case 'cancelled': return 'text-red-400';
-    default: return 'text-dungeon-secondary';
-  }
-}
-
-function getPaymentStatusColor(ps?: string) {
-  switch (ps) {
-    case 'approved': return 'text-green-400';
-    case 'waiting_verification': return 'text-yellow-400';
-    case 'rejected': return 'text-red-400';
-    default: return 'text-dungeon-secondary';
-  }
-}
-
-function getPaymentStatusLabel(ps?: string) {
-  switch (ps) {
-    case 'approved': return 'Approved';
-    case 'waiting_verification': return 'Waiting';
-    case 'rejected': return 'Rejected';
-    default: return 'None';
-  }
 }
 
 export default function BookingCard({

@@ -1,13 +1,11 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import ReactMarkdown from 'react-markdown';
 import { API_URL } from '@/libs/config';
-import { createReservation, deleteReservation } from '@/libs/reservations';
-import { getShop } from '@/libs/shops';
-import { validateReservationTime } from '@/utils/shopHours';
+import { handleChatAction, ActionResult } from '@/utils/chatActions';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -28,31 +26,38 @@ function SendIcon({ className }: { className?: string }) {
   );
 }
 
-const STORAGE_KEY = 'dungeon_chat_history';
 const WEATHER_CACHE_KEY = 'dungeon_weather_cache';
 const WEATHER_CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+const SESSION_ID_KEY = 'dungeon_chat_session_id';
+const HISTORY_WINDOW = 12; // messages sent as context
+
+/** Get or create a persistent session ID */
+function getSessionId(): string {
+  if (typeof window === 'undefined') return 'ssr';
+  let id = sessionStorage.getItem(SESSION_ID_KEY);
+  if (!id) {
+    id = crypto.randomUUID();
+    sessionStorage.setItem(SESSION_ID_KEY, id);
+  }
+  return id;
+}
+
+/** Storage key per user — guests share one, logged-in users get their own */
+function getStorageKey(userId?: string): string {
+  return userId ? `dungeon_chat_${userId}` : 'dungeon_chat_guest';
+}
 
 async function getWeather() {
   try {
-    // Check cache first
     const cached = sessionStorage.getItem(WEATHER_CACHE_KEY);
     if (cached) {
       const { data, ts } = JSON.parse(cached);
       if (Date.now() - ts < WEATHER_CACHE_TTL) return data;
     }
-    // Fetch fresh
-    const res = await fetch(
-      'https://pm25.gistda.or.th/rest/getWeatherbyArea?id=103301',
-      { signal: AbortSignal.timeout(4000) }
-    );
-    const json = await res.json();
-    const d = json?.data?.[0];
-    if (!d) return null;
-    const data = {
-      temp: d.temperature_2m,
-      wind: d.windspeed_10m_max,
-      rainChance: d.precipitation_probability_max,
-    };
+
+    const res = await fetch('https://data.gistda.or.th/api/weather/current');
+    if (!res.ok) return null;
+    const data = await res.json();
     sessionStorage.setItem(WEATHER_CACHE_KEY, JSON.stringify({ data, ts: Date.now() }));
     return data;
   } catch {
@@ -63,67 +68,65 @@ async function getWeather() {
 const defaultMessages: Message[] = [
   {
     role: 'assistant',
-    content:
-      "Hi! I'm your **Dungeon Inn** assistant 🕯️\n\nAsk me about massage shops, services, prices, hours, or TikTok videos!",
+    content: 'Welcome to **Dungeon Inn**! I can help you find massage shops, check services, manage bookings, and more. How can I help you today?\n\nยินดีต้อนรับสู่ **Dungeon Inn**! ฉันช่วยค้นหาร้านนวด ดูบริการ จัดการการจอง และอื่นๆ ได้ มีอะไรให้ช่วยไหมครับ?',
   },
 ];
 
 export default function ChatWidget() {
-  const { token, isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const { token, isAuthenticated, user } = useSelector((state: RootState) => state.auth);
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>(defaultMessages);
-  const prevAuthRef = useRef<boolean | null>(null);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const sessionIdRef = useRef(getSessionId());
 
-  // Restore chat history from sessionStorage on first mount
+  // Restore chat history from localStorage (per-user)
   useEffect(() => {
+    const key = getStorageKey(user?._id);
     try {
-      const saved = sessionStorage.getItem(STORAGE_KEY);
+      const saved = localStorage.getItem(key);
       if (saved) {
-        const parsed: Message[] = JSON.parse(saved);
+        const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
           setMessages(parsed);
         }
       }
-    } catch {
-      // ignore
-    }
-  }, []);
+    } catch {}
+  }, [user?._id]);
 
-  // Persist chat history to sessionStorage whenever it changes
+  // Persist chat history to localStorage whenever it changes
   useEffect(() => {
-    try {
-      if (messages.length > 1) {
-        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
-      }
-    } catch {
-      // ignore
+    const key = getStorageKey(user?._id);
+    if (messages.length > 1) {
+      try {
+        localStorage.setItem(key, JSON.stringify(messages.slice(-50))); // cap at 50 messages
+      } catch {}
     }
-  }, [messages]);
+  }, [messages, user?._id]);
 
-  // Clear history when user logs out
-  useEffect(() => {
-    if (prevAuthRef.current === true && !isAuthenticated) {
-      setMessages(defaultMessages);
-      sessionStorage.removeItem(STORAGE_KEY);
-    }
-    prevAuthRef.current = isAuthenticated;
-  }, [isAuthenticated]);
-
-  // Auto-scroll to bottom on new messages
+  // Auto-scroll to bottom
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, open]);
+  }, [messages, loading]);
 
-  // Focus input when opened
-  useEffect(() => {
-    if (open) {
-      setTimeout(() => inputRef.current?.focus(), 100);
-    }
-  }, [open]);
+  const clearHistory = useCallback(() => {
+    setMessages(defaultMessages);
+    const key = getStorageKey(user?._id);
+    localStorage.removeItem(key);
+  }, [user?._id]);
+
+  const processAction = useCallback(async (action: any) => {
+    if (!token || !action?.type) return;
+
+    const result: ActionResult = await handleChatAction(action, token);
+    const icon = result.success ? 'OK' : 'X';
+    setMessages((prev) => [
+      ...prev,
+      { role: 'assistant', content: `${icon} **${result.message}**` },
+    ]);
+  }, [token]);
 
   const sendMessage = async () => {
     const text = input.trim();
@@ -133,7 +136,6 @@ export default function ChatWidget() {
     const nextMessages = [...messages, userMsg];
     setMessages(nextMessages);
     setInput('');
-    // Reset textarea height
     if (inputRef.current) {
       inputRef.current.style.height = 'auto';
     }
@@ -142,11 +144,10 @@ export default function ChatWidget() {
     try {
       const history = nextMessages
         .slice(1)
-        .slice(-8)
+        .slice(-HISTORY_WINDOW)
         .map(({ role, content }) => ({ role, content }));
 
-      // Fetch live weather from client side (cached 10 min, GISTDA Thai IP)
-      // Only include in request if the message seems weather-related
+      // Fetch live weather (cached 10 min, GISTDA Thai IP)
       const weatherKeywords = /weather|rain|hot|temperature|wind|umbrella|อากาศ|ฝน|ร้อน|ลม|หนาว/i;
       const weather = weatherKeywords.test(text) ? await getWeather() : null;
 
@@ -156,7 +157,12 @@ export default function ChatWidget() {
           'Content-Type': 'application/json',
           ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ message: text, history, weather }),
+        body: JSON.stringify({
+          message: text,
+          history,
+          weather,
+          sessionId: sessionIdRef.current,
+        }),
       });
 
       const data = await res.json();
@@ -166,149 +172,14 @@ export default function ChatWidget() {
 
       setMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
 
-      // Handle booking/cancel action from chatbot
-      if (data.success && token) {
-        if (data.action?.type === 'create_reservation') {
-          const { shopId, serviceId, resvDate } = data.action;
-          try {
-            // Validate shop hours before creating reservation
-            const shopRes = await getShop(shopId);
-            if (shopRes.success && shopRes.data?.openTime && shopRes.data?.closeTime) {
-              const validation = validateReservationTime(
-                resvDate, shopRes.data.openTime, shopRes.data.closeTime
-              );
-              if (!validation.ok) {
-                setMessages((prev) => [
-                  ...prev,
-                  {
-                    role: 'assistant',
-                    content: `❌ **Cannot book:** ${validation.error}\n\nShop hours: ${shopRes.data.openTime} - ${shopRes.data.closeTime}. Please choose a time within operating hours.`,
-                  },
-                ]);
-                return;
-              }
-            }
-
-            const resvRes = await createReservation(
-              { shop: shopId, service: serviceId, resvDate },
-              token
-            );
-            if (resvRes.success) {
-              setMessages((prev) => [
-                ...prev,
-                {
-                  role: 'assistant',
-                  content: `✅ **Booking confirmed!** \n\nView it at [My Bookings](/mybookings)`,
-                },
-              ]);
-            } else {
-              setMessages((prev) => [
-                ...prev,
-                {
-                  role: 'assistant',
-                  content: `❌ **Booking failed:** ${resvRes.message || 'Please try again'}`,
-                },
-              ]);
-            }
-          } catch {
-            setMessages((prev) => [
-              ...prev,
-              { role: 'assistant', content: '❌ Error creating booking. Please try again.' },
-            ]);
-          }
-        } else if (data.action?.type === 'edit_reservation') {
-          const { reservationId, resvDate } = data.action;
-          try {
-            // Fetch reservation to get shop info for hours validation
-            const resvInfoRes = await fetch(`${API_URL}/reservations/${reservationId}`, {
-              headers: { Authorization: `Bearer ${token}` },
-            });
-            const resvInfo = await resvInfoRes.json();
-            if (resvInfo.success && resvInfo.data?.shop) {
-              const shopId = typeof resvInfo.data.shop === 'object' ? resvInfo.data.shop._id : resvInfo.data.shop;
-              const shopRes = await getShop(shopId);
-              if (shopRes.success && shopRes.data?.openTime && shopRes.data?.closeTime) {
-                const validation = validateReservationTime(
-                  resvDate, shopRes.data.openTime, shopRes.data.closeTime
-                );
-                if (!validation.ok) {
-                  setMessages((prev) => [
-                    ...prev,
-                    {
-                      role: 'assistant',
-                      content: `❌ **Cannot reschedule:** ${validation.error}\n\nShop hours: ${shopRes.data.openTime} - ${shopRes.data.closeTime}. Please choose a time within operating hours.`,
-                    },
-                  ]);
-                  return;
-                }
-              }
-            }
-
-            const res = await fetch(`${API_URL}/reservations/${reservationId}`, {
-              method: 'PUT',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-              },
-              body: JSON.stringify({ resvDate }),
-            });
-            const editRes = await res.json();
-            if (editRes.success) {
-              setMessages((prev) => [
-                ...prev,
-                {
-                  role: 'assistant',
-                  content: `✅ **Booking updated!** \n\nView it at [My Bookings](/mybookings)`,
-                },
-              ]);
-            } else {
-              setMessages((prev) => [
-                ...prev,
-                {
-                  role: 'assistant',
-                  content: `❌ **Update failed:** ${editRes.message || 'Please try again'}`,
-                },
-              ]);
-            }
-          } catch {
-            setMessages((prev) => [
-              ...prev,
-              { role: 'assistant', content: '❌ Error updating booking. Please try again.' },
-            ]);
-          }
-        } else if (data.action?.type === 'cancel_reservation') {
-          const { reservationId } = data.action;
-          try {
-            const cancelRes = await deleteReservation(reservationId, token);
-            if (cancelRes.success) {
-              setMessages((prev) => [
-                ...prev,
-                {
-                  role: 'assistant',
-                  content: `✅ **Reservation cancelled successfully!** \n\nView your bookings at [My Bookings](/mybookings)`,
-                },
-              ]);
-            } else {
-              setMessages((prev) => [
-                ...prev,
-                {
-                  role: 'assistant',
-                  content: `❌ **Cancellation failed:** ${cancelRes.message || 'Please try again'}`,
-                },
-              ]);
-            }
-          } catch {
-            setMessages((prev) => [
-              ...prev,
-              { role: 'assistant', content: '❌ Error cancelling reservation. Please try again.' },
-            ]);
-          }
-        }
+      // Handle booking/cancel/edit action from chatbot
+      if (data.success && data.action) {
+        await processAction(data.action);
       }
     } catch {
       setMessages((prev) => [
         ...prev,
-        { role: 'assistant', content: 'Connection error. Please try again. การเชื่อมต่อผิดพลาด กรุณาลองใหม่ครับ' },
+        { role: 'assistant', content: 'Connection error. Please try again.' },
       ]);
     } finally {
       setLoading(false);
@@ -321,6 +192,19 @@ export default function ChatWidget() {
       sendMessage();
     }
   };
+
+  // Auth status badge
+  const authBadge = isAuthenticated ? (
+    <span className="inline-flex items-center gap-1 text-xs text-green-400">
+      <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
+      {user?.role === 'merchant' ? 'Merchant' : user?.role === 'admin' ? 'Admin' : 'Logged in'}
+    </span>
+  ) : (
+    <span className="inline-flex items-center gap-1 text-xs text-dungeon-secondary">
+      <span className="w-1.5 h-1.5 rounded-full bg-dungeon-secondary" />
+      Guest
+    </span>
+  );
 
   return (
     <>
@@ -356,15 +240,14 @@ export default function ChatWidget() {
               <span className="text-xl">🕯️</span>
               <div>
                 <p className="text-dungeon-header-text font-bold text-sm">Dungeon Inn Assistant</p>
-                <p className="text-dungeon-secondary text-xs">Ask about shops, bookings, merchants & more</p>
+                <div className="flex items-center gap-2">
+                  {authBadge}
+                </div>
               </div>
             </div>
             <div className="flex items-center gap-1">
               <button
-                onClick={() => {
-                  setMessages(defaultMessages);
-                  sessionStorage.removeItem(STORAGE_KEY);
-                }}
+                onClick={clearHistory}
                 title="Clear chat history"
                 className="text-dungeon-secondary hover:text-dungeon-header-text transition-colors p-1 rounded-lg hover:bg-dungeon-outline text-xs"
               >
@@ -483,12 +366,11 @@ export default function ChatWidget() {
               value={input}
               onChange={(e) => {
                 setInput(e.target.value);
-                // Auto-resize: reset then expand
                 e.target.style.height = 'auto';
                 e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
               }}
               onKeyDown={handleKey}
-              placeholder="Ask about shops, bookings, merchants…"
+              placeholder="Ask about shops, bookings, merchants..."
               disabled={loading}
               rows={1}
               className="flex-1 bg-dungeon-surface border border-dungeon-outline rounded-xl px-4 py-2.5 text-sm text-dungeon-header-text placeholder-dungeon-secondary focus:outline-none focus:border-dungeon-accent disabled:opacity-50 transition-colors resize-none overflow-y-auto leading-relaxed"

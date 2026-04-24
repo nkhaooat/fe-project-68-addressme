@@ -3,7 +3,8 @@
 import { PaginationData } from '@/types/api';
 
 interface PaginationProps {
-  pagination: PaginationData | null;
+  pagination?: PaginationData | null;
+  totalPages?: number;
   currentPage: number;
   onPageChange: (page: number) => void;
 }
@@ -25,10 +26,11 @@ function getPageNumbers(currentPage: number, totalPages: number): (number | stri
   return pages;
 }
 
-export default function Pagination({ pagination, currentPage, onPageChange }: PaginationProps) {
-  if (!pagination || pagination.pages <= 1) return null;
+export default function Pagination({ pagination, totalPages: totalPagesProp, currentPage, onPageChange }: PaginationProps) {
+  const totalPages = totalPagesProp || pagination?.pages || 0;
+  if (totalPages <= 1) return null;
 
-  const pageNumbers = getPageNumbers(currentPage, pagination.pages);
+  const pageNumbers = getPageNumbers(currentPage, totalPages);
 
   return (
     <div className="flex justify-center items-center gap-2 mt-12">
@@ -63,8 +65,8 @@ export default function Pagination({ pagination, currentPage, onPageChange }: Pa
 
       {/* Next */}
       <button
-        onClick={() => onPageChange(Math.min(pagination.pages, currentPage + 1))}
-        disabled={currentPage === pagination.pages}
+        onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+        disabled={currentPage === totalPages}
         className="px-4 py-2 bg-dungeon-surface border border-dungeon-outline rounded-lg text-dungeon-header-text disabled:opacity-50 disabled:cursor-not-allowed hover:border-dungeon-accent transition-colors"
       >
         Next →

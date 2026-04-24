@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
+import { useToast } from '@/components/ToastContext';
 import { getServices, createService, updateService, deleteService, Service, ServiceQueryParams } from '@/libs/services';
 import { getShops, Shop } from '@/libs/shops';
 import Pagination from '@/components/Pagination';
@@ -21,6 +22,7 @@ const emptyService: Omit<Service, '_id'> = {
 
 export default function AdminServicesPage() {
   const { token, user } = useSelector((state: RootState) => state.auth);
+  const { addToast } = useToast();
   const [services, setServices] = useState<Service[]>([]);
   const [shops, setShops] = useState<Shop[]>([]);
   const [pagination, setPagination] = useState<PaginationData | null>(null);
@@ -128,10 +130,10 @@ export default function AdminServicesPage() {
         }
         handleCloseModal();
       } else {
-        alert(res.message || `Failed to ${editingService ? 'update' : 'create'} service`);
+        addToast(res.message || `Failed to ${editingService ? 'update' : 'create'} service`);
       }
     } catch {
-      alert(`Error ${editingService ? 'updating' : 'creating'} service`);
+      addToast(`Error ${editingService ? 'updating' : 'creating'} service`);
     } finally {
       setIsSubmitting(false);
     }
@@ -144,10 +146,10 @@ export default function AdminServicesPage() {
       if (res.success) {
         setServices(services.filter(s => s._id !== id));
       } else {
-        alert(res.message || 'Failed to delete service');
+        addToast(res.message || 'Failed to delete service');
       }
     } catch {
-      alert('Error deleting service');
+      addToast('Error deleting service');
     }
   };
 

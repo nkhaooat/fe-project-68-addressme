@@ -6,6 +6,7 @@ import { getShops, getShopAreas, ShopQueryParams } from '@/libs/shops';
 import { Shop } from '@/interface';
 import { useDebounce } from '@/hooks/useDebounce';
 import { PaginationData } from '@/types/api';
+import Pagination from '@/components/Pagination';
 
 export default function ShopsPage() {
   const [shops, setShops] = useState<Shop[]>([]);
@@ -101,56 +102,6 @@ export default function ShopsPage() {
     );
   }
 
-  const totalPages = pagination?.pages || 1;
-
-  // Generate page numbers for pagination - mobile friendly
-  const getPageNumbers = () => {
-    const pages: (number | string)[] = [];
-    
-    if (totalPages <= 5) {
-      // Show all pages if 5 or fewer
-      for (let i = 1; i <= totalPages; i++) pages.push(i);
-    } else {
-      // Always show first 3 pages
-      pages.push(1, 2, 3);
-      
-      // Show ellipsis if current page is > 4
-      if (currentPage > 4) {
-        pages.push('...');
-      }
-      
-      // Show current page if it's in the middle (not in first 3 or last 3)
-      if (currentPage > 3 && currentPage < totalPages - 2) {
-        // Only add if not already added
-        if (currentPage !== 3) {
-          pages.push(currentPage);
-        }
-        // Add ellipsis before last pages if needed
-        if (currentPage < totalPages - 3) {
-          pages.push('...');
-        }
-      } else if (currentPage === 4) {
-        // Special case: current page is 4
-        pages.push(4);
-        if (totalPages > 7) pages.push('...');
-      } else if (currentPage >= totalPages - 2 && currentPage > 4) {
-        // Show ellipsis before last pages
-        pages.push('...');
-      }
-      
-      // Always show last 3 pages
-      if (totalPages > 3) {
-        // Avoid duplicates
-        const lastThree = [totalPages - 2, totalPages - 1, totalPages];
-        lastThree.forEach(page => {
-          if (!pages.includes(page) && page > 3) {
-            pages.push(page);
-          }
-        });
-      }
-    }
-    return pages;
-  };
 
   return (
     <main className="min-h-screen bg-dungeon-canvas py-8">
@@ -341,47 +292,7 @@ export default function ShopsPage() {
         </div>
 
         {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex justify-center items-center gap-2 mt-12">
-            {/* Previous */}
-            <button
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              className="px-4 py-2 bg-dungeon-surface border border-dungeon-outline rounded-lg text-dungeon-header-text disabled:opacity-50 disabled:cursor-not-allowed hover:border-dungeon-accent transition-colors"
-            >
-              ← Prev
-            </button>
-
-            {/* Page Numbers */}
-            <div className="flex gap-1">
-              {getPageNumbers().map((page, index) => (
-                <button
-                  key={index}
-                  onClick={() => typeof page === 'number' && setCurrentPage(page)}
-                  disabled={page === '...'}
-                  className={`w-10 h-10 rounded-lg border transition-colors ${
-                    page === currentPage
-                      ? 'bg-dungeon-accent border-dungeon-accent text-dungeon-dark-text font-bold'
-                      : page === '...'
-                      ? 'bg-transparent border-transparent text-dungeon-secondary cursor-default'
-                      : 'bg-dungeon-surface border-dungeon-outline text-dungeon-header-text hover:border-dungeon-accent'
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
-            </div>
-
-            {/* Next */}
-            <button
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-              className="px-4 py-2 bg-dungeon-surface border border-dungeon-outline rounded-lg text-dungeon-header-text disabled:opacity-50 disabled:cursor-not-allowed hover:border-dungeon-accent transition-colors"
-            >
-              Next →
-            </button>
-          </div>
-        )}
+        <Pagination pagination={pagination} currentPage={currentPage} onPageChange={setCurrentPage} />
       </div>
     </main>
   );

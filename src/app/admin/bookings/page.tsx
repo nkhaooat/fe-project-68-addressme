@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
+import { useToast } from '@/components/ToastContext';
 import { getReservations, updateReservation, deleteReservation } from '@/libs/reservations';
 import { verifySlip } from '@/libs/promotions';
 import { Reservation } from '@/interface';
@@ -17,6 +18,7 @@ import { PaginationData } from '@/types/api';
 
 export default function AdminBookingsPage() {
   const { token, user } = useSelector((state: RootState) => state.auth);
+  const { addToast } = useToast();
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [pagination, setPagination] = useState<PaginationData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -84,10 +86,10 @@ export default function AdminBookingsPage() {
         setReservations(reservations.map((r) => (r._id === id ? res.data : r)));
         setEditingId(null);
       } else {
-        alert(res.message || 'Failed to update');
+        addToast(res.message || 'Failed to update');
       }
     } catch {
-      alert('Error updating reservation');
+      addToast('Error updating reservation');
     }
   };
 
@@ -103,10 +105,10 @@ export default function AdminBookingsPage() {
       if (res.success) {
         setReservations(reservations.map((r) => r._id === id ? { ...r, status: 'cancelled' } : r));
       } else {
-        alert(res.message || 'Failed to cancel');
+        addToast(res.message || 'Failed to cancel');
       }
     } catch {
-      alert('Error canceling reservation');
+      addToast('Error canceling reservation');
     }
   };
 
@@ -117,10 +119,10 @@ export default function AdminBookingsPage() {
       if (res.success) {
         setReservations(reservations.map((r) => (r._id === id ? { ...r, ...res.data } : r)));
       } else {
-        alert(res.message || 'Failed to verify slip');
+        addToast(res.message || 'Failed to verify slip');
       }
     } catch {
-      alert('Error verifying slip');
+      addToast('Error verifying slip');
     } finally {
       setVerifyingId(null);
     }

@@ -13,6 +13,8 @@ import { QRCodeSVG } from 'qrcode.react';
 import ErrorBanner from '@/components/ErrorBanner';
 import { API_URL } from '@/libs/config';
 import { getStatusColor, getPaymentStatusColor, getPaymentStatusLabel } from '@/utils/reservationStatus';
+import Pagination from '@/components/Pagination';
+import { useToast } from '@/components/ToastContext';
 
 const STATUS_TABS = [
   { key: 'all', label: 'All', emoji: '' },
@@ -38,6 +40,7 @@ export default function MyBookingsPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const { addToast } = useToast();
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   useEffect(() => {
@@ -114,10 +117,10 @@ export default function MyBookingsPage() {
           r._id === id ? { ...r, status: 'cancelled' } : r
         ));
       } else {
-        alert(res.message || 'Failed to cancel booking');
+        addToast(res.message || 'Failed to cancel booking');
       }
     } catch {
-      alert('Error canceling booking');
+      addToast('Error canceling booking');
     }
   };
 
@@ -135,10 +138,10 @@ export default function MyBookingsPage() {
           r._id === reservationId ? { ...r, ...res.data } : r
         ));
       } else {
-        alert(res.message || 'Failed to upload slip');
+        addToast(res.message || 'Failed to upload slip');
       }
     } catch {
-      alert('Error uploading slip');
+      addToast('Error uploading slip');
     } finally {
       setUploadingId(null);
     }
@@ -353,39 +356,7 @@ export default function MyBookingsPage() {
             </div>
 
             {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-2 mt-8">
-                <button
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                  className="px-3 py-2 bg-dungeon-surface border border-dungeon-outline rounded text-dungeon-primary text-sm disabled:opacity-30 hover:border-dungeon-accent transition-colors"
-                >
-                  ← Prev
-                </button>
-                <div className="flex gap-1">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                    <button
-                      key={page}
-                      onClick={() => setCurrentPage(page)}
-                      className={`w-9 h-9 rounded text-sm font-semibold transition-colors ${
-                        currentPage === page
-                          ? 'bg-dungeon-accent text-dungeon-dark-text'
-                          : 'bg-dungeon-surface border border-dungeon-outline text-dungeon-primary hover:border-dungeon-accent'
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  ))}
-                </div>
-                <button
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
-                  className="px-3 py-2 bg-dungeon-surface border border-dungeon-outline rounded text-dungeon-primary text-sm disabled:opacity-30 hover:border-dungeon-accent transition-colors"
-                >
-                  Next →
-                </button>
-              </div>
-            )}
+            <Pagination totalPages={totalPages} currentPage={currentPage} onPageChange={setCurrentPage} />
           </>
         )}
       </div>

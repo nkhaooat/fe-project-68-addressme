@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
+import { useToast } from '@/components/ToastContext';
 import { getShops, createShop, updateShop, deleteShop, Shop, ShopQueryParams, addTiktokLinks, removeTiktokLink } from '@/libs/shops';
 import Pagination from '@/components/Pagination';
 import ErrorBanner from '@/components/ErrorBanner';
@@ -21,6 +22,7 @@ const emptyShop: Omit<Shop, '_id'> = {
 
 export default function AdminShopsPage() {
   const { token, user } = useSelector((state: RootState) => state.auth);
+  const { addToast } = useToast();
   const [shops, setShops] = useState<Shop[]>([]);
   const [pagination, setPagination] = useState<PaginationData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -101,10 +103,10 @@ export default function AdminShopsPage() {
         }
         handleCloseModal();
       } else {
-        alert(res.message || `Failed to ${editingShop ? 'update' : 'create'} shop`);
+        addToast(res.message || `Failed to ${editingShop ? 'update' : 'create'} shop`);
       }
     } catch {
-      alert(`Error ${editingShop ? 'updating' : 'creating'} shop`);
+      addToast(`Error ${editingShop ? 'updating' : 'creating'} shop`);
     } finally {
       setIsSubmitting(false);
     }
@@ -118,10 +120,10 @@ export default function AdminShopsPage() {
         setShops(shops.filter(s => s._id !== id));
         if (pagination) setPagination({ ...pagination, total: pagination.total - 1 });
       } else {
-        alert(res.message || 'Failed to delete shop');
+        addToast(res.message || 'Failed to delete shop');
       }
     } catch {
-      alert('Error deleting shop');
+      addToast('Error deleting shop');
     }
   };
 
@@ -133,10 +135,10 @@ export default function AdminShopsPage() {
         setFormData(prev => ({ ...prev, tiktokLinks: data.data }));
         setNewTiktokUrl('');
       } else {
-        alert(data.message || 'Failed to add TikTok link');
+        addToast(data.message || 'Failed to add TikTok link');
       }
     } catch {
-      alert('Error adding TikTok link');
+      addToast('Error adding TikTok link');
     }
   };
 
@@ -148,10 +150,10 @@ export default function AdminShopsPage() {
       if (data.success) {
         setFormData(prev => ({ ...prev, tiktokLinks: data.data }));
       } else {
-        alert(data.message || 'Failed to remove TikTok link');
+        addToast(data.message || 'Failed to remove TikTok link');
       }
     } catch {
-      alert('Error removing TikTok link');
+      addToast('Error removing TikTok link');
     }
   };
 

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
+import { useToast } from '@/components/ToastContext';
 import { getPromotions, createPromotion, deletePromotion } from '@/libs/promotions';
 import AccessDenied from '@/components/AccessDenied';
 import LoadingState from '@/components/LoadingState';
@@ -23,6 +24,7 @@ interface Promotion {
 
 export default function AdminPromotionsPage() {
   const { token, user } = useSelector((state: RootState) => state.auth);
+  const { addToast } = useToast();
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -84,9 +86,9 @@ export default function AdminPromotionsPage() {
     try {
       const res = await deletePromotion(id, token!);
       if (res.success) setPromotions(promotions.map(p => p._id === id ? { ...p, isActive: false } : p));
-      else alert(res.message || 'Failed to deactivate');
+      else addToast(res.message || 'Failed to deactivate');
     } catch {
-      alert('Error deactivating promotion');
+      addToast('Error deactivating promotion');
     }
   }
 

@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import { useDispatch } from 'react-redux';
 import { RootState } from '@/redux/store';
 import { getMerchantDashboard, getMerchantReservations, merchantScanQR, getMe, updateMerchantReservationStatus } from '@/libs/auth';
+import Pagination from '@/components/Pagination';
+import { useToast } from '@/components/ToastContext';
 import { setCredentials } from '@/redux/features/authSlice';
 
 interface ShopData {
@@ -33,6 +35,7 @@ export default function MerchantDashboardPage() {
   const { token, user } = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch();
   const router = useRouter();
+  const { addToast } = useToast();
   const [shop, setShop] = useState<ShopData | null>(null);
   const [stats, setStats] = useState({ totalReservations: 0, pendingReservations: 0, todayReservations: 0 });
   const [reservations, setReservations] = useState<ReservationData[]>([]);
@@ -128,10 +131,10 @@ export default function MerchantDashboardPage() {
       if (res.success) {
         setReservations(reservations.map(r => r._id === reservationId ? { ...r, status: newStatus } : r));
       } else {
-        alert(res.message || 'Failed to update status');
+        addToast(res.message || 'Failed to update status');
       }
     } catch {
-      alert('Error updating reservation status');
+      addToast('Error updating reservation status');
     }
   }
 
@@ -372,30 +375,7 @@ export default function MerchantDashboardPage() {
                 </div>
 
                 {/* Pagination */}
-                {resTotalPages > 1 && (
-                  <div className="flex items-center justify-center gap-2 mt-8">
-                    <button onClick={() => setResPage(p => Math.max(1, p - 1))} disabled={resPage === 1}
-                      className="px-3 py-2 bg-dungeon-surface border border-dungeon-outline rounded text-dungeon-primary text-sm disabled:opacity-30 hover:border-dungeon-accent transition-colors">
-                      Prev
-                    </button>
-                    <div className="flex gap-1">
-                      {Array.from({ length: resTotalPages }, (_, i) => i + 1).map(page => (
-                        <button key={page} onClick={() => setResPage(page)}
-                          className={`w-9 h-9 rounded text-sm font-semibold transition-colors ${
-                            resPage === page
-                              ? 'bg-dungeon-accent text-dungeon-dark-text'
-                              : 'bg-dungeon-surface border border-dungeon-outline text-dungeon-primary hover:border-dungeon-accent'
-                          }`}>
-                          {page}
-                        </button>
-                      ))}
-                    </div>
-                    <button onClick={() => setResPage(p => Math.min(resTotalPages, p + 1))} disabled={resPage === resTotalPages}
-                      className="px-3 py-2 bg-dungeon-surface border border-dungeon-outline rounded text-dungeon-primary text-sm disabled:opacity-30 hover:border-dungeon-accent transition-colors">
-                      Next
-                    </button>
-                  </div>
-                )}
+                <Pagination totalPages={resTotalPages} currentPage={resPage} onPageChange={setResPage} />
               </>
             )}
           </>

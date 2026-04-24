@@ -26,8 +26,6 @@ function SendIcon({ className }: { className?: string }) {
   );
 }
 
-const WEATHER_CACHE_KEY = 'dungeon_weather_cache';
-const WEATHER_CACHE_TTL = 10 * 60 * 1000; // 10 minutes
 const SESSION_ID_KEY = 'dungeon_chat_session_id';
 const HISTORY_WINDOW = 12; // messages sent as context
 
@@ -47,33 +45,6 @@ function getStorageKey(userId?: string): string {
   return userId ? `dungeon_chat_${userId}` : 'dungeon_chat_guest';
 }
 
-async function getWeather() {
-  try {
-    const cached = sessionStorage.getItem(WEATHER_CACHE_KEY);
-    if (cached) {
-      const { data, ts } = JSON.parse(cached);
-      if (Date.now() - ts < WEATHER_CACHE_TTL) return data;
-    }
-
-    // Open-Meteo: free, no API key, CORS-friendly
-    const res = await fetch(
-      'https://api.open-meteo.com/v1/forecast?latitude=13.75&longitude=100.5&current=temperature_2m,wind_speed_10m,precipitation_probability&timezone=Asia/Bangkok'
-    );
-    if (!res.ok) return null;
-    const json = await res.json();
-    const data = {
-      temp: json.current?.temperature_2m,
-      wind: json.current?.wind_speed_10m,
-      rainChance: json.current?.precipitation_probability,
-    };
-    if (data.temp == null) return null;
-    sessionStorage.setItem(WEATHER_CACHE_KEY, JSON.stringify({ data, ts: Date.now() }));
-    return data;
-  } catch {
-    return null;
-  }
-}
-
 const defaultMessages: Message[] = [
   {
     role: 'assistant',
@@ -87,9 +58,20 @@ export default function ChatWidget() {
   const [messages, setMessages] = useState<Message[]>(defaultMessages);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const sessionIdRef = useRef(getSessionId());
+
+  // Request geolocation on mount (optional — user can deny)
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        () => {} // silently ignore denial — Bangkok will be used as fallback
+      );
+    }
+  }, []);
 
   // Restore chat history from localStorage (per-user)
   useEffect(() => {
@@ -156,10 +138,6 @@ export default function ChatWidget() {
         .slice(-HISTORY_WINDOW)
         .map(({ role, content }) => ({ role, content }));
 
-      // Fetch live weather (cached 10 min, GISTDA Thai IP)
-      const weatherKeywords = /weather|rain|hot|temperature|wind|umbrella|อากาศ|ฝน|ร้อน|ลม|หนาว/i;
-      const weather = weatherKeywords.test(text) ? await getWeather() : null;
-
       // --- Streaming request ---
       const res = await fetch(`${API_URL}/chat/stream`, {
         method: 'POST',
@@ -170,7 +148,8 @@ export default function ChatWidget() {
         body: JSON.stringify({
           message: text,
           history,
-          weather,
+          lat: userCoords?.lat ?? null,
+          lng: userCoords?.lng ?? null,
           sessionId: sessionIdRef.current,
         }),
       });

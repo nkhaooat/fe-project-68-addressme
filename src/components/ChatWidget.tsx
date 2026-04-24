@@ -42,7 +42,7 @@ function getSessionId(): string {
   return id;
 }
 
-/** Storage key per user — guests share one, logged-in users get their own */
+/** Storage key per user */
 function getStorageKey(userId?: string): string {
   return userId ? `dungeon_chat_${userId}` : 'dungeon_chat_guest';
 }
@@ -55,9 +55,18 @@ async function getWeather() {
       if (Date.now() - ts < WEATHER_CACHE_TTL) return data;
     }
 
-    const res = await fetch('https://data.gistda.or.th/api/weather/current');
+    // Open-Meteo: free, no API key, CORS-friendly
+    const res = await fetch(
+      'https://api.open-meteo.com/v1/forecast?latitude=13.75&longitude=100.5&current=temperature_2m,wind_speed_10m,precipitation_probability&timezone=Asia/Bangkok'
+    );
     if (!res.ok) return null;
-    const data = await res.json();
+    const json = await res.json();
+    const data = {
+      temp: json.current?.temperature_2m,
+      wind: json.current?.wind_speed_10m,
+      rainChance: json.current?.precipitation_probability,
+    };
+    if (data.temp == null) return null;
     sessionStorage.setItem(WEATHER_CACHE_KEY, JSON.stringify({ data, ts: Date.now() }));
     return data;
   } catch {

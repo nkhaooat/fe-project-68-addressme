@@ -151,7 +151,8 @@ export default function ChatWidget() {
       const weatherKeywords = /weather|rain|hot|temperature|wind|umbrella|อากาศ|ฝน|ร้อน|ลม|หนาว/i;
       const weather = weatherKeywords.test(text) ? await getWeather() : null;
 
-      const res = await fetch(`${API_URL}/chat`, {
+      // --- Streaming request ---
+      const res = await fetch(`${API_URL}/chat/stream`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -165,16 +166,59 @@ export default function ChatWidget() {
         }),
       });
 
-      const data = await res.json();
-      const reply = data.success
-        ? data.reply
-        : 'Sorry, something went wrong. Please try again.';
+      if (!res.ok || !res.body) {
+        throw new Error('Stream failed');
+      }
 
-      setMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
+      // Add empty assistant message that we'll fill incrementally
+      const assistantIdx = nextMessages.length;
+      setMessages([...nextMessages, { role: 'assistant', content: '' }]);
 
-      // Handle booking/cancel/edit action from chatbot
-      if (data.success && data.action) {
-        await processAction(data.action);
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let accumulated = '';
+      let buffer = '';
+      let action: any = null;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || ''; // keep incomplete line
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          try {
+            const event = JSON.parse(line);
+            if (event.type === 'token') {
+              accumulated += event.text;
+              setMessages((prev) => {
+                const updated = [...prev];
+                updated[assistantIdx] = { role: 'assistant', content: accumulated };
+                return updated;
+              });
+            } else if (event.type === 'action') {
+              action = event.action;
+            } else if (event.type === 'error') {
+              accumulated += (accumulated ? '\n\n' : '') + event.text;
+              setMessages((prev) => {
+                const updated = [...prev];
+                updated[assistantIdx] = { role: 'assistant', content: accumulated };
+                return updated;
+              });
+            }
+            // 'done' — just end the loop naturally
+          } catch {
+            // malformed line — skip
+          }
+        }
+      }
+
+      // Process any action after stream completes
+      if (action) {
+        await processAction(action);
       }
     } catch {
       setMessages((prev) => [

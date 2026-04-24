@@ -2,21 +2,22 @@ import Link from 'next/link';
 
 export default function NotFound() {
   return (
-    <main className="min-h-screen bg-dungeon-canvas flex items-center justify-center px-4">
-      <div className="text-center">
-        <div className="text-8xl mb-6">🏚️</div>
-        <h1 className="text-6xl font-bold text-dungeon-header-text mb-4">404</h1>
-        <h2 className="text-2xl text-dungeon-sub-header mb-2">Room Not Found</h2>
-        <p className="text-dungeon-secondary mb-8 max-w-md mx-auto">
-          The path you seek has vanished into the darkness. Perhaps it never existed in this dungeon.
+    <div className="min-h-screen bg-dungeon-bg flex items-center justify-center px-4">
+      <div className="bg-dungeon-canvas border border-dungeon-outline rounded-xl p-8 max-w-md text-center">
+        <p className="text-6xl mb-4">🕯️</p>
+        <h2 className="text-dungeon-header-text text-2xl font-bold mb-2">
+          Room Not Found
+        </h2>
+        <p className="text-dungeon-secondary text-sm mb-6">
+          You have wandered into an unexplored corridor. This page does not exist.
         </p>
         <Link
           href="/"
-          className="px-6 py-3 bg-dungeon-accent text-dungeon-dark-text font-bold rounded-lg hover:bg-dungeon-accent-dark transition-colors"
+          className="inline-block bg-dungeon-accent text-white px-6 py-2 rounded-lg hover:opacity-90 transition-opacity"
         >
-          Return to the Entrance
+          Return to the Inn
         </Link>
       </div>
-    </main>
+    </div>
   );
 }

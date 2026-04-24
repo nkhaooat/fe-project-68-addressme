@@ -140,7 +140,7 @@ export async function getMerchantServices(token: string) {
   return response.json();
 }
 
-export async function createMerchantService(token: string, data: any) {
+export async function createMerchantService(token: string, data: Record<string, unknown>) {
   const response = await fetch(`${API_URL}/merchant/services`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -149,7 +149,7 @@ export async function createMerchantService(token: string, data: any) {
   return response.json();
 }
 
-export async function updateMerchantService(token: string, id: string, data: any) {
+export async function updateMerchantService(token: string, id: string, data: Record<string, unknown>) {
   const response = await fetch(`${API_URL}/merchant/services/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },

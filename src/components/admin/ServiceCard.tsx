@@ -55,16 +55,16 @@ export default function ServiceCard({ service, shops, onEdit, onDelete }: Servic
           <span className="text-dungeon-secondary">Price:</span>{' '}
           <span className="text-dungeon-accent font-bold">฿{service.price}</span>
         </div>
-        {(service as any).sessions > 1 && (
+        {service.sessions > 1 && (
           <div>
             <span className="text-dungeon-secondary">Sessions:</span>{' '}
-            <span className="text-dungeon-primary">{(service as any).sessions}</span>
+            <span className="text-dungeon-primary">{service.sessions}</span>
           </div>
         )}
       </div>
 
-      {(service as any).description && (
-        <p className="text-dungeon-secondary text-sm mt-2 line-clamp-2">{(service as any).description}</p>
+      {service.description && (
+        <p className="text-dungeon-secondary text-sm mt-2 line-clamp-2">{service.description}</p>
       )}
     </div>
   );

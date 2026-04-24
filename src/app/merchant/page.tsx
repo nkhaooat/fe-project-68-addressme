@@ -41,7 +41,7 @@ export default function MerchantDashboardPage() {
   const [reservations, setReservations] = useState<ReservationData[]>([]);
   const [loading, setLoading] = useState(true);
   const [scanToken, setScanToken] = useState('');
-  const [scanResult, setScanResult] = useState<{ success: boolean; message: string; data?: any } | null>(null);
+  const [scanResult, setScanResult] = useState<{ success: boolean; message: string; data?: { user?: { name: string; email: string }; reservation?: { _id: string; resvDate: string; status: string } } } | null>(null);
   const [scanning, setScanning] = useState(false);
   const [tab, setTab] = useState<'overview' | 'reservations' | 'scan'>('overview');
   const [searchQuery, setSearchQuery] = useState('');

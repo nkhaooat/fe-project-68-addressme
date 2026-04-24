@@ -9,8 +9,11 @@ import { getShop } from '@/libs/shops';
 import { validateReservationTime } from '@/utils/shopHours';
 
 export interface ChatAction {
-  type: 'create_reservation' | 'cancel_reservation' | 'edit_reservation';
-  [key: string]: any;
+  type: 'create_reservation' | 'edit_reservation' | 'cancel_reservation';
+  shopId?: string;
+  serviceId?: string;
+  reservationId?: string;
+  resvDate?: string;
 }
 
 export interface ActionResult {
@@ -39,6 +42,9 @@ export async function handleCreateReservation(
   token: string
 ): Promise<ActionResult> {
   const { shopId, serviceId, resvDate } = action;
+  if (!shopId || !serviceId || !resvDate) {
+    return { success: false, message: 'Missing booking details. Please try again.' };
+  }
 
   // Validate shop hours
   const hoursError = await validateShopHours(shopId, resvDate);
@@ -61,6 +67,9 @@ export async function handleEditReservation(
   token: string
 ): Promise<ActionResult> {
   const { reservationId, resvDate } = action;
+  if (!reservationId) {
+    return { success: false, message: 'Missing reservation ID.' };
+  }
 
   try {
     // Fetch reservation to get shop info for hours validation
@@ -70,11 +79,13 @@ export async function handleEditReservation(
     const resvInfo = await resvInfoRes.json();
 
     if (resvInfo.success && resvInfo.data?.shop) {
-      const shopId = typeof resvInfo.data.shop === 'object' ? resvInfo.data.shop._id : resvInfo.data.shop;
-      const hoursError = await validateShopHours(shopId, resvDate);
-      if (hoursError) {
-        hoursError.message = hoursError.message.replace('Cannot book:', 'Cannot reschedule:');
-        return hoursError;
+      const shopId: string = typeof resvInfo.data.shop === 'object' ? resvInfo.data.shop._id : resvInfo.data.shop;
+      if (shopId && resvDate) {
+        const hoursError = await validateShopHours(shopId, resvDate);
+        if (hoursError) {
+          hoursError.message = hoursError.message.replace('Cannot book:', 'Cannot reschedule:');
+          return hoursError;
+        }
       }
     }
 
@@ -103,6 +114,9 @@ export async function handleCancelReservation(
   token: string
 ): Promise<ActionResult> {
   const { reservationId } = action;
+  if (!reservationId) {
+    return { success: false, message: 'Missing reservation ID.' };
+  }
 
   try {
     const res = await deleteReservation(reservationId, token);

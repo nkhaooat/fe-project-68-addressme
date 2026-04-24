@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import ReactMarkdown from 'react-markdown';
 import { API_URL } from '@/libs/config';
-import { handleChatAction, ActionResult } from '@/utils/chatActions';
+import { handleChatAction, ActionResult, ChatAction } from '@/utils/chatActions';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -108,7 +108,7 @@ export default function ChatWidget() {
     localStorage.removeItem(key);
   }, [user?._id]);
 
-  const processAction = useCallback(async (action: any) => {
+  const processAction = useCallback(async (action: ChatAction) => {
     if (!token || !action?.type) return;
 
     const result: ActionResult = await handleChatAction(action, token);
@@ -166,7 +166,7 @@ export default function ChatWidget() {
       const decoder = new TextDecoder();
       let accumulated = '';
       let buffer = '';
-      let action: any = null;
+      let action: ChatAction | null = null;
 
       while (true) {
         const { done, value } = await reader.read();

@@ -144,13 +144,13 @@ export default function ServiceModal({
 
               <div>
                 <label className="block text-dungeon-secondary text-sm mb-1">Sessions</label>
-                <input type="number" name="sessions" value={(formData as any).sessions || 1} onChange={handleInputChange} min="1"
+                <input type="number" name="sessions" value={formData.sessions || 1} onChange={handleInputChange} min="1"
                   className="w-full bg-dungeon-canvas border border-dungeon-outline rounded-lg px-4 py-2 text-dungeon-header-text focus:border-dungeon-accent focus:outline-none" />
               </div>
 
               <div className="md:col-span-2">
                 <label className="block text-dungeon-secondary text-sm mb-1">Description</label>
-                <textarea name="description" value={(formData as any).description || ''} onChange={handleInputChange} rows={3} placeholder="Describe the service..."
+                <textarea name="description" value={formData.description || ''} onChange={handleInputChange} rows={3} placeholder="Describe the service..."
                   className="w-full bg-dungeon-canvas border border-dungeon-outline rounded-lg px-4 py-2 text-dungeon-header-text focus:border-dungeon-accent focus:outline-none resize-none" />
               </div>
             </div>

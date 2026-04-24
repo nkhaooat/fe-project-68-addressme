@@ -4,8 +4,8 @@ export interface Reservation {
   _id: string;
   resvDate: string;
   user: User | string;
-  shop: any; // Shop type from libs/shops - using any to avoid circular deps
-  service: any; // Service type from libs/services
+  shop: { _id: string; name: string; location: string; } | string;
+  service: { _id: string; name: string; duration: number; price: number; } | string;
   status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
   promotionCode?: string | null;
   discountAmount?: number;

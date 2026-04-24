@@ -103,8 +103,8 @@ export default function AdminServicesPage() {
     setEditingService(service);
     setFormData({
       name: service.name, area: service.area, duration: service.duration,
-      oil: service.oil, price: service.price, sessions: (service as any).sessions || 1,
-      description: (service as any).description || '', shop: service.shop
+      oil: service.oil, price: service.price, sessions: service.sessions || 1,
+      description: service.description || '', shop: service.shop
     });
     setIsModalOpen(true);
   };

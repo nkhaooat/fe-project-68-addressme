@@ -221,6 +221,14 @@ export default function TopMenu() {
                           >
                             Merchants
                           </Link>
+                          <hr className="border-dungeon-outline my-1" />
+                          <Link
+                            href="/admin/settings"
+                            onClick={() => setIsAdminDropdownOpen(false)}
+                            className={pathname === '/admin/settings' ? 'block px-4 py-2 text-dungeon-accent bg-dungeon-canvas' : 'block px-4 py-2 text-dungeon-primary hover:text-dungeon-accent hover:bg-dungeon-canvas'}
+                          >
+                            Settings
+                          </Link>
                         </div>
                       )}
                     </div>
@@ -373,6 +381,13 @@ export default function TopMenu() {
                           className={`py-2 pl-2 ${pathname === '/admin/merchants' ? 'text-dungeon-accent' : 'text-dungeon-primary hover:text-dungeon-accent'}`}
                         >
                           Merchants
+                        </Link>
+                        <Link
+                          href="/admin/settings"
+                          onClick={closeMenu}
+                          className={`py-2 pl-2 ${pathname === '/admin/settings' ? 'text-dungeon-accent' : 'text-dungeon-primary hover:text-dungeon-accent'}`}
+                        >
+                          Settings
                         </Link>
                       </div>
                     </div>

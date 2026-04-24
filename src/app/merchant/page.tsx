@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import { useRouter } from 'next/navigation';
 import { useDispatch } from 'react-redux';
 import { RootState } from '@/redux/store';
-import { getMerchantDashboard, getMerchantReservations, merchantScanQR, getMe } from '@/libs/auth';
+import { getMerchantDashboard, getMerchantReservations, merchantScanQR, getMe, updateMerchantReservationStatus } from '@/libs/auth';
 import { setCredentials } from '@/redux/features/authSlice';
 
 interface ShopData {
@@ -120,6 +120,19 @@ export default function MerchantDashboardPage() {
       setScanResult({ success: false, message: 'Scan failed' });
     }
     setScanning(false);
+  }
+
+  async function handleUpdateStatus(reservationId: string, newStatus: string) {
+    try {
+      const res = await updateMerchantReservationStatus(token!, reservationId, newStatus);
+      if (res.success) {
+        setReservations(reservations.map(r => r._id === reservationId ? { ...r, status: newStatus } : r));
+      } else {
+        alert(res.message || 'Failed to update status');
+      }
+    } catch {
+      alert('Error updating reservation status');
+    }
   }
 
   // Pending state
@@ -324,9 +337,35 @@ export default function MerchantDashboardPage() {
                             {r.service.name} - ฿{r.service.price} · {new Date(r.resvDate).toLocaleString()}
                           </p>
                         </div>
-                        <span className={`text-sm font-bold ${statusColor(r.status)}`}>
-                          {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className={`text-sm font-bold ${statusColor(r.status)}`}>
+                            {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
+                          </span>
+                          {r.status === 'pending' && (
+                            <button
+                              onClick={() => handleUpdateStatus(r._id, 'confirmed')}
+                              className="px-3 py-1.5 bg-green-700 text-white text-xs font-bold rounded hover:bg-green-600 transition-colors"
+                            >
+                              Confirm
+                            </button>
+                          )}
+                          {r.status === 'confirmed' && (
+                            <button
+                              onClick={() => handleUpdateStatus(r._id, 'completed')}
+                              className="px-3 py-1.5 bg-blue-600 text-white text-xs font-bold rounded hover:bg-blue-500 transition-colors"
+                            >
+                              Complete
+                            </button>
+                          )}
+                          {(r.status === 'pending' || r.status === 'confirmed') && (
+                            <button
+                              onClick={() => handleUpdateStatus(r._id, 'cancelled')}
+                              className="px-3 py-1.5 bg-red-700 text-white text-xs font-bold rounded hover:bg-red-600 transition-colors"
+                            >
+                              Cancel
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}

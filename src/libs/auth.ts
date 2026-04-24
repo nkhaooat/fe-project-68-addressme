@@ -153,3 +153,15 @@ export async function deleteMerchantService(token: string, id: string) {
   });
   return response.json();
 }
+
+export async function updateMerchantReservationStatus(token: string, reservationId: string, status: string) {
+  const response = await fetch(`${API_URL}/merchant/reservations/${reservationId}/status`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ status }),
+  });
+  return response.json();
+}

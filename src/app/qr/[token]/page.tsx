@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import { QRCodeSVG } from 'qrcode.react';
+import QRCodeDisplay from '@/components/QRCodeDisplay';
 
 interface BookingInfo {
   success: boolean;
@@ -19,7 +20,8 @@ interface BookingInfo {
 }
 
 export default function QRPage() {
-  const { token } = useParams();
+  const params = useParams();
+  const token = params.token as string;
   const router = useRouter();
   const { token: authToken, user } = useSelector((state: RootState) => state.auth);
   const [booking, setBooking] = useState<BookingInfo | null>(null);
@@ -90,10 +92,8 @@ export default function QRPage() {
 
         {/* QR Code */}
         <div className="p-6 text-center">
-          <div className="bg-white inline-block p-4 rounded-lg mb-4">
-            <QRCodeSVG value={qrUrl} size={200} level="M" />
-          </div>
-          <p className="text-dungeon-secondary text-sm">Show this code at the shop</p>
+          <QRCodeDisplay token={token} />
+          <p className="text-dungeon-secondary text-sm mt-2">Show this code at the shop</p>
         </div>
 
         {/* Booking Details */}

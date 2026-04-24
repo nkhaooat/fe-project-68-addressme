@@ -72,7 +72,7 @@ export default function ProfilePage() {
             )}
             <div className="flex justify-between">
               <span className="text-dungeon-secondary">Member since</span>
-              <span className="text-dungeon-primary">{user._id ? 'Active' : 'N/A'}</span>
+              <span className="text-dungeon-primary">{user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'N/A'}</span>
             </div>
           </div>
         </div>

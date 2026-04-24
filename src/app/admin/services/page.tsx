@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import { useToast } from '@/components/ToastContext';
+import ConfirmDialog from '@/components/ConfirmDialog';
 import { getServices, createService, updateService, deleteService, Service, ServiceQueryParams } from '@/libs/services';
 import { getShops, Shop } from '@/libs/shops';
 import Pagination from '@/components/Pagination';
@@ -23,6 +24,7 @@ const emptyService: Omit<Service, '_id'> = {
 export default function AdminServicesPage() {
   const { token, user } = useSelector((state: RootState) => state.auth);
   const { addToast } = useToast();
+  const [pendingDelete, setPendingDelete] = useState<{id: string; name: string} | null>(null);
   const [services, setServices] = useState<Service[]>([]);
   const [shops, setShops] = useState<Shop[]>([]);
   const [pagination, setPagination] = useState<PaginationData | null>(null);
@@ -139,8 +141,13 @@ export default function AdminServicesPage() {
     }
   };
 
-  const handleDelete = async (id: string, serviceName: string) => {
-    if (!confirm(`Are you sure you want to delete "${serviceName}"? This action cannot be undone.`)) return;
+  const handleDelete = (id: string, serviceName: string) => {
+    setPendingDelete({ id, name: serviceName });
+  };
+
+  const confirmDeleteService = async () => {
+    const { id } = pendingDelete!;
+    setPendingDelete(null);
     try {
       const res = await deleteService(id, token!);
       if (res.success) {
@@ -180,6 +187,7 @@ export default function AdminServicesPage() {
   if (loading) return <LoadingState message="Loading services..." />;
 
   return (
+    <>
     <main className="min-h-screen bg-dungeon-canvas py-8">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center mb-8">
@@ -263,5 +271,14 @@ export default function AdminServicesPage() {
         onFormDataChange={setFormData}
       />
     </main>
+    <ConfirmDialog
+      open={pendingDelete !== null}
+      title="Delete Service"
+      message={`Are you sure you want to delete "${pendingDelete?.name}"? This action cannot be undone.`}
+      confirmLabel="Delete"
+      onConfirm={confirmDeleteService}
+      onCancel={() => setPendingDelete(null)}
+    />
+    </>
   );
 }

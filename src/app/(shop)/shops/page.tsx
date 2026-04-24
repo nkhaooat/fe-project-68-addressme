@@ -7,6 +7,7 @@ import { Shop } from '@/interface';
 import { useDebounce } from '@/hooks/useDebounce';
 import { PaginationData } from '@/types/api';
 import Pagination from '@/components/Pagination';
+import ShopImage from '@/components/ShopImage';
 
 export default function ShopsPage() {
   const [shops, setShops] = useState<Shop[]>([]);
@@ -227,36 +228,7 @@ export default function ShopsPage() {
               className="bg-dungeon-surface border border-dungeon-outline rounded-lg overflow-hidden hover:border-dungeon-accent transition-colors group"
             >
               <div className="h-48 bg-dungeon-primary-header flex items-center justify-center overflow-hidden">
-{(shop.photoProxy || shop.photo) ? (
-                  <img
-                    src={shop.photoProxy || shop.photo!}
-                    alt={shop.name}
-                    data-fallback="0"
-                    onError={(e) => {
-                      const img = e.currentTarget as HTMLImageElement;
-                      const step = parseInt(img.getAttribute('data-fallback') || '0');
-                      if (step === 0 && shop.photo && img.src !== shop.photo) {
-                        // EPIC 3: Google API failed → fall back to MongoDB photo
-                        img.setAttribute('data-fallback', '1');
-                        img.src = shop.photo;
-                      } else if (step < 2) {
-                        // EPIC 3: All sources failed → show emoji placeholder
-                        img.setAttribute('data-fallback', '2');
-                        img.style.display = 'none';
-                        const parent = img.parentElement;
-                        if (parent && !parent.querySelector('span.fallback-emoji')) {
-                          const span = document.createElement('span');
-                          span.className = 'text-6xl fallback-emoji';
-                          span.textContent = '🏪';
-                          parent.appendChild(span);
-                        }
-                      }
-                    }}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                ) : (
-                  <span className="text-6xl">🏪</span>
-                )}
+                <ShopImage photoProxy={shop.photoProxy} photo={shop.photo} name={shop.name} height="h-48" fallbackText="🏪" />
               </div>
               <div className="p-6">
                 <div className="flex justify-between items-start gap-2 mb-2">

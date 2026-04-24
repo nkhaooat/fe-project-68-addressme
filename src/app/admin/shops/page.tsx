@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import { useToast } from '@/components/ToastContext';
+import ConfirmDialog from '@/components/ConfirmDialog';
 import { getShops, createShop, updateShop, deleteShop, Shop, ShopQueryParams, addTiktokLinks, removeTiktokLink } from '@/libs/shops';
 import Pagination from '@/components/Pagination';
 import ErrorBanner from '@/components/ErrorBanner';
@@ -23,6 +24,8 @@ const emptyShop: Omit<Shop, '_id'> = {
 export default function AdminShopsPage() {
   const { token, user } = useSelector((state: RootState) => state.auth);
   const { addToast } = useToast();
+  const [pendingDeleteShop, setPendingDeleteShop] = useState<{id: string; name: string} | null>(null);
+  const [pendingRemoveTiktok, setPendingRemoveTiktok] = useState<string | null>(null);
   const [shops, setShops] = useState<Shop[]>([]);
   const [pagination, setPagination] = useState<PaginationData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -112,8 +115,13 @@ export default function AdminShopsPage() {
     }
   };
 
-  const handleDelete = async (id: string, shopName: string) => {
-    if (!confirm(`Are you sure you want to delete "${shopName}"? This action cannot be undone.`)) return;
+  const handleDelete = (id: string, shopName: string) => {
+    setPendingDeleteShop({ id, name: shopName });
+  };
+
+  const confirmDeleteShop = async () => {
+    const { id } = pendingDeleteShop!;
+    setPendingDeleteShop(null);
     try {
       const res = await deleteShop(id, token!);
       if (res.success) {
@@ -142,9 +150,15 @@ export default function AdminShopsPage() {
     }
   };
 
-  const handleRemoveTiktok = async (url: string) => {
+  const handleRemoveTiktok = (url: string) => {
     if (!editingShop || !token) return;
-    if (!confirm('Remove this TikTok link?')) return;
+    setPendingRemoveTiktok(url);
+  };
+
+  const confirmRemoveTiktok = async () => {
+    const url = pendingRemoveTiktok!;
+    setPendingRemoveTiktok(null);
+    if (!editingShop || !token) return;
     try {
       const data = await removeTiktokLink(editingShop._id, url, token);
       if (data.success) {
@@ -161,6 +175,7 @@ export default function AdminShopsPage() {
   if (loading && shops.length === 0) return <LoadingState message="Loading shops..." />;
 
   return (
+    <>
     <main className="min-h-screen bg-dungeon-canvas py-8">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center mb-8">
@@ -222,5 +237,22 @@ export default function AdminShopsPage() {
         onSubmit={handleSubmit}
       />
     </main>
+    <ConfirmDialog
+      open={pendingDeleteShop !== null}
+      title="Delete Shop"
+      message={`Are you sure you want to delete "${pendingDeleteShop?.name}"? This action cannot be undone.`}
+      confirmLabel="Delete"
+      onConfirm={confirmDeleteShop}
+      onCancel={() => setPendingDeleteShop(null)}
+    />
+    <ConfirmDialog
+      open={pendingRemoveTiktok !== null}
+      title="Remove TikTok Link"
+      message="Remove this TikTok link?"
+      confirmLabel="Remove"
+      onConfirm={confirmRemoveTiktok}
+      onCancel={() => setPendingRemoveTiktok(null)}
+    />
+    </>
   );
 }

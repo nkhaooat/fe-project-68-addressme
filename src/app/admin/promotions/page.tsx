@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import { useToast } from '@/components/ToastContext';
+import ConfirmDialog from '@/components/ConfirmDialog';
 import { getPromotions, createPromotion, deletePromotion } from '@/libs/promotions';
 import AccessDenied from '@/components/AccessDenied';
 import LoadingState from '@/components/LoadingState';
@@ -25,6 +26,7 @@ interface Promotion {
 export default function AdminPromotionsPage() {
   const { token, user } = useSelector((state: RootState) => state.auth);
   const { addToast } = useToast();
+  const [pendingDeactivate, setPendingDeactivate] = useState<string | null>(null);
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -81,8 +83,13 @@ export default function AdminPromotionsPage() {
     }
   }
 
-  async function handleDelete(id: string) {
-    if (!confirm('Are you sure you want to deactivate this promotion?')) return;
+  function handleDelete(id: string) {
+    setPendingDeactivate(id);
+  }
+
+  async function confirmDeactivate() {
+    const id = pendingDeactivate!;
+    setPendingDeactivate(null);
     try {
       const res = await deletePromotion(id, token!);
       if (res.success) setPromotions(promotions.map(p => p._id === id ? { ...p, isActive: false } : p));
@@ -96,6 +103,7 @@ export default function AdminPromotionsPage() {
   if (loading) return <LoadingState message="Loading promotions..." />;
 
   return (
+    <>
     <main className="min-h-screen bg-dungeon-canvas py-8">
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex justify-between items-center mb-8">
@@ -198,5 +206,14 @@ export default function AdminPromotionsPage() {
         </div>
       </div>
     </main>
+    <ConfirmDialog
+      open={pendingDeactivate !== null}
+      title="Deactivate Promotion"
+      message="Are you sure you want to deactivate this promotion?"
+      confirmLabel="Deactivate"
+      onConfirm={confirmDeactivate}
+      onCancel={() => setPendingDeactivate(null)}
+    />
+    </>
   );
 }

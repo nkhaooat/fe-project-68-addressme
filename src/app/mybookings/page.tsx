@@ -10,11 +10,13 @@ import Link from 'next/link';
 import EditBookingModal from '@/components/EditBookingModal';
 import ReviewModal from '@/components/ReviewModal';
 import { QRCodeSVG } from 'qrcode.react';
+import QRCodeDisplay from '@/components/QRCodeDisplay';
 import ErrorBanner from '@/components/ErrorBanner';
 import { API_URL } from '@/libs/config';
 import { getStatusColor, getPaymentStatusColor, getPaymentStatusLabel } from '@/utils/reservationStatus';
 import Pagination from '@/components/Pagination';
 import { useToast } from '@/components/ToastContext';
+import ConfirmDialog from '@/components/ConfirmDialog';
 
 const STATUS_TABS = [
   { key: 'all', label: 'All', emoji: '' },
@@ -41,6 +43,7 @@ export default function MyBookingsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const { addToast } = useToast();
+  const [pendingCancelId, setPendingCancelId] = useState<string | null>(null);
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   useEffect(() => {
@@ -107,9 +110,13 @@ export default function MyBookingsPage() {
     setCurrentPage(1);
   }, [statusFilter, searchQuery]);
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to cancel this booking?')) return;
+  const handleDelete = (id: string) => {
+    setPendingCancelId(id);
+  };
 
+  const confirmDelete = async () => {
+    const id = pendingCancelId!;
+    setPendingCancelId(null);
     try {
       const res = await deleteReservation(id, token!);
       if (res.success) {
@@ -169,6 +176,7 @@ export default function MyBookingsPage() {
   }
 
   return (
+    <>
     <main className="min-h-screen bg-dungeon-canvas py-8">
       <div className="max-w-4xl mx-auto px-4">
         <h1 className="text-3xl font-bold text-dungeon-header-text mb-8 text-center">
@@ -406,13 +414,7 @@ export default function MyBookingsPage() {
             </div>
             {qrReservation.qrActive ? (
               <>
-                <div className="bg-white p-4 rounded-lg inline-block mb-4">
-                  <QRCodeSVG
-                    value={`${typeof window !== 'undefined' ? window.location.origin : ''}/qr/${qrReservation.qrToken}`}
-                    size={200}
-                    level="M"
-                  />
-                </div>
+                <QRCodeDisplay token={qrReservation.qrToken!} />
                 <p className="text-dungeon-primary text-sm mb-2">Show this QR code at the shop</p>
                 <p className="text-dungeon-secondary text-xs mb-4">
                   {qrReservation.shop && typeof qrReservation.shop === 'object' ? qrReservation.shop.name : 'Shop'} — {new Date(qrReservation.resvDate).toLocaleString()}
@@ -442,5 +444,14 @@ export default function MyBookingsPage() {
         </div>
       )}
     </main>
+    <ConfirmDialog
+      open={pendingCancelId !== null}
+      title="Cancel Booking"
+      message="Are you sure you want to cancel this booking? This action cannot be undone."
+      confirmLabel="Cancel Booking"
+      onConfirm={confirmDelete}
+      onCancel={() => setPendingCancelId(null)}
+    />
+    </>
   );
 }

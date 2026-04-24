@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import { useToast } from '@/components/ToastContext';
+import ConfirmDialog from '@/components/ConfirmDialog';
 import { getReservations, updateReservation, deleteReservation } from '@/libs/reservations';
 import { verifySlip } from '@/libs/promotions';
 import { Reservation } from '@/interface';
@@ -19,6 +20,7 @@ import { PaginationData } from '@/types/api';
 export default function AdminBookingsPage() {
   const { token, user } = useSelector((state: RootState) => state.auth);
   const { addToast } = useToast();
+  const [pendingCancelId, setPendingCancelId] = useState<string | null>(null);
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [pagination, setPagination] = useState<PaginationData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -98,8 +100,13 @@ export default function AdminBookingsPage() {
     setEditingReservation(null);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to cancel this booking?')) return;
+  const handleDelete = (id: string) => {
+    setPendingCancelId(id);
+  };
+
+  const confirmDelete = async () => {
+    const id = pendingCancelId!;
+    setPendingCancelId(null);
     try {
       const res = await deleteReservation(id, token!);
       if (res.success) {
@@ -132,6 +139,7 @@ export default function AdminBookingsPage() {
   if (loading) return <LoadingState message="Loading all bookings..." />;
 
   return (
+    <>
     <main className="min-h-screen bg-dungeon-canvas py-8">
       <div className="max-w-6xl mx-auto px-4">
         <h1 className="text-3xl font-bold text-dungeon-header-text mb-8 text-center">All Bookings (Admin)</h1>
@@ -233,5 +241,14 @@ export default function AdminBookingsPage() {
         isAdmin={true}
       />
     </main>
+    <ConfirmDialog
+      open={pendingCancelId !== null}
+      title="Cancel Booking"
+      message="Are you sure you want to cancel this booking?"
+      confirmLabel="Cancel Booking"
+      onConfirm={confirmDelete}
+      onCancel={() => setPendingCancelId(null)}
+    />
+    </>
   );
 }

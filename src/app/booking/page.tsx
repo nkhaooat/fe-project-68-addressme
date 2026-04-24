@@ -10,6 +10,7 @@ import { createReservation } from '@/libs/reservations';
 import LoadingState from '@/components/LoadingState';
 import ErrorBanner from '@/components/ErrorBanner';
 import { QRCodeSVG } from 'qrcode.react';
+import QRCodeDisplay from '@/components/QRCodeDisplay';
 import { validatePromotion } from '@/libs/promotions';
 import { Shop, Service } from '@/interface';
 import Link from 'next/link';
@@ -197,13 +198,7 @@ export default function BookingPage() {
             <div className="bg-dungeon-surface border border-dungeon-outline rounded-xl p-8 max-w-md w-full text-center">
               <h2 className="text-2xl font-bold text-dungeon-header-text mb-2">🎉 Booking Confirmed!</h2>
               <p className="text-dungeon-secondary mb-6">Check your email for confirmation details.</p>
-              <div className="bg-white p-4 rounded-lg inline-block mb-4">
-                <QRCodeSVG
-                  value={`${typeof window !== 'undefined' ? window.location.origin : ''}/qr/${qrData.qrToken}`}
-                  size={200}
-                  level="M"
-                />
-              </div>
+              <QRCodeDisplay token={qrData.qrToken} />
               <p className="text-dungeon-primary text-sm mb-6">Show this QR code at the shop</p>
               <div className="flex gap-3 justify-center">
                 <button

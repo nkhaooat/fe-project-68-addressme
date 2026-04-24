@@ -7,6 +7,7 @@ import { getShop } from '@/libs/shops';
 import { getShopServices } from '@/libs/services';
 import { getShopReviews } from '@/libs/reviews';
 import { Shop, Service, Review } from '@/interface';
+import ShopImage from '@/components/ShopImage';
 
 // TikTok logo SVG
 function TikTokIcon({ className }: { className?: string }) {
@@ -181,27 +182,9 @@ export default function ShopDetailPage() {
         {/* Shop Header */}
         <div className="bg-dungeon-surface border border-dungeon-outline rounded-lg overflow-hidden mb-8">
           {/* Shop Photo */}
-          {(shop.photoProxy || shop.photo) && (
-            <div className="h-64 w-full overflow-hidden">
-              <img
-                src={shop.photoProxy || shop.photo!}
-                alt={shop.name}
-                data-fallback="0"
-                onError={(e) => {
-                  const img = e.currentTarget as HTMLImageElement;
-                  const step = parseInt(img.getAttribute('data-fallback') || '0');
-                  if (step === 0 && shop.photo && img.src !== shop.photo) {
-                    img.setAttribute('data-fallback', '1');
-                    img.src = shop.photo;
-                  } else {
-                    // All sources failed — hide the image container entirely
-                    img.style.display = 'none';
-                  }
-                }}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          )}
+          <div className="h-64 w-full overflow-hidden">
+            <ShopImage photoProxy={shop.photoProxy} photo={shop.photo} name={shop.name} height="h-64" fallbackText="🏪" />
+          </div>
           <div className="p-8">
             <div className="flex justify-between items-center mb-4">
               <h1 className="text-3xl font-bold text-dungeon-header-text">{shop.name}</h1>

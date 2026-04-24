@@ -74,67 +74,67 @@ export default function MerchantShopPage() {
     setSaving(false);
   }
 
-  if (loading) return <main className="min-h-screen bg-[#1A1A1A] flex items-center justify-center"><p className="text-[#8A8177]">Loading...</p></main>;
+  if (loading) return <main className="min-h-screen bg-dungeon-canvas flex items-center justify-center"><p className="text-dungeon-secondary">Loading...</p></main>;
 
   return (
-    <main className="min-h-screen bg-[#1A1A1A] py-8">
+    <main className="min-h-screen bg-dungeon-canvas py-8">
       <div className="max-w-2xl mx-auto px-4">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold text-[#F0E5D8]">Edit My Shop</h1>
-          <button onClick={() => router.push('/merchant')} className="text-[#8A8177] hover:text-[#F0E5D8] text-sm transition-colors">
+          <h1 className="text-3xl font-bold text-dungeon-header-text">Edit My Shop</h1>
+          <button onClick={() => router.push('/merchant')} className="text-dungeon-secondary hover:text-dungeon-header-text text-sm transition-colors">
             Back to Dashboard
           </button>
         </div>
 
-        <div className="bg-[#2B2B2B] border border-[#403A36] rounded-xl p-6 space-y-4">
+        <div className="bg-dungeon-surface border border-dungeon-outline rounded-xl p-6 space-y-4">
           {/* Shop ID (read-only) */}
           <div>
-            <label className="block text-[#8A8177] text-sm mb-1">Shop ID</label>
-            <input value={shop?._id || ''} disabled className="w-full bg-[#1A1A1A] border border-[#403A36] rounded-lg px-4 py-3 text-[#5A544E] text-sm" />
+            <label className="block text-dungeon-secondary text-sm mb-1">Shop ID</label>
+            <input value={shop?._id || ''} disabled className="w-full bg-dungeon-canvas border border-dungeon-outline rounded-lg px-4 py-3 text-dungeon-muted text-sm" />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-[#8A8177] text-sm mb-1">Shop Name</label>
+              <label className="block text-dungeon-secondary text-sm mb-1">Shop Name</label>
               <input value={form.name} onChange={e => setForm({...form, name: e.target.value})}
-                className="w-full bg-[#1A1A1A] border border-[#403A36] rounded-lg px-4 py-3 text-[#F0E5D8] focus:outline-none focus:border-[#E57A00] transition-colors" />
+                className="w-full bg-dungeon-canvas border border-dungeon-outline rounded-lg px-4 py-3 text-dungeon-header-text focus:outline-none focus:border-dungeon-accent transition-colors" />
             </div>
             <div>
-              <label className="block text-[#8A8177] text-sm mb-1">Telephone</label>
+              <label className="block text-dungeon-secondary text-sm mb-1">Telephone</label>
               <input value={form.telephone} onChange={e => setForm({...form, telephone: e.target.value})}
-                className="w-full bg-[#1A1A1A] border border-[#403A36] rounded-lg px-4 py-3 text-[#F0E5D8] focus:outline-none focus:border-[#E57A00] transition-colors" />
+                className="w-full bg-dungeon-canvas border border-dungeon-outline rounded-lg px-4 py-3 text-dungeon-header-text focus:outline-none focus:border-dungeon-accent transition-colors" />
             </div>
           </div>
 
           <div>
-            <label className="block text-[#8A8177] text-sm mb-1">Address</label>
+            <label className="block text-dungeon-secondary text-sm mb-1">Address</label>
             <input value={form.address} onChange={e => setForm({...form, address: e.target.value})}
-              className="w-full bg-[#1A1A1A] border border-[#403A36] rounded-lg px-4 py-3 text-[#F0E5D8] focus:outline-none focus:border-[#E57A00] transition-colors" />
+              className="w-full bg-dungeon-canvas border border-dungeon-outline rounded-lg px-4 py-3 text-dungeon-header-text focus:outline-none focus:border-dungeon-accent transition-colors" />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-[#8A8177] text-sm mb-1">Opening Time</label>
+              <label className="block text-dungeon-secondary text-sm mb-1">Opening Time</label>
               <input type="time" value={form.openTime} onChange={e => setForm({...form, openTime: e.target.value})}
-                className="w-full bg-[#1A1A1A] border border-[#403A36] rounded-lg px-4 py-3 text-[#F0E5D8] focus:outline-none focus:border-[#E57A00] transition-colors" />
+                className="w-full bg-dungeon-canvas border border-dungeon-outline rounded-lg px-4 py-3 text-dungeon-header-text focus:outline-none focus:border-dungeon-accent transition-colors" />
             </div>
             <div>
-              <label className="block text-[#8A8177] text-sm mb-1">Closing Time</label>
+              <label className="block text-dungeon-secondary text-sm mb-1">Closing Time</label>
               <input type="time" value={form.closeTime} onChange={e => setForm({...form, closeTime: e.target.value})}
-                className="w-full bg-[#1A1A1A] border border-[#403A36] rounded-lg px-4 py-3 text-[#F0E5D8] focus:outline-none focus:border-[#E57A00] transition-colors" />
+                className="w-full bg-dungeon-canvas border border-dungeon-outline rounded-lg px-4 py-3 text-dungeon-header-text focus:outline-none focus:border-dungeon-accent transition-colors" />
             </div>
           </div>
 
           <div>
-            <label className="block text-[#8A8177] text-sm mb-1">Description</label>
+            <label className="block text-dungeon-secondary text-sm mb-1">Description</label>
             <textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} rows={3}
-              className="w-full bg-[#1A1A1A] border border-[#403A36] rounded-lg px-4 py-3 text-[#F0E5D8] focus:outline-none focus:border-[#E57A00] transition-colors resize-none" />
+              className="w-full bg-dungeon-canvas border border-dungeon-outline rounded-lg px-4 py-3 text-dungeon-header-text focus:outline-none focus:border-dungeon-accent transition-colors resize-none" />
           </div>
 
           <div>
-            <label className="block text-[#8A8177] text-sm mb-1">Image URL</label>
+            <label className="block text-dungeon-secondary text-sm mb-1">Image URL</label>
             <input value={form.imageUrl} onChange={e => setForm({...form, imageUrl: e.target.value})}
-              className="w-full bg-[#1A1A1A] border border-[#403A36] rounded-lg px-4 py-3 text-[#F0E5D8] focus:outline-none focus:border-[#E57A00] transition-colors" />
+              className="w-full bg-dungeon-canvas border border-dungeon-outline rounded-lg px-4 py-3 text-dungeon-header-text focus:outline-none focus:border-dungeon-accent transition-colors" />
           </div>
 
           {message && (
@@ -144,7 +144,7 @@ export default function MerchantShopPage() {
           )}
 
           <button onClick={handleSave} disabled={saving}
-            className="w-full py-3 bg-[#E57A00] text-[#1A110A] font-bold rounded-lg hover:bg-[#c46a00] transition-colors disabled:opacity-50">
+            className="w-full py-3 bg-dungeon-accent text-dungeon-dark-text font-bold rounded-lg hover:bg-dungeon-accent-dark transition-colors disabled:opacity-50">
             {saving ? 'Saving...' : 'Save Changes'}
           </button>
         </div>

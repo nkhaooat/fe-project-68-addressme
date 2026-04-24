@@ -42,17 +42,17 @@ export default function ReviewPage() {
 
   if (!reservationId) {
     return (
-      <main className="min-h-screen bg-[#1A1A1A] flex items-center justify-center">
+      <main className="min-h-screen bg-dungeon-canvas flex items-center justify-center">
         <div className="text-center">
-          <p className="text-[#8A8177] text-xl">Invalid review link</p>
-          <a href="/" className="text-[#E57A00] text-sm mt-2 inline-block hover:underline">Go home</a>
+          <p className="text-dungeon-secondary text-xl">Invalid review link</p>
+          <a href="/" className="text-dungeon-accent text-sm mt-2 inline-block hover:underline">Go home</a>
         </div>
       </main>
     );
   }
 
   if (loading) {
-    return <main className="min-h-screen bg-[#1A1A1A] flex items-center justify-center"><p className="text-[#8A8177]">Loading...</p></main>;
+    return <main className="min-h-screen bg-dungeon-canvas flex items-center justify-center"><p className="text-dungeon-secondary">Loading...</p></main>;
   }
 
   function handleDone() {
@@ -61,14 +61,14 @@ export default function ReviewPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#1A1A1A] flex items-center justify-center">
+    <main className="min-h-screen bg-dungeon-canvas flex items-center justify-center">
       <div className="text-center">
-        <h1 className="text-2xl font-bold text-[#F0E5D8] mb-4">Leave a Review</h1>
-        <p className="text-[#A88C6B] mb-6">
+        <h1 className="text-2xl font-bold text-dungeon-header-text mb-4">Leave a Review</h1>
+        <p className="text-dungeon-sub-header mb-6">
           {reservation ? `${reservation.shopName} - ${reservation.serviceName}` : 'Share your experience'}
         </p>
         <button onClick={() => setShowReview(true)}
-          className="px-8 py-3 bg-[#E57A00] text-[#1A110A] font-bold rounded-xl hover:bg-[#c46a00] transition-colors">
+          className="px-8 py-3 bg-dungeon-accent text-dungeon-dark-text font-bold rounded-xl hover:bg-dungeon-accent-dark transition-colors">
           Write Review
         </button>
       </div>

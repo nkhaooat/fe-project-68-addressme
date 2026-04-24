@@ -27,6 +27,9 @@ export interface Shop {
   photo?: string;
   photoProxy?: string;
   placeId?: string;
+  hasGooglePhoto?: boolean;
+  platformRating?: number;
+  platformReviewCount?: number;
   description?: string;
   tiktokLinks?: string[];
 }

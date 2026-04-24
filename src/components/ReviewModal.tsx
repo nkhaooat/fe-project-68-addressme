@@ -44,9 +44,9 @@ export default function ReviewModal({ reservationId, shopName, serviceName, toke
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-      <div className="bg-[#2B2B2B] border border-[#403A36] rounded-xl p-6 w-full max-w-md">
-        <h2 className="text-xl font-bold text-[#F0E5D8] mb-1">Rate Your Experience</h2>
-        <p className="text-[#A88C6B] text-sm mb-5">
+      <div className="bg-dungeon-surface border border-dungeon-outline rounded-xl p-6 w-full max-w-md">
+        <h2 className="text-xl font-bold text-dungeon-header-text mb-1">Rate Your Experience</h2>
+        <p className="text-dungeon-sub-header text-sm mb-5">
           {serviceName} · {shopName}
         </p>
 
@@ -72,23 +72,23 @@ export default function ReviewModal({ reservationId, shopName, serviceName, toke
           placeholder="Share your experience (optional)"
           rows={3}
           maxLength={500}
-          className="w-full bg-[#1A1A1A] border border-[#403A36] rounded-lg px-4 py-2.5 text-sm text-[#F0E5D8] placeholder-[#8A8177] focus:outline-none focus:border-[#E57A00] resize-none mb-1"
+          className="w-full bg-dungeon-canvas border border-dungeon-outline rounded-lg px-4 py-2.5 text-sm text-dungeon-header-text placeholder-dungeon-secondary focus:outline-none focus:border-dungeon-accent resize-none mb-1"
         />
-        <p className="text-[#8A8177] text-xs text-right mb-4">{comment.length}/500</p>
+        <p className="text-dungeon-secondary text-xs text-right mb-4">{comment.length}/500</p>
 
         {error && <p className="text-red-400 text-sm mb-3">{error}</p>}
 
         <div className="flex gap-3">
           <button
             onClick={onClose}
-            className="flex-1 px-4 py-2 border border-[#403A36] text-[#8A8177] rounded-lg hover:border-[#E57A00] hover:text-[#F0E5D8] transition-colors"
+            className="flex-1 px-4 py-2 border border-dungeon-outline text-dungeon-secondary rounded-lg hover:border-dungeon-accent hover:text-dungeon-header-text transition-colors"
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="flex-1 px-4 py-2 bg-[#E57A00] text-[#1A110A] font-bold rounded-lg hover:bg-[#c46a00] transition-colors disabled:opacity-50"
+            className="flex-1 px-4 py-2 bg-dungeon-accent text-dungeon-dark-text font-bold rounded-lg hover:bg-dungeon-accent-dark transition-colors disabled:opacity-50"
           >
             {loading ? 'Submitting…' : 'Submit Review'}
           </button>

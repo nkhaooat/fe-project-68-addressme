@@ -12,22 +12,7 @@ interface PaginationData {
   limit: number;
 }
 
-// Debounce hook
-function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [value, delay]);
-
-  return debouncedValue;
-}
+import { useDebounce } from '@/hooks/useDebounce';
 
 export default function ShopsPage() {
   const [shops, setShops] = useState<Shop[]>([]);
@@ -109,15 +94,15 @@ export default function ShopsPage() {
 
   if (loading && shops.length === 0) {
     return (
-      <div className="min-h-screen bg-[#1A1A1A] flex items-center justify-center">
-        <div className="text-[#E57A00] text-xl">Loading shops...</div>
+      <div className="min-h-screen bg-dungeon-canvas flex items-center justify-center">
+        <div className="text-dungeon-accent text-xl">Loading shops...</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#1A1A1A] flex items-center justify-center">
+      <div className="min-h-screen bg-dungeon-canvas flex items-center justify-center">
         <div className="text-red-400 text-xl">{error}</div>
       </div>
     );
@@ -175,9 +160,9 @@ export default function ShopsPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#1A1A1A] py-8">
+    <main className="min-h-screen bg-dungeon-canvas py-8">
       <div className="max-w-6xl mx-auto px-4">
-        <h1 className="text-4xl font-bold text-[#F0E5D8] mb-8 text-center">
+        <h1 className="text-4xl font-bold text-dungeon-header-text mb-8 text-center">
           Massage Shops
         </h1>
 
@@ -193,24 +178,24 @@ export default function ShopsPage() {
                 const sanitized = e.target.value.replace(/[\\/<>&"']/g, '');
                 setSearchQuery(sanitized);
               }}
-              className="w-full bg-[#2B2B2B] border border-[#403A36] rounded-lg px-4 py-3 pl-12 text-[#F0E5D8] placeholder-[#8A8177] focus:border-[#E57A00] focus:outline-none"
+              className="w-full bg-dungeon-surface border border-dungeon-outline rounded-lg px-4 py-3 pl-12 text-dungeon-header-text placeholder-dungeon-secondary focus:border-dungeon-accent focus:outline-none"
             />
-            <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#8A8177]">
+            <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-dungeon-secondary">
               🔍
             </span>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="bg-[#2B2B2B] border border-[#403A36] rounded-lg p-6 mb-8">
+        <div className="bg-dungeon-surface border border-dungeon-outline rounded-lg p-6 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             {/* Area Filter */}
             <div>
-              <label className="block text-[#8A8177] text-sm mb-2">Area</label>
+              <label className="block text-dungeon-secondary text-sm mb-2">Area</label>
               <select
                 value={selectedArea}
                 onChange={(e) => setSelectedArea(e.target.value)}
-                className="w-full bg-[#1A1A1A] border border-[#403A36] rounded-lg px-4 py-2 text-[#F0E5D8] focus:border-[#E57A00] focus:outline-none"
+                className="w-full bg-dungeon-canvas border border-dungeon-outline rounded-lg px-4 py-2 text-dungeon-header-text focus:border-dungeon-accent focus:outline-none"
               >
                 <option value="">All Areas</option>
                 {areas.map((area) => (
@@ -221,11 +206,11 @@ export default function ShopsPage() {
 
             {/* Rating Filter */}
             <div>
-              <label className="block text-[#8A8177] text-sm mb-2">Min Rating</label>
+              <label className="block text-dungeon-secondary text-sm mb-2">Min Rating</label>
               <select
                 value={minRating}
                 onChange={(e) => setMinRating(e.target.value)}
-                className="w-full bg-[#1A1A1A] border border-[#403A36] rounded-lg px-4 py-2 text-[#F0E5D8] focus:border-[#E57A00] focus:outline-none"
+                className="w-full bg-dungeon-canvas border border-dungeon-outline rounded-lg px-4 py-2 text-dungeon-header-text focus:border-dungeon-accent focus:outline-none"
               >
                 <option value="">Any Rating</option>
                 <option value="4.5">4.5+ Stars</option>
@@ -236,11 +221,11 @@ export default function ShopsPage() {
 
             {/* Price Range Filter */}
             <div>
-              <label className="block text-[#8A8177] text-sm mb-2">Price Range</label>
+              <label className="block text-dungeon-secondary text-sm mb-2">Price Range</label>
               <select
                 value={priceRange}
                 onChange={(e) => setPriceRange(e.target.value)}
-                className="w-full bg-[#1A1A1A] border border-[#403A36] rounded-lg px-4 py-2 text-[#F0E5D8] focus:border-[#E57A00] focus:outline-none"
+                className="w-full bg-dungeon-canvas border border-dungeon-outline rounded-lg px-4 py-2 text-dungeon-header-text focus:border-dungeon-accent focus:outline-none"
               >
                 <option value="">Any Price</option>
                 <option value="0-300">฿0 - ฿300 (Street)</option>
@@ -252,11 +237,11 @@ export default function ShopsPage() {
 
             {/* Sort By */}
             <div>
-              <label className="block text-[#8A8177] text-sm mb-2">Sort By</label>
+              <label className="block text-dungeon-secondary text-sm mb-2">Sort By</label>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as ShopQueryParams['sortBy'])}
-                className="w-full bg-[#1A1A1A] border border-[#403A36] rounded-lg px-4 py-2 text-[#F0E5D8] focus:border-[#E57A00] focus:outline-none"
+                className="w-full bg-dungeon-canvas border border-dungeon-outline rounded-lg px-4 py-2 text-dungeon-header-text focus:border-dungeon-accent focus:outline-none"
               >
                 <option value="rating">Rating</option>
                 <option value="price">Price</option>
@@ -266,11 +251,11 @@ export default function ShopsPage() {
 
             {/* Sort Order */}
             <div>
-              <label className="block text-[#8A8177] text-sm mb-2">Order</label>
+              <label className="block text-dungeon-secondary text-sm mb-2">Order</label>
               <select
                 value={sortOrder}
                 onChange={(e) => setSortOrder(e.target.value as ShopQueryParams['sortOrder'])}
-                className="w-full bg-[#1A1A1A] border border-[#403A36] rounded-lg px-4 py-2 text-[#F0E5D8] focus:border-[#E57A00] focus:outline-none"
+                className="w-full bg-dungeon-canvas border border-dungeon-outline rounded-lg px-4 py-2 text-dungeon-header-text focus:border-dungeon-accent focus:outline-none"
               >
                 <option value="desc">High to Low</option>
                 <option value="asc">Low to High</option>
@@ -280,10 +265,10 @@ export default function ShopsPage() {
 
           {/* Results count */}
           {pagination && (
-            <div className="mt-4 text-[#8A8177] text-sm">
+            <div className="mt-4 text-dungeon-secondary text-sm">
               Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} - {Math.min(currentPage * ITEMS_PER_PAGE, pagination.total)} of {pagination.total} shops
               {debouncedSearchQuery && searchQuery !== debouncedSearchQuery && (
-                <span className="ml-2 text-[#E57A00]">(searching...)</span>
+                <span className="ml-2 text-dungeon-accent">(searching...)</span>
               )}
             </div>
           )}
@@ -295,9 +280,9 @@ export default function ShopsPage() {
             <Link
               key={shop._id}
               href={`/shop/${shop._id}`}
-              className="bg-[#2B2B2B] border border-[#403A36] rounded-lg overflow-hidden hover:border-[#E57A00] transition-colors group"
+              className="bg-dungeon-surface border border-dungeon-outline rounded-lg overflow-hidden hover:border-dungeon-accent transition-colors group"
             >
-              <div className="h-48 bg-[#2C1E18] flex items-center justify-center overflow-hidden">
+              <div className="h-48 bg-dungeon-primary-header flex items-center justify-center overflow-hidden">
 {(shop.photoProxy || shop.photo) ? (
                   <img
                     src={shop.photoProxy || shop.photo!}
@@ -331,7 +316,7 @@ export default function ShopsPage() {
               </div>
               <div className="p-6">
                 <div className="flex justify-between items-start gap-2 mb-2">
-                  <h2 className="text-xl font-bold text-[#F0E5D8] group-hover:text-[#E57A00] transition-colors leading-tight">
+                  <h2 className="text-xl font-bold text-dungeon-header-text group-hover:text-dungeon-accent transition-colors leading-tight">
                     {shop.name}
                   </h2>
                   {shop.rating && (
@@ -342,18 +327,18 @@ export default function ShopsPage() {
                     </div>
                   )}
                   {(shop.platformReviewCount ?? 0) > 0 && (
-                    <div className="flex items-center gap-1 text-[#E57A00] shrink-0 ml-1">
+                    <div className="flex items-center gap-1 text-dungeon-accent shrink-0 ml-1">
                       <span>⭐</span>
                       <span className="text-sm font-bold">{shop.platformRating}</span>
                       <img src="/logo.png" alt="Dungeon Inn" className="w-3 h-3" />
                     </div>
                   )}
                 </div>
-                <p className="text-[#8A8177] text-sm mb-2">{shop.address}</p>
-                <p className="text-[#A88C6B] text-sm mb-4">{shop.location}</p>
+                <p className="text-dungeon-secondary text-sm mb-2">{shop.address}</p>
+                <p className="text-dungeon-sub-header text-sm mb-4">{shop.location}</p>
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-[#8A8177]">⏰ {shop.openTime} - {shop.closeTime}</span>
-                  <span className="text-[#E57A00] font-bold">
+                  <span className="text-dungeon-secondary">⏰ {shop.openTime} - {shop.closeTime}</span>
+                  <span className="text-dungeon-accent font-bold">
                     ฿{shop.priceRangeMin} - ฿{shop.priceRangeMax}
                   </span>
                 </div>
@@ -369,7 +354,7 @@ export default function ShopsPage() {
             <button
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="px-4 py-2 bg-[#2B2B2B] border border-[#403A36] rounded-lg text-[#F0E5D8] disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#E57A00] transition-colors"
+              className="px-4 py-2 bg-dungeon-surface border border-dungeon-outline rounded-lg text-dungeon-header-text disabled:opacity-50 disabled:cursor-not-allowed hover:border-dungeon-accent transition-colors"
             >
               ← Prev
             </button>
@@ -383,10 +368,10 @@ export default function ShopsPage() {
                   disabled={page === '...'}
                   className={`w-10 h-10 rounded-lg border transition-colors ${
                     page === currentPage
-                      ? 'bg-[#E57A00] border-[#E57A00] text-[#1A110A] font-bold'
+                      ? 'bg-dungeon-accent border-dungeon-accent text-dungeon-dark-text font-bold'
                       : page === '...'
-                      ? 'bg-transparent border-transparent text-[#8A8177] cursor-default'
-                      : 'bg-[#2B2B2B] border-[#403A36] text-[#F0E5D8] hover:border-[#E57A00]'
+                      ? 'bg-transparent border-transparent text-dungeon-secondary cursor-default'
+                      : 'bg-dungeon-surface border-dungeon-outline text-dungeon-header-text hover:border-dungeon-accent'
                   }`}
                 >
                   {page}
@@ -398,7 +383,7 @@ export default function ShopsPage() {
             <button
               onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="px-4 py-2 bg-[#2B2B2B] border border-[#403A36] rounded-lg text-[#F0E5D8] disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#E57A00] transition-colors"
+              className="px-4 py-2 bg-dungeon-surface border border-dungeon-outline rounded-lg text-dungeon-header-text disabled:opacity-50 disabled:cursor-not-allowed hover:border-dungeon-accent transition-colors"
             >
               Next →
             </button>

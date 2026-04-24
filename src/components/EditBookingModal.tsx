@@ -233,17 +233,17 @@ export default function EditBookingModal({
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-      <div className="bg-[#2B2B2B] border border-[#403A36] rounded-lg p-6 w-full max-w-md">
-        <h2 className="text-2xl font-bold text-[#F0E5D8] mb-4">
+      <div className="bg-dungeon-surface border border-dungeon-outline rounded-lg p-6 w-full max-w-md">
+        <h2 className="text-2xl font-bold text-dungeon-header-text mb-4">
           {isAdmin ? 'Edit Booking (Admin)' : 'Edit Your Booking'}
         </h2>
         
-        <div className="mb-4 text-[#8A8177]">
-          <p><span className="text-[#D4CFC6]">Shop:</span> {shopName}</p>
-          <p><span className="text-[#D4CFC6]">Service:</span> {serviceName} {serviceDuration > 0 && `(${serviceDuration} mins)`}</p>
+        <div className="mb-4 text-dungeon-secondary">
+          <p><span className="text-dungeon-primary">Shop:</span> {shopName}</p>
+          <p><span className="text-dungeon-primary">Service:</span> {serviceName} {serviceDuration > 0 && `(${serviceDuration} mins)`}</p>
           {shop && (
             <p className="text-sm mt-2">
-              <span className="text-[#A88C6B]">Shop Hours:</span> {shop.openTime} - {shop.closeTime}
+              <span className="text-dungeon-sub-header">Shop Hours:</span> {shop.openTime} - {shop.closeTime}
             </p>
           )}
         </div>
@@ -256,14 +256,14 @@ export default function EditBookingModal({
 
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block text-[#8A8177] text-sm mb-2">
+            <label className="block text-dungeon-secondary text-sm mb-2">
               New Appointment Date & Time
             </label>
             <input
               type="datetime-local"
               value={newDate}
               onChange={(e) => setNewDate(e.target.value)}
-              className="w-full bg-[#1A1A1A] border border-[#403A36] rounded-lg px-4 py-2 text-[#F0E5D8] focus:border-[#E57A00] focus:outline-none"
+              className="w-full bg-dungeon-canvas border border-dungeon-outline rounded-lg px-4 py-2 text-dungeon-header-text focus:border-dungeon-accent focus:outline-none"
               required
             />
           </div>
@@ -272,14 +272,14 @@ export default function EditBookingModal({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 bg-[#454545] text-[#D4CFC6] rounded hover:bg-[#5a5a5a] transition-colors"
+              className="flex-1 px-4 py-2 bg-dungeon-star-empty text-dungeon-primary rounded hover:bg-dungeon-star-half transition-colors"
               disabled={loading}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-2 bg-[#E57A00] text-[#1A110A] font-bold rounded hover:bg-[#c46a00] transition-colors"
+              className="flex-1 px-4 py-2 bg-dungeon-accent text-dungeon-dark-text font-bold rounded hover:bg-dungeon-accent-dark transition-colors"
               disabled={loading}
             >
               {loading ? 'Updating...' : 'Update Booking'}

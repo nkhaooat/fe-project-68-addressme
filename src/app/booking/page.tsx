@@ -219,8 +219,8 @@ export default function BookingPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#1A1A1A] flex items-center justify-center">
-        <div className="text-[#E57A00] text-xl">Loading...</div>
+      <main className="min-h-screen bg-dungeon-canvas flex items-center justify-center">
+        <div className="text-dungeon-accent text-xl">Loading...</div>
       </main>
     );
   }
@@ -228,9 +228,9 @@ export default function BookingPage() {
   const displayPrice = promoApplied ? promoApplied.finalPrice : (service?.price || 0);
 
   return (
-    <main className="min-h-screen bg-[#1A1A1A] py-8">
+    <main className="min-h-screen bg-dungeon-canvas py-8">
       <div className="max-w-2xl mx-auto px-4">
-        <h1 className="text-3xl font-bold text-[#F0E5D8] mb-8 text-center">
+        <h1 className="text-3xl font-bold text-dungeon-header-text mb-8 text-center">
           Make a Reservation
         </h1>
 
@@ -249,9 +249,9 @@ export default function BookingPage() {
         {/* US 6-2: QR Code success modal after booking */}
         {qrData && (
           <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-            <div className="bg-[#2B2B2B] border border-[#403A36] rounded-xl p-8 max-w-md w-full text-center">
-              <h2 className="text-2xl font-bold text-[#F0E5D8] mb-2">🎉 Booking Confirmed!</h2>
-              <p className="text-[#8A8177] mb-6">Check your email for confirmation details.</p>
+            <div className="bg-dungeon-surface border border-dungeon-outline rounded-xl p-8 max-w-md w-full text-center">
+              <h2 className="text-2xl font-bold text-dungeon-header-text mb-2">🎉 Booking Confirmed!</h2>
+              <p className="text-dungeon-secondary mb-6">Check your email for confirmation details.</p>
               <div className="bg-white p-4 rounded-lg inline-block mb-4">
                 <QRCodeSVG
                   value={`${typeof window !== 'undefined' ? window.location.origin : ''}/qr/${qrData.qrToken}`}
@@ -259,7 +259,7 @@ export default function BookingPage() {
                   level="M"
                 />
               </div>
-              <p className="text-[#D4CFC6] text-sm mb-6">Show this QR code at the shop</p>
+              <p className="text-dungeon-primary text-sm mb-6">Show this QR code at the shop</p>
               <div className="flex gap-3 justify-center">
                 <button
                   onClick={() => {
@@ -271,13 +271,13 @@ export default function BookingPage() {
                       link.click();
                     }
                   }}
-                  className="px-6 py-2 bg-[#E57A00] text-[#1A110A] font-bold rounded hover:bg-[#c46a00] transition-colors"
+                  className="px-6 py-2 bg-dungeon-accent text-dungeon-dark-text font-bold rounded hover:bg-dungeon-accent-dark transition-colors"
                 >
                   📥 Download QR
                 </button>
                 <button
                   onClick={() => router.push('/mybookings')}
-                  className="px-6 py-2 bg-[#403A36] text-[#F0E5D8] rounded hover:bg-[#E57A00] hover:text-[#1A110A] transition-colors font-bold"
+                  className="px-6 py-2 bg-dungeon-outline text-dungeon-header-text rounded hover:bg-dungeon-accent hover:text-dungeon-dark-text transition-colors font-bold"
                 >
                   My Bookings →
                 </button>
@@ -286,14 +286,14 @@ export default function BookingPage() {
           </div>
         )}
 
-        <div className="bg-[#2B2B2B] border border-[#403A36] rounded-lg p-6 mb-6">
-          <h2 className="text-xl font-bold text-[#F0E5D8] mb-4">Booking Details</h2>
+        <div className="bg-dungeon-surface border border-dungeon-outline rounded-lg p-6 mb-6">
+          <h2 className="text-xl font-bold text-dungeon-header-text mb-4">Booking Details</h2>
           
           {shop && (
             <div className="mb-4">
-              <p className="text-[#8A8177]">Shop</p>
-              <p className="text-[#D4CFC6] font-medium">{shop.name}</p>
-              <p className="text-[#A88C6B] text-sm mt-1">
+              <p className="text-dungeon-secondary">Shop</p>
+              <p className="text-dungeon-primary font-medium">{shop.name}</p>
+              <p className="text-dungeon-sub-header text-sm mt-1">
                 🕐 Open: {shop.openTime} - {shop.closeTime}
               </p>
             </div>
@@ -301,18 +301,18 @@ export default function BookingPage() {
 
           {service && (
             <div className="mb-4">
-              <p className="text-[#8A8177]">Service</p>
-              <p className="text-[#D4CFC6] font-medium">{service.name}</p>
-              <p className="text-[#E57A00]">฿{service.price} • {service.duration} mins</p>
+              <p className="text-dungeon-secondary">Service</p>
+              <p className="text-dungeon-primary font-medium">{service.name}</p>
+              <p className="text-dungeon-accent">฿{service.price} • {service.duration} mins</p>
             </div>
           )}
 
           {/* EPIC 4: Price Breakdown */}
           {service && (
-            <div className="border-t border-[#403A36] pt-4 mt-4">
-              <h3 className="text-lg font-semibold text-[#F0E5D8] mb-3">Price</h3>
+            <div className="border-t border-dungeon-outline pt-4 mt-4">
+              <h3 className="text-lg font-semibold text-dungeon-header-text mb-3">Price</h3>
               <div className="space-y-2">
-                <div className="flex justify-between text-[#D4CFC6]">
+                <div className="flex justify-between text-dungeon-primary">
                   <span>Original Price</span>
                   <span>฿{service.price}</span>
                 </div>
@@ -322,7 +322,7 @@ export default function BookingPage() {
                       <span>Discount ({promoApplied.discountType === 'flat' ? `฿${promoApplied.discountValue} off` : `${promoApplied.discountValue}% off`})</span>
                       <span>-฿{promoApplied.discountAmount}</span>
                     </div>
-                    <div className="border-t border-[#403A36] pt-2 flex justify-between text-[#E57A00] font-bold text-lg">
+                    <div className="border-t border-dungeon-outline pt-2 flex justify-between text-dungeon-accent font-bold text-lg">
                       <span>Final Price</span>
                       <span>฿{promoApplied.finalPrice}</span>
                     </div>
@@ -333,26 +333,26 @@ export default function BookingPage() {
           )}
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-[#2B2B2B] border border-[#403A36] rounded-lg p-6 mb-6">
-          <h2 className="text-xl font-bold text-[#F0E5D8] mb-6">Select Date & Time</h2>
+        <form onSubmit={handleSubmit} className="bg-dungeon-surface border border-dungeon-outline rounded-lg p-6 mb-6">
+          <h2 className="text-xl font-bold text-dungeon-header-text mb-6">Select Date & Time</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
-              <label className="block text-[#A88C6B] text-sm font-bold mb-2">Date</label>
+              <label className="block text-dungeon-sub-header text-sm font-bold mb-2">Date</label>
               <input
                 type="date"
                 value={resvDate}
                 onChange={(e) => setResvDate(e.target.value)}
                 min={new Date().toISOString().split('T')[0]}
-                className="w-full px-4 py-3 bg-[#1A1A1A] border border-[#403A36] rounded text-[#D4CFC6] focus:outline-none focus:border-[#E57A00]"
+                className="w-full px-4 py-3 bg-dungeon-canvas border border-dungeon-outline rounded text-dungeon-primary focus:outline-none focus:border-dungeon-accent"
                 required
               />
             </div>
             <div>
-              <label className="block text-[#A88C6B] text-sm font-bold mb-2">
+              <label className="block text-dungeon-sub-header text-sm font-bold mb-2">
                 Time
                 {shop && (
-                  <span className="text-[#8A8177] font-normal ml-2">
+                  <span className="text-dungeon-secondary font-normal ml-2">
                     ({shop.openTime} - {shop.closeTime})
                   </span>
                 )}
@@ -361,7 +361,7 @@ export default function BookingPage() {
                 type="time"
                 value={resvTime}
                 onChange={(e) => setResvTime(e.target.value)}
-                className="w-full px-4 py-3 bg-[#1A1A1A] border border-[#403A36] rounded text-[#D4CFC6] focus:outline-none focus:border-[#E57A00]"
+                className="w-full px-4 py-3 bg-dungeon-canvas border border-dungeon-outline rounded text-dungeon-primary focus:outline-none focus:border-dungeon-accent"
                 required
               />
               {timeError && <p className="text-red-400 text-sm mt-2">{timeError}</p>}
@@ -370,8 +370,8 @@ export default function BookingPage() {
         </form>
 
         {/* EPIC 4: Promotion Code Section */}
-        <div className="bg-[#2B2B2B] border border-[#403A36] rounded-lg p-6 mb-6">
-          <h2 className="text-xl font-bold text-[#F0E5D8] mb-4">Promotion Code</h2>
+        <div className="bg-dungeon-surface border border-dungeon-outline rounded-lg p-6 mb-6">
+          <h2 className="text-xl font-bold text-dungeon-header-text mb-4">Promotion Code</h2>
           
           {promoApplied ? (
             <div className="bg-green-900/30 border border-green-600 rounded-lg p-4">
@@ -385,7 +385,7 @@ export default function BookingPage() {
                   Remove
                 </button>
               </div>
-              <p className="text-[#D4CFC6] text-sm">
+              <p className="text-dungeon-primary text-sm">
                 Code: <span className="font-mono">{promoApplied.code}</span> — {promoApplied.discountType === 'flat' ? `฿${promoApplied.discountValue} off` : `${promoApplied.discountValue}% off`}
               </p>
               <p className="text-green-400 text-sm mt-1">
@@ -400,41 +400,41 @@ export default function BookingPage() {
                   value={promoCode}
                   onChange={(e) => { setPromoCode(e.target.value.toUpperCase()); setPromoError(''); }}
                   placeholder="Enter promotion code"
-                  className="flex-1 px-4 py-3 bg-[#1A1A1A] border border-[#403A36] rounded text-[#D4CFC6] focus:outline-none focus:border-[#E57A00] uppercase font-mono"
+                  className="flex-1 px-4 py-3 bg-dungeon-canvas border border-dungeon-outline rounded text-dungeon-primary focus:outline-none focus:border-dungeon-accent uppercase font-mono"
                   disabled={!service}
                 />
                 <button
                   type="button"
                   onClick={handleApplyPromo}
                   disabled={promoValidating || !promoCode.trim() || !service}
-                  className="px-6 py-3 bg-[#E57A00] text-[#1A110A] font-bold rounded hover:bg-[#c46a00] transition-colors disabled:opacity-50"
+                  className="px-6 py-3 bg-dungeon-accent text-dungeon-dark-text font-bold rounded hover:bg-dungeon-accent-dark transition-colors disabled:opacity-50"
                 >
                   {promoValidating ? 'Checking...' : 'Apply'}
                 </button>
               </div>
               {promoError && <p className="text-red-400 text-sm mt-2">{promoError}</p>}
-              {!service && <p className="text-[#8A8177] text-sm mt-2">Select a service first to apply promotion</p>}
+              {!service && <p className="text-dungeon-secondary text-sm mt-2">Select a service first to apply promotion</p>}
             </div>
           )}
         </div>
 
         {/* Submit */}
-        <form onSubmit={handleSubmit} className="bg-[#2B2B2B] border border-[#403A36] rounded-lg p-6">
+        <form onSubmit={handleSubmit} className="bg-dungeon-surface border border-dungeon-outline rounded-lg p-6">
           <div className="flex items-center justify-between mb-6">
-            <span className="text-[#8A8177]">Total</span>
-            <span className="text-2xl font-bold text-[#E57A00]">฿{displayPrice}</span>
+            <span className="text-dungeon-secondary">Total</span>
+            <span className="text-2xl font-bold text-dungeon-accent">฿{displayPrice}</span>
           </div>
           <div className="flex gap-4">
             <Link
               href={`/shop/${shopId}`}
-              className="flex-1 py-3 bg-[#454545] text-[#D4CFC6] font-bold rounded text-center hover:bg-[#5a5a5a] transition-colors"
+              className="flex-1 py-3 bg-dungeon-star-empty text-dungeon-primary font-bold rounded text-center hover:bg-dungeon-star-half transition-colors"
             >
               Cancel
             </Link>
             <button
               type="submit"
               disabled={submitting || !!timeError}
-              className="flex-1 py-3 bg-[#E57A00] text-[#1A110A] font-bold rounded hover:bg-[#c46a00] transition-colors disabled:opacity-50"
+              className="flex-1 py-3 bg-dungeon-accent text-dungeon-dark-text font-bold rounded hover:bg-dungeon-accent-dark transition-colors disabled:opacity-50"
             >
               {submitting ? 'Booking...' : `Confirm Booking ฿${displayPrice}`}
             </button>

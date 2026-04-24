@@ -68,13 +68,13 @@ export default function RegisterPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#1A1A1A] flex items-center justify-center px-4 py-8">
+    <main className="min-h-screen bg-dungeon-canvas flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-md">
-        <div className="bg-[#2B2B2B] border border-[#403A36] rounded-lg p-8">
-          <h1 className="text-3xl font-bold text-[#F0E5D8] text-center mb-2">
+        <div className="bg-dungeon-surface border border-dungeon-outline rounded-lg p-8">
+          <h1 className="text-3xl font-bold text-dungeon-header-text text-center mb-2">
             Join Dungeon Inn
           </h1>
-          <p className="text-[#8A8177] text-center mb-8">
+          <p className="text-dungeon-secondary text-center mb-8">
             Create your account to begin
           </p>
 
@@ -86,7 +86,7 @@ export default function RegisterPage() {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-[#A88C6B] text-sm font-bold mb-2">
+              <label className="block text-dungeon-sub-header text-sm font-bold mb-2">
                 Full Name
               </label>
               <input
@@ -94,14 +94,14 @@ export default function RegisterPage() {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className="w-full px-4 py-3 bg-[#1A1A1A] border border-[#403A36] rounded text-[#D4CFC6] focus:outline-none focus:border-[#E57A00]"
+                className="w-full px-4 py-3 bg-dungeon-canvas border border-dungeon-outline rounded text-dungeon-primary focus:outline-none focus:border-dungeon-accent"
                 placeholder="John Doe"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-[#A88C6B] text-sm font-bold mb-2">
+              <label className="block text-dungeon-sub-header text-sm font-bold mb-2">
                 Email
               </label>
               <input
@@ -109,14 +109,14 @@ export default function RegisterPage() {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full px-4 py-3 bg-[#1A1A1A] border border-[#403A36] rounded text-[#D4CFC6] focus:outline-none focus:border-[#E57A00]"
+                className="w-full px-4 py-3 bg-dungeon-canvas border border-dungeon-outline rounded text-dungeon-primary focus:outline-none focus:border-dungeon-accent"
                 placeholder="your@email.com"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-[#A88C6B] text-sm font-bold mb-2">
+              <label className="block text-dungeon-sub-header text-sm font-bold mb-2">
                 Telephone
               </label>
               <input
@@ -124,14 +124,14 @@ export default function RegisterPage() {
                 name="telephone"
                 value={formData.telephone}
                 onChange={handleChange}
-                className="w-full px-4 py-3 bg-[#1A1A1A] border border-[#403A36] rounded text-[#D4CFC6] focus:outline-none focus:border-[#E57A00]"
+                className="w-full px-4 py-3 bg-dungeon-canvas border border-dungeon-outline rounded text-dungeon-primary focus:outline-none focus:border-dungeon-accent"
                 placeholder="0812345678"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-[#A88C6B] text-sm font-bold mb-2">
+              <label className="block text-dungeon-sub-header text-sm font-bold mb-2">
                 Password
               </label>
               <input
@@ -139,14 +139,14 @@ export default function RegisterPage() {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className="w-full px-4 py-3 bg-[#1A1A1A] border border-[#403A36] rounded text-[#D4CFC6] focus:outline-none focus:border-[#E57A00]"
+                className="w-full px-4 py-3 bg-dungeon-canvas border border-dungeon-outline rounded text-dungeon-primary focus:outline-none focus:border-dungeon-accent"
                 placeholder="••••••••"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-[#A88C6B] text-sm font-bold mb-2">
+              <label className="block text-dungeon-sub-header text-sm font-bold mb-2">
                 Confirm Password
               </label>
               <input
@@ -154,7 +154,7 @@ export default function RegisterPage() {
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className="w-full px-4 py-3 bg-[#1A1A1A] border border-[#403A36] rounded text-[#D4CFC6] focus:outline-none focus:border-[#E57A00]"
+                className="w-full px-4 py-3 bg-dungeon-canvas border border-dungeon-outline rounded text-dungeon-primary focus:outline-none focus:border-dungeon-accent"
                 placeholder="••••••••"
                 required
               />
@@ -163,21 +163,21 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-[#E57A00] text-[#1A110A] font-bold rounded hover:bg-[#c46a00] transition-colors disabled:opacity-50"
+              className="w-full py-3 bg-dungeon-accent text-dungeon-dark-text font-bold rounded hover:bg-dungeon-accent-dark transition-colors disabled:opacity-50"
             >
               {loading ? 'Creating Account...' : 'Create Account'}
             </button>
           </form>
 
-          <p className="text-center mt-6 text-[#8A8177]">
+          <p className="text-center mt-6 text-dungeon-secondary">
             Already have an account?{' '}
-            <Link href="/login" className="text-[#E57A00] hover:underline">
+            <Link href="/login" className="text-dungeon-accent hover:underline">
               Sign in
             </Link>
           </p>
-          <p className="text-center mt-2 text-[#8A8177]">
+          <p className="text-center mt-2 text-dungeon-secondary">
             Shop owner?{' '}
-            <Link href="/register/merchant" className="text-[#E57A00] hover:underline">
+            <Link href="/register/merchant" className="text-dungeon-accent hover:underline">
               Register as Merchant
             </Link>
           </p>

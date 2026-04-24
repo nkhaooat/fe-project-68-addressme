@@ -100,18 +100,18 @@ export default function MerchantServicesPage() {
     setShowForm(true);
   }
 
-  if (loading) return <main className="min-h-screen bg-[#1A1A1A] flex items-center justify-center"><p className="text-[#8A8177]">Loading...</p></main>;
+  if (loading) return <main className="min-h-screen bg-dungeon-canvas flex items-center justify-center"><p className="text-dungeon-secondary">Loading...</p></main>;
 
   return (
-    <main className="min-h-screen bg-[#1A1A1A] py-8">
+    <main className="min-h-screen bg-dungeon-canvas py-8">
       <div className="max-w-4xl mx-auto px-4">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold text-[#F0E5D8]">Manage Services</h1>
+          <h1 className="text-3xl font-bold text-dungeon-header-text">Manage Services</h1>
           <div className="flex gap-3">
-            <button onClick={() => router.push('/merchant')} className="text-[#8A8177] hover:text-[#F0E5D8] text-sm transition-colors">
+            <button onClick={() => router.push('/merchant')} className="text-dungeon-secondary hover:text-dungeon-header-text text-sm transition-colors">
               Back to Dashboard
             </button>
-            <button onClick={startCreate} className="px-4 py-2 bg-[#E57A00] text-[#1A110A] font-bold rounded-lg hover:bg-[#c46a00] transition-colors text-sm">
+            <button onClick={startCreate} className="px-4 py-2 bg-dungeon-accent text-dungeon-dark-text font-bold rounded-lg hover:bg-dungeon-accent-dark transition-colors text-sm">
               Add Service
             </button>
           </div>
@@ -125,51 +125,51 @@ export default function MerchantServicesPage() {
 
         {/* Add/Edit form */}
         {showForm && (
-          <div className="bg-[#2B2B2B] border border-[#403A36] rounded-xl p-6 mb-6">
-            <h2 className="text-xl font-bold text-[#F0E5D8] mb-4">{editId ? 'Edit Service' : 'Add New Service'}</h2>
+          <div className="bg-dungeon-surface border border-dungeon-outline rounded-xl p-6 mb-6">
+            <h2 className="text-xl font-bold text-dungeon-header-text mb-4">{editId ? 'Edit Service' : 'Add New Service'}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-[#8A8177] text-sm mb-1">Service Name</label>
+                <label className="block text-dungeon-secondary text-sm mb-1">Service Name</label>
                 <input value={form.name} onChange={e => setForm({...form, name: e.target.value})}
-                  className="w-full bg-[#1A1A1A] border border-[#403A36] rounded-lg px-4 py-3 text-[#F0E5D8] focus:outline-none focus:border-[#E57A00] transition-colors" />
+                  className="w-full bg-dungeon-canvas border border-dungeon-outline rounded-lg px-4 py-3 text-dungeon-header-text focus:outline-none focus:border-dungeon-accent transition-colors" />
               </div>
               <div>
-                <label className="block text-[#8A8177] text-sm mb-1">Area / Type</label>
+                <label className="block text-dungeon-secondary text-sm mb-1">Area / Type</label>
                 <input value={form.area} onChange={e => setForm({...form, area: e.target.value})}
-                  className="w-full bg-[#1A1A1A] border border-[#403A36] rounded-lg px-4 py-3 text-[#F0E5D8] focus:outline-none focus:border-[#E57A00] transition-colors" />
+                  className="w-full bg-dungeon-canvas border border-dungeon-outline rounded-lg px-4 py-3 text-dungeon-header-text focus:outline-none focus:border-dungeon-accent transition-colors" />
               </div>
               <div>
-                <label className="block text-[#8A8177] text-sm mb-1">Duration (minutes)</label>
+                <label className="block text-dungeon-secondary text-sm mb-1">Duration (minutes)</label>
                 <input type="number" value={form.duration} onChange={e => setForm({...form, duration: Number(e.target.value)})}
-                  className="w-full bg-[#1A1A1A] border border-[#403A36] rounded-lg px-4 py-3 text-[#F0E5D8] focus:outline-none focus:border-[#E57A00] transition-colors" />
+                  className="w-full bg-dungeon-canvas border border-dungeon-outline rounded-lg px-4 py-3 text-dungeon-header-text focus:outline-none focus:border-dungeon-accent transition-colors" />
               </div>
               <div>
-                <label className="block text-[#8A8177] text-sm mb-1">Price (THB)</label>
+                <label className="block text-dungeon-secondary text-sm mb-1">Price (THB)</label>
                 <input type="number" value={form.price} onChange={e => setForm({...form, price: Number(e.target.value)})}
-                  className="w-full bg-[#1A1A1A] border border-[#403A36] rounded-lg px-4 py-3 text-[#F0E5D8] focus:outline-none focus:border-[#E57A00] transition-colors" />
+                  className="w-full bg-dungeon-canvas border border-dungeon-outline rounded-lg px-4 py-3 text-dungeon-header-text focus:outline-none focus:border-dungeon-accent transition-colors" />
               </div>
               <div className="flex items-center gap-2">
-                <input type="checkbox" checked={form.oil} onChange={e => setForm({...form, oil: e.target.checked})} className="w-4 h-4 accent-[#E57A00]" />
-                <label className="text-[#D4CFC6] text-sm">Uses Oil</label>
+                <input type="checkbox" checked={form.oil} onChange={e => setForm({...form, oil: e.target.checked})} className="w-4 h-4 accent-dungeon-accent" />
+                <label className="text-dungeon-primary text-sm">Uses Oil</label>
               </div>
               <div>
-                <label className="block text-[#8A8177] text-sm mb-1">Sessions</label>
+                <label className="block text-dungeon-secondary text-sm mb-1">Sessions</label>
                 <input type="number" value={form.sessions} onChange={e => setForm({...form, sessions: Number(e.target.value)})}
-                  className="w-full bg-[#1A1A1A] border border-[#403A36] rounded-lg px-4 py-3 text-[#F0E5D8] focus:outline-none focus:border-[#E57A00] transition-colors" />
+                  className="w-full bg-dungeon-canvas border border-dungeon-outline rounded-lg px-4 py-3 text-dungeon-header-text focus:outline-none focus:border-dungeon-accent transition-colors" />
               </div>
             </div>
             <div className="mt-4">
-              <label className="block text-[#8A8177] text-sm mb-1">Description</label>
+              <label className="block text-dungeon-secondary text-sm mb-1">Description</label>
               <textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} rows={2}
-                className="w-full bg-[#1A1A1A] border border-[#403A36] rounded-lg px-4 py-3 text-[#F0E5D8] focus:outline-none focus:border-[#E57A00] transition-colors resize-none" />
+                className="w-full bg-dungeon-canvas border border-dungeon-outline rounded-lg px-4 py-3 text-dungeon-header-text focus:outline-none focus:border-dungeon-accent transition-colors resize-none" />
             </div>
             <div className="flex gap-3 mt-4">
               <button onClick={handleSubmit} disabled={saving}
-                className="px-6 py-2 bg-[#E57A00] text-[#1A110A] font-bold rounded-lg hover:bg-[#c46a00] transition-colors disabled:opacity-50">
+                className="px-6 py-2 bg-dungeon-accent text-dungeon-dark-text font-bold rounded-lg hover:bg-dungeon-accent-dark transition-colors disabled:opacity-50">
                 {saving ? 'Saving...' : editId ? 'Update' : 'Create'}
               </button>
               <button onClick={() => { setShowForm(false); setEditId(null); }}
-                className="px-6 py-2 bg-[#2B2B2B] border border-[#403A36] text-[#D4CFC6] rounded-lg hover:border-[#E57A00] transition-colors">
+                className="px-6 py-2 bg-dungeon-surface border border-dungeon-outline text-dungeon-primary rounded-lg hover:border-dungeon-accent transition-colors">
                 Cancel
               </button>
             </div>
@@ -178,23 +178,23 @@ export default function MerchantServicesPage() {
 
         {/* Services list */}
         {services.length === 0 ? (
-          <div className="bg-[#2B2B2B] border border-[#403A36] rounded-xl p-12 text-center">
-            <p className="text-[#8A8177] text-lg">No services yet</p>
-            <p className="text-[#5A544E] text-sm mt-1">Add your first service to get started</p>
+          <div className="bg-dungeon-surface border border-dungeon-outline rounded-xl p-12 text-center">
+            <p className="text-dungeon-secondary text-lg">No services yet</p>
+            <p className="text-dungeon-muted text-sm mt-1">Add your first service to get started</p>
           </div>
         ) : (
           <div className="space-y-3">
             {services.map(svc => (
-              <div key={svc._id} className="bg-[#2B2B2B] border border-[#403A36] rounded-lg p-4">
+              <div key={svc._id} className="bg-dungeon-surface border border-dungeon-outline rounded-lg p-4">
                 <div className="flex justify-between items-center">
                   <div className="flex-1">
-                    <p className="text-[#F0E5D8] font-bold text-lg">{svc.name}</p>
-                    <p className="text-[#A88C6B] text-sm">{svc.area} | {svc.duration} min | THB {svc.price} | {svc.oil ? 'Oil' : 'No oil'}</p>
-                    {svc.description && <p className="text-[#8A8177] text-sm mt-1">{svc.description}</p>}
+                    <p className="text-dungeon-header-text font-bold text-lg">{svc.name}</p>
+                    <p className="text-dungeon-sub-header text-sm">{svc.area} | {svc.duration} min | THB {svc.price} | {svc.oil ? 'Oil' : 'No oil'}</p>
+                    {svc.description && <p className="text-dungeon-secondary text-sm mt-1">{svc.description}</p>}
                   </div>
                   <div className="flex gap-2 ml-4">
                     <button onClick={() => startEdit(svc)}
-                      className="px-4 py-2 bg-[#1A1A1A] border border-[#403A36] text-[#D4CFC6] rounded-lg hover:border-[#E57A00] transition-colors text-sm">
+                      className="px-4 py-2 bg-dungeon-canvas border border-dungeon-outline text-dungeon-primary rounded-lg hover:border-dungeon-accent transition-colors text-sm">
                       Edit
                     </button>
                     {deleteConfirm === svc._id ? (
@@ -204,13 +204,13 @@ export default function MerchantServicesPage() {
                           Confirm
                         </button>
                         <button onClick={() => setDeleteConfirm(null)}
-                          className="px-3 py-2 bg-[#1A1A1A] border border-[#403A36] text-[#8A8177] rounded-lg text-sm hover:text-[#D4CFC6] transition-colors">
+                          className="px-3 py-2 bg-dungeon-canvas border border-dungeon-outline text-dungeon-secondary rounded-lg text-sm hover:text-dungeon-primary transition-colors">
                           Cancel
                         </button>
                       </div>
                     ) : (
                       <button onClick={() => setDeleteConfirm(svc._id)}
-                        className="px-4 py-2 bg-[#1A1A1A] border border-red-800/50 text-red-400 rounded-lg hover:border-red-600 transition-colors text-sm">
+                        className="px-4 py-2 bg-dungeon-canvas border border-red-800/50 text-red-400 rounded-lg hover:border-red-600 transition-colors text-sm">
                         Delete
                       </button>
                     )}

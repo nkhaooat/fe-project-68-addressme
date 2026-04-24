@@ -28,7 +28,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${cinzel.variable} ${inter.variable} antialiased bg-[#1A1A1A] text-[#D4CFC6]`}>
+      <body className={`${cinzel.variable} ${inter.variable} antialiased bg-dungeon-canvas text-dungeon-primary`}>
         <ReduxProvider>
           <TopMenu />
           {children}

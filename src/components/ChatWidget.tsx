@@ -282,7 +282,7 @@ export default function ChatWidget() {
       {/* Floating button */}
       <button
         onClick={() => setOpen((v) => !v)}
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-[#E57A00] text-white shadow-lg flex items-center justify-center hover:bg-[#c46a00] transition-all duration-200 hover:scale-105"
+        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-dungeon-accent text-white shadow-lg flex items-center justify-center hover:bg-dungeon-accent-dark transition-all duration-200 hover:scale-105"
         aria-label="Open chat"
       >
         {open ? (
@@ -298,7 +298,7 @@ export default function ChatWidget() {
 
       {/* Chat window */}
       {open && (
-        <div className="fixed bottom-24 right-6 z-50 flex flex-col bg-[#1A1A1A] border border-[#403A36] rounded-2xl shadow-2xl overflow-hidden
+        <div className="fixed bottom-24 right-6 z-50 flex flex-col bg-dungeon-canvas border border-dungeon-outline rounded-2xl shadow-2xl overflow-hidden
           w-[420px] max-w-[calc(100vw-2rem)]
           sm:w-[480px]
           md:w-[520px]
@@ -306,12 +306,12 @@ export default function ChatWidget() {
           sm:h-[640px]">
 
           {/* Header */}
-          <div className="bg-[#2B2B2B] px-4 py-3 flex items-center justify-between border-b border-[#403A36] shrink-0">
+          <div className="bg-dungeon-surface px-4 py-3 flex items-center justify-between border-b border-dungeon-outline shrink-0">
             <div className="flex items-center gap-3">
               <span className="text-xl">🕯️</span>
               <div>
-                <p className="text-[#F0E5D8] font-bold text-sm">Dungeon Inn Assistant</p>
-                <p className="text-[#8A8177] text-xs">Ask about shops, bookings, merchants & more</p>
+                <p className="text-dungeon-header-text font-bold text-sm">Dungeon Inn Assistant</p>
+                <p className="text-dungeon-secondary text-xs">Ask about shops, bookings, merchants & more</p>
               </div>
             </div>
             <div className="flex items-center gap-1">
@@ -321,13 +321,13 @@ export default function ChatWidget() {
                   sessionStorage.removeItem(STORAGE_KEY);
                 }}
                 title="Clear chat history"
-                className="text-[#8A8177] hover:text-[#F0E5D8] transition-colors p-1 rounded-lg hover:bg-[#403A36] text-xs"
+                className="text-dungeon-secondary hover:text-dungeon-header-text transition-colors p-1 rounded-lg hover:bg-dungeon-outline text-xs"
               >
                 🗑️
               </button>
               <button
                 onClick={() => setOpen(false)}
-                className="text-[#8A8177] hover:text-[#F0E5D8] transition-colors p-1 rounded-lg hover:bg-[#403A36]"
+                className="text-dungeon-secondary hover:text-dungeon-header-text transition-colors p-1 rounded-lg hover:bg-dungeon-outline"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
                   <path fillRule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clipRule="evenodd" />
@@ -344,7 +344,7 @@ export default function ChatWidget() {
                 className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 {msg.role === 'assistant' && (
-                  <div className="w-7 h-7 rounded-full bg-[#E57A00] flex items-center justify-center text-xs mr-2 mt-1 shrink-0">
+                  <div className="w-7 h-7 rounded-full bg-dungeon-accent flex items-center justify-center text-xs mr-2 mt-1 shrink-0">
                     🕯️
                   </div>
                 )}
@@ -352,21 +352,21 @@ export default function ChatWidget() {
                 <div
                   className={`max-w-[82%] px-3 py-2.5 rounded-2xl text-sm leading-relaxed ${
                     msg.role === 'user'
-                      ? 'bg-[#E57A00] text-[#1A110A] rounded-br-sm font-medium'
-                      : 'bg-[#2B2B2B] text-[#D4CFC6] border border-[#403A36] rounded-bl-sm'
+                      ? 'bg-dungeon-accent text-dungeon-dark-text rounded-br-sm font-medium'
+                      : 'bg-dungeon-surface text-dungeon-primary border border-dungeon-outline rounded-bl-sm'
                   }`}
                 >
                   {msg.role === 'assistant' ? (
                     <div className="prose prose-sm max-w-none
                       prose-p:my-1 prose-p:leading-relaxed
-                      prose-headings:text-[#F0E5D8] prose-headings:font-bold prose-headings:my-1
-                      prose-strong:text-[#F0E5D8] prose-strong:font-semibold
+                      prose-headings:text-dungeon-header-text prose-headings:font-bold prose-headings:my-1
+                      prose-strong:text-dungeon-header-text prose-strong:font-semibold
                       prose-ul:my-1 prose-ul:pl-4 prose-li:my-0.5
                       prose-ol:my-1 prose-ol:pl-4
-                      prose-a:text-[#E57A00] prose-a:underline prose-a:break-all
-                      prose-code:text-[#E57A00] prose-code:bg-[#1A1A1A] prose-code:px-1 prose-code:rounded
-                      prose-hr:border-[#403A36] prose-hr:my-2
-                      text-[#D4CFC6]">
+                      prose-a:text-dungeon-accent prose-a:underline prose-a:break-all
+                      prose-code:text-dungeon-accent prose-code:bg-dungeon-canvas prose-code:px-1 prose-code:rounded
+                      prose-hr:border-dungeon-outline prose-hr:my-2
+                      text-dungeon-primary">
                       <ReactMarkdown
                         components={{
                           a: ({ href, children }) => (
@@ -374,7 +374,7 @@ export default function ChatWidget() {
                               href={href}
                               target={href?.startsWith('http') ? '_blank' : '_self'}
                               rel="noopener noreferrer"
-                              className="text-[#E57A00] underline break-all"
+                              className="text-dungeon-accent underline break-all"
                             >
                               {children}
                             </a>
@@ -394,15 +394,15 @@ export default function ChatWidget() {
             {/* Typing indicator */}
             {loading && (
               <div className="flex justify-start">
-                <div className="w-7 h-7 rounded-full bg-[#E57A00] flex items-center justify-center text-xs mr-2 mt-1 shrink-0">
+                <div className="w-7 h-7 rounded-full bg-dungeon-accent flex items-center justify-center text-xs mr-2 mt-1 shrink-0">
                   🕯️
                 </div>
-                <div className="bg-[#2B2B2B] border border-[#403A36] px-4 py-3 rounded-2xl rounded-bl-sm">
+                <div className="bg-dungeon-surface border border-dungeon-outline px-4 py-3 rounded-2xl rounded-bl-sm">
                   <span className="flex gap-1.5 items-center">
                     {[0, 1, 2].map((i) => (
                       <span
                         key={i}
-                        className="w-2 h-2 bg-[#E57A00] rounded-full animate-bounce"
+                        className="w-2 h-2 bg-dungeon-accent rounded-full animate-bounce"
                         style={{ animationDelay: `${i * 0.15}s` }}
                       />
                     ))}
@@ -424,7 +424,7 @@ export default function ChatWidget() {
                 'TikTok videos',
               ].map((q) => (
                 <button key={q} onClick={() => { setInput(q); }}
-                  className="flex-shrink-0 px-3 py-1.5 bg-[#2B2B2B] border border-[#403A36] rounded-full text-[#A88C6B] text-xs hover:border-[#E57A00] hover:text-[#D4CFC6] transition-colors">
+                  className="flex-shrink-0 px-3 py-1.5 bg-dungeon-surface border border-dungeon-outline rounded-full text-dungeon-sub-header text-xs hover:border-dungeon-accent hover:text-dungeon-primary transition-colors">
                   {q}
                 </button>
               ))}
@@ -432,7 +432,7 @@ export default function ChatWidget() {
           )}
 
           {/* Input */}
-          <div className="border-t border-[#403A36] p-3 flex gap-2 shrink-0 bg-[#1A1A1A] items-end">
+          <div className="border-t border-dungeon-outline p-3 flex gap-2 shrink-0 bg-dungeon-canvas items-end">
             <textarea
               ref={inputRef}
               value={input}
@@ -446,13 +446,13 @@ export default function ChatWidget() {
               placeholder="Ask about shops, bookings, merchants…"
               disabled={loading}
               rows={1}
-              className="flex-1 bg-[#2B2B2B] border border-[#403A36] rounded-xl px-4 py-2.5 text-sm text-[#F0E5D8] placeholder-[#8A8177] focus:outline-none focus:border-[#E57A00] disabled:opacity-50 transition-colors resize-none overflow-y-auto leading-relaxed"
+              className="flex-1 bg-dungeon-surface border border-dungeon-outline rounded-xl px-4 py-2.5 text-sm text-dungeon-header-text placeholder-dungeon-secondary focus:outline-none focus:border-dungeon-accent disabled:opacity-50 transition-colors resize-none overflow-y-auto leading-relaxed"
               style={{ minHeight: '42px', maxHeight: '120px' }}
             />
             <button
               onClick={sendMessage}
               disabled={loading || !input.trim()}
-              className="w-10 h-10 bg-[#E57A00] text-[#1A110A] rounded-xl flex items-center justify-center hover:bg-[#c46a00] transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:scale-105 shrink-0 mb-0"
+              className="w-10 h-10 bg-dungeon-accent text-dungeon-dark-text rounded-xl flex items-center justify-center hover:bg-dungeon-accent-dark transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:scale-105 shrink-0 mb-0"
               aria-label="Send"
             >
               <SendIcon className="w-4 h-4" />

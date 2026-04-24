@@ -49,23 +49,23 @@ export default function QRPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#1A1A1A] flex items-center justify-center">
-        <div className="text-[#E57A00] text-xl">Verifying...</div>
+      <main className="min-h-screen bg-dungeon-canvas flex items-center justify-center">
+        <div className="text-dungeon-accent text-xl">Verifying...</div>
       </main>
     );
   }
 
   if (!booking?.success) {
     return (
-      <main className="min-h-screen bg-[#1A1A1A] flex items-center justify-center p-4">
-        <div className="bg-[#2B2B2B] border border-[#403A36] rounded-xl p-8 max-w-md w-full text-center">
+      <main className="min-h-screen bg-dungeon-canvas flex items-center justify-center p-4">
+        <div className="bg-dungeon-surface border border-dungeon-outline rounded-xl p-8 max-w-md w-full text-center">
           <p className="text-4xl mb-4">⛔</p>
           <h1 className="text-xl font-bold text-red-400 mb-2">Invalid QR Code</h1>
-          <p className="text-[#8A8177]">{booking?.message || 'This QR code is not valid.'}</p>
+          <p className="text-dungeon-secondary">{booking?.message || 'This QR code is not valid.'}</p>
           {booking?.message?.includes('Not authorized') && (
             <button
               onClick={() => router.push('/login')}
-              className="mt-4 px-6 py-2 bg-[#E57A00] text-[#1A110A] font-bold rounded hover:bg-[#c46a00] transition-colors"
+              className="mt-4 px-6 py-2 bg-dungeon-accent text-dungeon-dark-text font-bold rounded hover:bg-dungeon-accent-dark transition-colors"
             >
               Log In
             </button>
@@ -80,12 +80,12 @@ export default function QRPage() {
   const time = new Date(d.resvDate).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
   return (
-    <main className="min-h-screen bg-[#1A1A1A] flex items-center justify-center p-4">
-      <div className="bg-[#2B2B2B] border border-[#403A36] rounded-xl max-w-md w-full overflow-hidden">
+    <main className="min-h-screen bg-dungeon-canvas flex items-center justify-center p-4">
+      <div className="bg-dungeon-surface border border-dungeon-outline rounded-xl max-w-md w-full overflow-hidden">
         {/* Header */}
-        <div className="bg-[#2C1E18] p-6 text-center border-b-2 border-[#E57A00]">
-          <h1 className="text-2xl font-extrabold text-[#E57A00] tracking-wider">⚔️ DUNGEON INN</h1>
-          <p className="text-xs text-[#8A8177] tracking-widest uppercase mt-1">Massage Reservation</p>
+        <div className="bg-dungeon-primary-header p-6 text-center border-b-2 border-dungeon-accent">
+          <h1 className="text-2xl font-extrabold text-dungeon-accent tracking-wider">⚔️ DUNGEON INN</h1>
+          <p className="text-xs text-dungeon-secondary tracking-widest uppercase mt-1">Massage Reservation</p>
         </div>
 
         {/* QR Code */}
@@ -93,39 +93,39 @@ export default function QRPage() {
           <div className="bg-white inline-block p-4 rounded-lg mb-4">
             <QRCodeSVG value={qrUrl} size={200} level="M" />
           </div>
-          <p className="text-[#8A8177] text-sm">Show this code at the shop</p>
+          <p className="text-dungeon-secondary text-sm">Show this code at the shop</p>
         </div>
 
         {/* Booking Details */}
         <div className="px-6 pb-6">
-          <div className="bg-[#1A1A1A] rounded-lg divide-y divide-[#403A36]">
+          <div className="bg-dungeon-canvas rounded-lg divide-y divide-dungeon-outline">
             <div className="flex px-4 py-3">
-              <span className="text-[#8A8177] text-sm w-24">🏪 Shop</span>
-              <span className="text-[#D4CFC6] text-sm font-medium">{d.shop.name}</span>
+              <span className="text-dungeon-secondary text-sm w-24">🏪 Shop</span>
+              <span className="text-dungeon-primary text-sm font-medium">{d.shop.name}</span>
             </div>
             <div className="flex px-4 py-3">
-              <span className="text-[#8A8177] text-sm w-24">💆 Service</span>
-              <span className="text-[#D4CFC6] text-sm font-medium">{d.service.name}</span>
+              <span className="text-dungeon-secondary text-sm w-24">💆 Service</span>
+              <span className="text-dungeon-primary text-sm font-medium">{d.service.name}</span>
             </div>
             <div className="flex px-4 py-3">
-              <span className="text-[#8A8177] text-sm w-24">📅 Date</span>
-              <span className="text-[#D4CFC6] text-sm font-medium">{date}</span>
+              <span className="text-dungeon-secondary text-sm w-24">📅 Date</span>
+              <span className="text-dungeon-primary text-sm font-medium">{date}</span>
             </div>
             <div className="flex px-4 py-3">
-              <span className="text-[#8A8177] text-sm w-24">🕐 Time</span>
-              <span className="text-[#D4CFC6] text-sm font-medium">{time}</span>
+              <span className="text-dungeon-secondary text-sm w-24">🕐 Time</span>
+              <span className="text-dungeon-primary text-sm font-medium">{time}</span>
             </div>
             <div className="flex px-4 py-3">
-              <span className="text-[#8A8177] text-sm w-24">👤 Guest</span>
-              <span className="text-[#D4CFC6] text-sm font-medium">{d.user.name}</span>
+              <span className="text-dungeon-secondary text-sm w-24">👤 Guest</span>
+              <span className="text-dungeon-primary text-sm font-medium">{d.user.name}</span>
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="bg-[#1A1A1A] px-6 py-4 text-center border-t border-[#403A36]">
-          <p className="text-xs text-[#5A544E]">
-            © 2026 Dungeon Inn &nbsp;|&nbsp; <span className="text-[#E57A00]">Happy adventuring!</span>
+        <div className="bg-dungeon-canvas px-6 py-4 text-center border-t border-dungeon-outline">
+          <p className="text-xs text-dungeon-muted">
+            © 2026 Dungeon Inn &nbsp;|&nbsp; <span className="text-dungeon-accent">Happy adventuring!</span>
           </p>
         </div>
       </div>

@@ -151,7 +151,7 @@ export default function MyBookingsPage() {
       case 'confirmed': return 'text-green-400';
       case 'pending': return 'text-yellow-400';
       case 'cancelled': return 'text-red-400';
-      default: return 'text-[#8A8177]';
+      default: return 'text-dungeon-secondary';
     }
   };
 
@@ -160,7 +160,7 @@ export default function MyBookingsPage() {
       case 'approved': return 'text-green-400';
       case 'waiting_verification': return 'text-yellow-400';
       case 'rejected': return 'text-red-400';
-      default: return 'text-[#8A8177]';
+      default: return 'text-dungeon-secondary';
     }
   };
 
@@ -185,16 +185,16 @@ export default function MyBookingsPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#1A1A1A] flex items-center justify-center">
-        <div className="text-[#E57A00] text-xl">Loading your bookings...</div>
+      <main className="min-h-screen bg-dungeon-canvas flex items-center justify-center">
+        <div className="text-dungeon-accent text-xl">Loading your bookings...</div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-[#1A1A1A] py-8">
+    <main className="min-h-screen bg-dungeon-canvas py-8">
       <div className="max-w-4xl mx-auto px-4">
-        <h1 className="text-3xl font-bold text-[#F0E5D8] mb-8 text-center">
+        <h1 className="text-3xl font-bold text-dungeon-header-text mb-8 text-center">
           My Bookings
         </h1>
 
@@ -212,9 +212,9 @@ export default function MyBookingsPage() {
               placeholder="Search by shop or service name..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-[#2B2B2B] border border-[#403A36] rounded-lg px-4 py-3 pl-10 text-[#D4CFC6] placeholder-[#8A8177] focus:border-[#E57A00] focus:outline-none transition-colors"
+              className="w-full bg-dungeon-surface border border-dungeon-outline rounded-lg px-4 py-3 pl-10 text-dungeon-primary placeholder-dungeon-secondary focus:border-dungeon-accent focus:outline-none transition-colors"
             />
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8A8177]">🔍</span>
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-dungeon-secondary">🔍</span>
           </div>
         </div>
 
@@ -226,13 +226,13 @@ export default function MyBookingsPage() {
               onClick={() => setStatusFilter(tab.key)}
               className={`flex-shrink-0 px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
                 statusFilter === tab.key
-                  ? 'bg-[#E57A00] text-[#1A110A]'
-                  : 'bg-[#2B2B2B] text-[#8A8177] border border-[#403A36] hover:border-[#E57A00] hover:text-[#D4CFC6]'
+                  ? 'bg-dungeon-accent text-dungeon-dark-text'
+                  : 'bg-dungeon-surface text-dungeon-secondary border border-dungeon-outline hover:border-dungeon-accent hover:text-dungeon-primary'
               }`}
             >
               {tab.emoji} {tab.label}
               {statusCounts[tab.key] !== undefined && (
-                <span className={`ml-1.5 text-xs ${statusFilter === tab.key ? 'text-[#1A110A]/70' : 'text-[#5A544E]'}`}>
+                <span className={`ml-1.5 text-xs ${statusFilter === tab.key ? 'text-dungeon-dark-text/70' : 'text-dungeon-muted'}`}>
                   {statusCounts[tab.key]}
                 </span>
               )}
@@ -242,17 +242,17 @@ export default function MyBookingsPage() {
 
         {allReservations.length === 0 ? (
           <div className="text-center py-16">
-            <p className="text-[#8A8177] text-xl mb-4">No bookings yet</p>
+            <p className="text-dungeon-secondary text-xl mb-4">No bookings yet</p>
             <Link
               href="/shops"
-              className="inline-block px-6 py-3 bg-[#E57A00] text-[#1A110A] font-bold rounded hover:bg-[#c46a00] transition-colors"
+              className="inline-block px-6 py-3 bg-dungeon-accent text-dungeon-dark-text font-bold rounded hover:bg-dungeon-accent-dark transition-colors"
             >
               Browse Shops
             </Link>
           </div>
         ) : filteredReservations.length === 0 ? (
           <div className="text-center py-16">
-            <p className="text-[#8A8177] text-xl">No bookings match your filter</p>
+            <p className="text-dungeon-secondary text-xl">No bookings match your filter</p>
           </div>
         ) : (
           <>
@@ -260,11 +260,11 @@ export default function MyBookingsPage() {
               {paginatedReservations.map((reservation) => (
                 <div
                   key={reservation._id}
-                  className="bg-[#2B2B2B] border border-[#403A36] rounded-lg p-6"
+                  className="bg-dungeon-surface border border-dungeon-outline rounded-lg p-6"
                 >
                   <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div className="flex-1">
-                      <h3 className="text-xl font-bold text-[#F0E5D8]">
+                      <h3 className="text-xl font-bold text-dungeon-header-text">
                         {reservation.service && typeof reservation.service === 'object'
                           ? reservation.service.name
                           : 'Service'}
@@ -272,22 +272,22 @@ export default function MyBookingsPage() {
                       {reservation.shop && typeof reservation.shop === 'object' ? (
                         <Link
                           href={`/shop/${reservation.shop._id}`}
-                          className="text-[#A88C6B] hover:text-[#E57A00] transition-colors"
+                          className="text-dungeon-sub-header hover:text-dungeon-accent transition-colors"
                         >
                           {reservation.shop.name}
                         </Link>
                       ) : (
-                        <p className="text-[#A88C6B]">Shop</p>
+                        <p className="text-dungeon-sub-header">Shop</p>
                       )}
-                      <p className="text-[#8A8177] text-sm mt-1">
+                      <p className="text-dungeon-secondary text-sm mt-1">
                         📅 {new Date(reservation.resvDate).toLocaleString()}
                       </p>
                       
                       {reservation.originalPrice != null && (
-                        <p className="text-[#E57A00] text-sm mt-1">
+                        <p className="text-dungeon-accent text-sm mt-1">
                           {(reservation.discountAmount ?? 0) > 0 ? (
                             <>
-                              <span className="line-through text-[#8A8177]">฿{reservation.originalPrice}</span>
+                              <span className="line-through text-dungeon-secondary">฿{reservation.originalPrice}</span>
                               {' → '}<span className="font-bold">฿{reservation.finalPrice}</span>
                               {reservation.promotionCode && (
                                 <span className="text-green-400 ml-1">({reservation.promotionCode})</span>
@@ -312,7 +312,7 @@ export default function MyBookingsPage() {
                         <img
                           src={`${API_URL.replace('/api/v1', '')}${reservation.slipImageUrl}`}
                           alt="Payment slip"
-                          className="mt-2 h-20 rounded border border-[#403A36] object-cover"
+                          className="mt-2 h-20 rounded border border-dungeon-outline object-cover"
                         />
                       )}
                     </div>
@@ -321,7 +321,7 @@ export default function MyBookingsPage() {
                         {reservation.qrToken && reservation.qrActive && reservation.status !== 'cancelled' && reservation.status !== 'completed' && (
                           <button
                             onClick={() => setQrReservation(reservation)}
-                            className="px-4 py-2 bg-[#1A1A1A] border border-[#403A36] text-[#F0E5D8] rounded hover:border-[#E57A00] transition-colors text-sm"
+                            className="px-4 py-2 bg-dungeon-canvas border border-dungeon-outline text-dungeon-header-text rounded hover:border-dungeon-accent transition-colors text-sm"
                           >
                             📱 Show QR
                           </button>
@@ -329,7 +329,7 @@ export default function MyBookingsPage() {
                         {canEdit(reservation) && (
                           <button
                             onClick={() => setEditingReservation(reservation)}
-                            className="px-4 py-2 bg-[#E57A00] text-[#1A110A] font-bold rounded hover:bg-[#c46a00] transition-colors"
+                            className="px-4 py-2 bg-dungeon-accent text-dungeon-dark-text font-bold rounded hover:bg-dungeon-accent-dark transition-colors"
                           >
                             Edit
                           </button>
@@ -345,13 +345,13 @@ export default function MyBookingsPage() {
                         {reservation.status === 'completed' && !reviewedIds.has(reservation._id) && (
                           <button
                             onClick={() => setReviewingReservation(reservation)}
-                            className="px-4 py-2 bg-[#403A36] text-[#F0E5D8] rounded hover:bg-[#E57A00] hover:text-[#1A110A] transition-colors font-bold"
+                            className="px-4 py-2 bg-dungeon-outline text-dungeon-header-text rounded hover:bg-dungeon-accent hover:text-dungeon-dark-text transition-colors font-bold"
                           >
                             ⭐ Review
                           </button>
                         )}
                         {reservation.status === 'completed' && reviewedIds.has(reservation._id) && (
-                          <span className="px-4 py-2 text-[#8A8177] text-sm flex items-center">✓ Reviewed</span>
+                          <span className="px-4 py-2 text-dungeon-secondary text-sm flex items-center">✓ Reviewed</span>
                         )}
                       </div>
 
@@ -388,7 +388,7 @@ export default function MyBookingsPage() {
                 <button
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
-                  className="px-3 py-2 bg-[#2B2B2B] border border-[#403A36] rounded text-[#D4CFC6] text-sm disabled:opacity-30 hover:border-[#E57A00] transition-colors"
+                  className="px-3 py-2 bg-dungeon-surface border border-dungeon-outline rounded text-dungeon-primary text-sm disabled:opacity-30 hover:border-dungeon-accent transition-colors"
                 >
                   ← Prev
                 </button>
@@ -399,8 +399,8 @@ export default function MyBookingsPage() {
                       onClick={() => setCurrentPage(page)}
                       className={`w-9 h-9 rounded text-sm font-semibold transition-colors ${
                         currentPage === page
-                          ? 'bg-[#E57A00] text-[#1A110A]'
-                          : 'bg-[#2B2B2B] border border-[#403A36] text-[#D4CFC6] hover:border-[#E57A00]'
+                          ? 'bg-dungeon-accent text-dungeon-dark-text'
+                          : 'bg-dungeon-surface border border-dungeon-outline text-dungeon-primary hover:border-dungeon-accent'
                       }`}
                     >
                       {page}
@@ -410,7 +410,7 @@ export default function MyBookingsPage() {
                 <button
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}
-                  className="px-3 py-2 bg-[#2B2B2B] border border-[#403A36] rounded text-[#D4CFC6] text-sm disabled:opacity-30 hover:border-[#E57A00] transition-colors"
+                  className="px-3 py-2 bg-dungeon-surface border border-dungeon-outline rounded text-dungeon-primary text-sm disabled:opacity-30 hover:border-dungeon-accent transition-colors"
                 >
                   Next →
                 </button>
@@ -458,10 +458,10 @@ export default function MyBookingsPage() {
       {/* US 6-3: QR Code Modal */}
       {qrReservation && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#2B2B2B] border border-[#403A36] rounded-xl p-8 max-w-md w-full text-center">
+          <div className="bg-dungeon-surface border border-dungeon-outline rounded-xl p-8 max-w-md w-full text-center">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-[#F0E5D8]">Your QR Code</h2>
-              <button onClick={() => setQrReservation(null)} className="text-[#8A8177] hover:text-[#F0E5D8] text-xl">✕</button>
+              <h2 className="text-xl font-bold text-dungeon-header-text">Your QR Code</h2>
+              <button onClick={() => setQrReservation(null)} className="text-dungeon-secondary hover:text-dungeon-header-text text-xl">✕</button>
             </div>
             {qrReservation.qrActive ? (
               <>
@@ -472,8 +472,8 @@ export default function MyBookingsPage() {
                     level="M"
                   />
                 </div>
-                <p className="text-[#D4CFC6] text-sm mb-2">Show this QR code at the shop</p>
-                <p className="text-[#8A8177] text-xs mb-4">
+                <p className="text-dungeon-primary text-sm mb-2">Show this QR code at the shop</p>
+                <p className="text-dungeon-secondary text-xs mb-4">
                   {qrReservation.shop && typeof qrReservation.shop === 'object' ? qrReservation.shop.name : 'Shop'} — {new Date(qrReservation.resvDate).toLocaleString()}
                 </p>
                 <button
@@ -486,7 +486,7 @@ export default function MyBookingsPage() {
                       link.click();
                     }
                   }}
-                  className="px-6 py-2 bg-[#E57A00] text-[#1A110A] font-bold rounded hover:bg-[#c46a00] transition-colors"
+                  className="px-6 py-2 bg-dungeon-accent text-dungeon-dark-text font-bold rounded hover:bg-dungeon-accent-dark transition-colors"
                 >
                   📥 Download QR
                 </button>
@@ -494,7 +494,7 @@ export default function MyBookingsPage() {
             ) : (
               <div className="py-8">
                 <p className="text-red-400 text-lg mb-2">⛔ QR Code Void</p>
-                <p className="text-[#8A8177] text-sm">This QR code is no longer valid.</p>
+                <p className="text-dungeon-secondary text-sm">This QR code is no longer valid.</p>
               </div>
             )}
           </div>

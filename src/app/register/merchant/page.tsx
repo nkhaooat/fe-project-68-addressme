@@ -127,13 +127,13 @@ export default function RegisterMerchantPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#1A1A1A] flex items-center justify-center px-4 py-8">
+    <main className="min-h-screen bg-dungeon-canvas flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-md">
-        <div className="bg-[#2B2B2B] border border-[#403A36] rounded-lg p-8">
-          <h1 className="text-3xl font-bold text-[#F0E5D8] text-center mb-2">
+        <div className="bg-dungeon-surface border border-dungeon-outline rounded-lg p-8">
+          <h1 className="text-3xl font-bold text-dungeon-header-text text-center mb-2">
             Merchant Sign Up
           </h1>
-          <p className="text-[#8A8177] text-center mb-8">
+          <p className="text-dungeon-secondary text-center mb-8">
             Register to manage your shop on Dungeon Inn
           </p>
 
@@ -145,29 +145,29 @@ export default function RegisterMerchantPage() {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-[#A88C6B] text-sm font-bold mb-2">Full Name</label>
+              <label className="block text-dungeon-sub-header text-sm font-bold mb-2">Full Name</label>
               <input type="text" name="name" value={formData.name} onChange={handleChange}
-                className="w-full px-4 py-3 bg-[#1A1A1A] border border-[#403A36] rounded text-[#D4CFC6] focus:outline-none focus:border-[#E57A00]"
+                className="w-full px-4 py-3 bg-dungeon-canvas border border-dungeon-outline rounded text-dungeon-primary focus:outline-none focus:border-dungeon-accent"
                 placeholder="John Doe" required />
             </div>
 
             <div>
-              <label className="block text-[#A88C6B] text-sm font-bold mb-2">Email</label>
+              <label className="block text-dungeon-sub-header text-sm font-bold mb-2">Email</label>
               <input type="email" name="email" value={formData.email} onChange={handleChange}
-                className="w-full px-4 py-3 bg-[#1A1A1A] border border-[#403A36] rounded text-[#D4CFC6] focus:outline-none focus:border-[#E57A00]"
+                className="w-full px-4 py-3 bg-dungeon-canvas border border-dungeon-outline rounded text-dungeon-primary focus:outline-none focus:border-dungeon-accent"
                 placeholder="your@email.com" required />
             </div>
 
             <div>
-              <label className="block text-[#A88C6B] text-sm font-bold mb-2">Telephone</label>
+              <label className="block text-dungeon-sub-header text-sm font-bold mb-2">Telephone</label>
               <input type="tel" name="telephone" value={formData.telephone} onChange={handleChange}
-                className="w-full px-4 py-3 bg-[#1A1A1A] border border-[#403A36] rounded text-[#D4CFC6] focus:outline-none focus:border-[#E57A00]"
+                className="w-full px-4 py-3 bg-dungeon-canvas border border-dungeon-outline rounded text-dungeon-primary focus:outline-none focus:border-dungeon-accent"
                 placeholder="0812345678" required />
             </div>
 
             {/* Shop search bar */}
             <div ref={shopDropdownRef} className="relative">
-              <label className="block text-[#A88C6B] text-sm font-bold mb-2">Your Shop</label>
+              <label className="block text-dungeon-sub-header text-sm font-bold mb-2">Your Shop</label>
               <div className="relative">
                 <input
                   type="text"
@@ -180,7 +180,7 @@ export default function RegisterMerchantPage() {
                     }
                   }}
                   placeholder="Search for a shop..."
-                  className="w-full bg-[#1A1A1A] border border-[#403A36] rounded px-4 py-3 text-[#D4CFC6] focus:outline-none focus:border-[#E57A00]"
+                  className="w-full bg-dungeon-canvas border border-dungeon-outline rounded px-4 py-3 text-dungeon-primary focus:outline-none focus:border-dungeon-accent"
                 />
                 <button
                   type="button"
@@ -190,7 +190,7 @@ export default function RegisterMerchantPage() {
                       setIsShopDropdownOpen(!isShopDropdownOpen);
                     }
                   }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8A8177] hover:text-[#D4CFC6]"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-dungeon-secondary hover:text-dungeon-primary"
                 >
                   <svg className={`w-5 h-5 transition-transform ${isShopDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -200,29 +200,29 @@ export default function RegisterMerchantPage() {
 
               {/* Dropdown */}
               {isShopDropdownOpen && !formData.shopId && (
-                <div className="absolute z-10 w-full mt-1 bg-[#1A1A1A] border border-[#403A36] rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                <div className="absolute z-10 w-full mt-1 bg-dungeon-canvas border border-dungeon-outline rounded-lg shadow-lg max-h-60 overflow-y-auto">
                   {filteredShops.length > 0 ? (
                     filteredShops.map(shop => (
                       <button
                         key={shop._id}
                         type="button"
                         onClick={() => handleSelectShop(shop)}
-                        className="w-full text-left px-4 py-2 text-[#D4CFC6] hover:bg-[#2B2B2B] hover:text-[#E57A00] transition-colors"
+                        className="w-full text-left px-4 py-2 text-dungeon-primary hover:bg-dungeon-surface hover:text-dungeon-accent transition-colors"
                       >
                         {shop.name}
-                        <span className="text-[#8A8177] text-sm ml-2">- {shop.address}</span>
+                        <span className="text-dungeon-secondary text-sm ml-2">- {shop.address}</span>
                       </button>
                     ))
                   ) : (
-                    <div className="px-4 py-2 text-[#8A8177]">No shops found</div>
+                    <div className="px-4 py-2 text-dungeon-secondary">No shops found</div>
                   )}
                 </div>
               )}
 
               {/* Selected shop badge */}
               {formData.shopId && selectedShopName && (
-                <div className="mt-2 flex items-center gap-2 bg-[#1A1A1A] border border-[#403A36] rounded px-3 py-2">
-                  <span className="text-[#E57A00] font-semibold">{selectedShopName}</span>
+                <div className="mt-2 flex items-center gap-2 bg-dungeon-canvas border border-dungeon-outline rounded px-3 py-2">
+                  <span className="text-dungeon-accent font-semibold">{selectedShopName}</span>
                   <button
                     type="button"
                     onClick={() => {
@@ -232,7 +232,7 @@ export default function RegisterMerchantPage() {
                       setFilteredShops(shops.slice(0, 10));
                       setIsShopDropdownOpen(true);
                     }}
-                    className="text-[#8A8177] hover:text-red-400 ml-auto"
+                    className="text-dungeon-secondary hover:text-red-400 ml-auto"
                   >
                     Clear
                   </button>
@@ -241,32 +241,32 @@ export default function RegisterMerchantPage() {
             </div>
 
             <div>
-              <label className="block text-[#A88C6B] text-sm font-bold mb-2">Password</label>
+              <label className="block text-dungeon-sub-header text-sm font-bold mb-2">Password</label>
               <input type="password" name="password" value={formData.password} onChange={handleChange}
-                className="w-full px-4 py-3 bg-[#1A1A1A] border border-[#403A36] rounded text-[#D4CFC6] focus:outline-none focus:border-[#E57A00]"
+                className="w-full px-4 py-3 bg-dungeon-canvas border border-dungeon-outline rounded text-dungeon-primary focus:outline-none focus:border-dungeon-accent"
                 placeholder="Min 6 characters" required />
             </div>
 
             <div>
-              <label className="block text-[#A88C6B] text-sm font-bold mb-2">Confirm Password</label>
+              <label className="block text-dungeon-sub-header text-sm font-bold mb-2">Confirm Password</label>
               <input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange}
-                className="w-full px-4 py-3 bg-[#1A1A1A] border border-[#403A36] rounded text-[#D4CFC6] focus:outline-none focus:border-[#E57A00]"
+                className="w-full px-4 py-3 bg-dungeon-canvas border border-dungeon-outline rounded text-dungeon-primary focus:outline-none focus:border-dungeon-accent"
                 placeholder="Re-enter password" required />
             </div>
 
             <button type="submit" disabled={loading}
-              className="w-full py-3 bg-[#E57A00] text-[#1A110A] font-bold rounded hover:bg-[#c46a00] transition-colors disabled:opacity-50">
+              className="w-full py-3 bg-dungeon-accent text-dungeon-dark-text font-bold rounded hover:bg-dungeon-accent-dark transition-colors disabled:opacity-50">
               {loading ? 'Creating Merchant Account...' : 'Register as Merchant'}
             </button>
           </form>
 
-          <p className="text-center mt-6 text-[#8A8177]">
+          <p className="text-center mt-6 text-dungeon-secondary">
             Already have an account?{' '}
-            <Link href="/login" className="text-[#E57A00] hover:underline">Sign in</Link>
+            <Link href="/login" className="text-dungeon-accent hover:underline">Sign in</Link>
           </p>
-          <p className="text-center mt-2 text-[#8A8177]">
+          <p className="text-center mt-2 text-dungeon-secondary">
             Customer?{' '}
-            <Link href="/register" className="text-[#E57A00] hover:underline">Register here</Link>
+            <Link href="/register" className="text-dungeon-accent hover:underline">Register here</Link>
           </p>
         </div>
       </div>

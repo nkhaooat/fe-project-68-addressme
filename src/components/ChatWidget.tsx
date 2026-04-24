@@ -58,6 +58,7 @@ export default function ChatWidget() {
   const [messages, setMessages] = useState<Message[]>(defaultMessages);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [streaming, setStreaming] = useState(false);
   const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -131,6 +132,7 @@ export default function ChatWidget() {
       inputRef.current.style.height = 'auto';
     }
     setLoading(true);
+    setStreaming(false);
 
     try {
       const history = nextMessages
@@ -161,6 +163,8 @@ export default function ChatWidget() {
       // Add empty assistant message that we'll fill incrementally
       const assistantIdx = nextMessages.length;
       setMessages([...nextMessages, { role: 'assistant', content: '' }]);
+      setLoading(false); // hide dots, show empty bubble
+      setStreaming(true); // mark as streaming
 
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
@@ -215,6 +219,7 @@ export default function ChatWidget() {
       ]);
     } finally {
       setLoading(false);
+      setStreaming(false);
     }
   };
 
@@ -343,6 +348,9 @@ export default function ChatWidget() {
                       >
                         {msg.content}
                       </ReactMarkdown>
+                      {streaming && i === messages.length - 1 && msg.role === 'assistant' && (
+                        <span className="inline-block w-1.5 h-4 bg-dungeon-accent animate-pulse ml-0.5 align-text-bottom" />
+                      )}
                     </div>
                   ) : (
                     msg.content

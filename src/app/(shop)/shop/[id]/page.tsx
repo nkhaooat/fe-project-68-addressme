@@ -220,14 +220,6 @@ export default function ShopDetailPage() {
                 </p>
               </div>
             </div>
-            {/* Shop Description */}
-            {shop.description && (
-              <div className="mt-4 pt-4 border-t border-dungeon-outline">
-                <p className="text-dungeon-secondary mb-1">📝 About</p>
-                <p className="text-dungeon-primary text-sm leading-relaxed">{shop.description}</p>
-              </div>
-            )}
-
             <div className="mt-4 pt-4 border-t border-dungeon-outline">
               <div className="flex items-center justify-between flex-wrap gap-3">
                 {/* Price range */}

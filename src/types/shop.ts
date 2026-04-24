@@ -16,6 +16,6 @@ export interface Shop {
   hasGooglePhoto?: boolean;
   platformRating?: number;
   platformReviewCount?: number;
-  description?: string;
   tiktokLinks?: string[];
+  hours?: string[];
 }

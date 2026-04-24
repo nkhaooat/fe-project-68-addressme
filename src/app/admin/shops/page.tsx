@@ -18,7 +18,7 @@ const emptyShop: Omit<Shop, '_id'> = {
   name: '', address: '', location: '', tel: '', map: '',
   openTime: '09:00', closeTime: '21:00',
   priceRangeMin: 0, priceRangeMax: 0, rating: 0,
-  photo: '', placeId: '', description: '', tiktokLinks: []
+  photo: '', placeId: '', tiktokLinks: []
 };
 
 export default function AdminShopsPage() {
@@ -76,7 +76,7 @@ export default function AdminShopsPage() {
       map: shop.map, openTime: shop.openTime, closeTime: shop.closeTime,
       priceRangeMin: shop.priceRangeMin, priceRangeMax: shop.priceRangeMax,
       rating: shop.rating || 0, photo: shop.photo || '', placeId: shop.placeId || '',
-      description: shop.description || '', tiktokLinks: shop.tiktokLinks || []
+      tiktokLinks: shop.tiktokLinks || []
     });
     setIsModalOpen(true);
   };

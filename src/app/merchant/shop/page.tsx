@@ -14,7 +14,6 @@ interface ShopData {
   telephone: string;
   openTime: string;
   closeTime: string;
-  description: string;
   imageUrl: string;
 }
 
@@ -27,7 +26,7 @@ export default function MerchantShopPage() {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const [form, setForm] = useState({
-    name: '', address: '', telephone: '', openTime: '', closeTime: '', description: '', imageUrl: ''
+    name: '', address: '', telephone: '', openTime: '', closeTime: '', imageUrl: ''
   });
 
   useEffect(() => {
@@ -45,7 +44,7 @@ export default function MerchantShopPage() {
         setForm({
           name: s.name || '', address: s.address || '', telephone: s.telephone || '',
           openTime: s.openTime || '', closeTime: s.closeTime || '',
-          description: s.description || '', imageUrl: s.imageUrl || ''
+          imageUrl: s.imageUrl || ''
         });
       }
     } catch {}
@@ -124,12 +123,6 @@ export default function MerchantShopPage() {
               <input type="time" value={form.closeTime} onChange={e => setForm({...form, closeTime: e.target.value})}
                 className="w-full bg-dungeon-canvas border border-dungeon-outline rounded-lg px-4 py-3 text-dungeon-header-text focus:outline-none focus:border-dungeon-accent transition-colors" />
             </div>
-          </div>
-
-          <div>
-            <label className="block text-dungeon-secondary text-sm mb-1">Description</label>
-            <textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} rows={3}
-              className="w-full bg-dungeon-canvas border border-dungeon-outline rounded-lg px-4 py-3 text-dungeon-header-text focus:outline-none focus:border-dungeon-accent transition-colors resize-none" />
           </div>
 
           <div>

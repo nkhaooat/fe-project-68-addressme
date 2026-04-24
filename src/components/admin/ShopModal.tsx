@@ -126,12 +126,6 @@ export default function ShopModal({
                   className="w-full bg-dungeon-canvas border border-dungeon-outline rounded-lg px-4 py-2 text-dungeon-header-text focus:border-dungeon-accent focus:outline-none" />
               </div>
 
-              <div className="md:col-span-2">
-                <label className="block text-dungeon-secondary text-sm mb-1">Description</label>
-                <textarea name="description" value={formData.description || ''} onChange={handleInputChange} rows={3} placeholder="Brief description of the shop (optional - auto-generated if empty)"
-                  className="w-full bg-dungeon-canvas border border-dungeon-outline rounded-lg px-4 py-2 text-dungeon-header-text focus:border-dungeon-accent focus:outline-none resize-none" />
-              </div>
-
               {/* TikTok Links - Edit Mode Only */}
               {editingShop && (
                 <div className="md:col-span-2 border-t border-dungeon-outline pt-4 mt-2">

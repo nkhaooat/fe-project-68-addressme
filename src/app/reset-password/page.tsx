@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { resetPassword } from '@/libs/auth';
+import ErrorBanner from '@/components/ErrorBanner';
 
 function ResetPasswordForm() {
   const searchParams = useSearchParams();
@@ -73,11 +74,7 @@ function ResetPasswordForm() {
             </div>
           ) : (
             <>
-              {status === 'error' && (
-                <div className="bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded mb-6">
-                  {message}
-                </div>
-              )}
+              {status === 'error' && <ErrorBanner message={message} />}
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>

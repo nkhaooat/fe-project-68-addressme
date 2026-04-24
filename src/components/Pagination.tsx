@@ -1,11 +1,6 @@
 'use client';
 
-interface PaginationData {
-  total: number;
-  page: number;
-  pages: number;
-  limit: number;
-}
+import { PaginationData } from '@/types/api';
 
 interface PaginationProps {
   pagination: PaginationData | null;

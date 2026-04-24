@@ -4,15 +4,8 @@ import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { getShops, getShopAreas, ShopQueryParams } from '@/libs/shops';
 import { Shop } from '@/interface';
-
-interface PaginationData {
-  total: number;
-  page: number;
-  pages: number;
-  limit: number;
-}
-
 import { useDebounce } from '@/hooks/useDebounce';
+import { PaginationData } from '@/types/api';
 
 export default function ShopsPage() {
   const [shops, setShops] = useState<Shop[]>([]);

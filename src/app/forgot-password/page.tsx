@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { forgotPassword } from '@/libs/auth';
+import ErrorBanner from '@/components/ErrorBanner';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -56,11 +57,7 @@ export default function ForgotPasswordPage() {
             </div>
           ) : (
             <>
-              {status === 'error' && (
-                <div className="bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded mb-6">
-                  {message}
-                </div>
-              )}
+              {status === 'error' && <ErrorBanner message={message} />}
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>

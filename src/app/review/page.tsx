@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { RootState } from '@/redux/store';
 import ReviewModal from '@/components/ReviewModal';
 import { API_URL } from '@/libs/config';
+import LoadingState from '@/components/LoadingState';
 
 export default function ReviewPage() {
   const { token, user } = useSelector((state: RootState) => state.auth);
@@ -51,9 +52,7 @@ export default function ReviewPage() {
     );
   }
 
-  if (loading) {
-    return <main className="min-h-screen bg-dungeon-canvas flex items-center justify-center"><p className="text-dungeon-secondary">Loading...</p></main>;
-  }
+  if (loading) return <LoadingState message="Loading reservation..." />;
 
   function handleDone() {
     setShowReview(false);

@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux';
 import { useRouter } from 'next/navigation';
 import { RootState } from '@/redux/store';
 import { getMerchantServices, createMerchantService, updateMerchantService, deleteMerchantService } from '@/libs/auth';
+import LoadingState from '@/components/LoadingState';
 
 interface ServiceData {
   _id: string;
@@ -100,7 +101,7 @@ export default function MerchantServicesPage() {
     setShowForm(true);
   }
 
-  if (loading) return <main className="min-h-screen bg-dungeon-canvas flex items-center justify-center"><p className="text-dungeon-secondary">Loading...</p></main>;
+  if (loading) return <LoadingState message="Loading services..." />;
 
   return (
     <main className="min-h-screen bg-dungeon-canvas py-8">

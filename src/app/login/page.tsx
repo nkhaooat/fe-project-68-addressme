@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { userLogin, getMe } from '@/libs/auth';
 import { setCredentials } from '@/redux/features/authSlice';
+import ErrorBanner from '@/components/ErrorBanner';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -53,11 +54,7 @@ export default function LoginPage() {
             Enter the Dungeon Inn
           </p>
 
-          {error && (
-            <div className="bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded mb-6">
-              {error}
-            </div>
-          )}
+          {error && <ErrorBanner message={error} onDismiss={() => setError('')} />}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>

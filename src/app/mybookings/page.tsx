@@ -10,6 +10,7 @@ import Link from 'next/link';
 import EditBookingModal from '@/components/EditBookingModal';
 import ReviewModal from '@/components/ReviewModal';
 import { QRCodeSVG } from 'qrcode.react';
+import ErrorBanner from '@/components/ErrorBanner';
 import { API_URL } from '@/libs/config';
 
 const STATUS_TABS = [
@@ -198,11 +199,7 @@ export default function MyBookingsPage() {
           My Bookings
         </h1>
 
-        {error && (
-          <div className="bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded mb-6">
-            {error}
-          </div>
-        )}
+        {error && <ErrorBanner message={error} onDismiss={() => setError('')} />}
 
         {/* Search bar */}
         <div className="mb-4">

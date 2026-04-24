@@ -7,6 +7,8 @@ import { RootState } from '@/redux/store';
 import { getShop } from '@/libs/shops';
 import { getService } from '@/libs/services';
 import { createReservation } from '@/libs/reservations';
+import LoadingState from '@/components/LoadingState';
+import ErrorBanner from '@/components/ErrorBanner';
 import { QRCodeSVG } from 'qrcode.react';
 import { validatePromotion } from '@/libs/promotions';
 import { Shop, Service } from '@/interface';
@@ -217,13 +219,7 @@ export default function BookingPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <main className="min-h-screen bg-dungeon-canvas flex items-center justify-center">
-        <div className="text-dungeon-accent text-xl">Loading...</div>
-      </main>
-    );
-  }
+  if (loading) return <LoadingState message="Loading booking details..." />;
 
   const displayPrice = promoApplied ? promoApplied.finalPrice : (service?.price || 0);
 
@@ -234,11 +230,7 @@ export default function BookingPage() {
           Make a Reservation
         </h1>
 
-        {error && (
-          <div className="bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded mb-6">
-            {error}
-          </div>
-        )}
+        {error && <ErrorBanner message={error} onDismiss={() => setError('')} />}
 
         {success && !qrData && (
           <div className="bg-green-900/50 border border-green-500 text-green-200 px-4 py-3 rounded mb-6">

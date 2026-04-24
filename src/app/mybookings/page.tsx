@@ -12,6 +12,7 @@ import ReviewModal from '@/components/ReviewModal';
 import { QRCodeSVG } from 'qrcode.react';
 import QRCodeDisplay from '@/components/QRCodeDisplay';
 import ErrorBanner from '@/components/ErrorBanner';
+import { Skeleton, SkeletonGrid } from '@/components/Skeleton';
 import { API_URL } from '@/libs/config';
 import { getStatusColor, getPaymentStatusColor, getPaymentStatusLabel } from '@/utils/reservationStatus';
 import Pagination from '@/components/Pagination';
@@ -169,8 +170,9 @@ export default function MyBookingsPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-dungeon-canvas flex items-center justify-center">
-        <div className="text-dungeon-accent text-xl">Loading your bookings...</div>
+      <main className="min-h-screen bg-dungeon-canvas py-8 px-4">
+        <Skeleton className="h-8 w-48 mb-6" />
+        <SkeletonGrid count={3} lines={4} />
       </main>
     );
   }

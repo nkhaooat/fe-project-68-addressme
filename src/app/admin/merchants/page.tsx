@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import { getMerchants, approveMerchant, rejectMerchant } from '@/libs/auth';
 import AccessDenied from '@/components/AccessDenied';
-import LoadingState from '@/components/LoadingState';
+import { SkeletonPage } from '@/components/Skeleton';
 import Pagination from '@/components/Pagination';
 import { PaginationData } from '@/types/api';
 
@@ -86,7 +86,7 @@ export default function AdminMerchantsPage() {
   }
 
   if (user?.role !== 'admin') return <AccessDenied />;
-  if (loading) return <LoadingState message="Loading merchants..." />;
+  if (loading) return <main className="min-h-screen bg-dungeon-canvas py-8 px-4"><SkeletonPage type="table" /></main>;
 
   const pagination: PaginationData = {
     total: filteredMerchants.length,

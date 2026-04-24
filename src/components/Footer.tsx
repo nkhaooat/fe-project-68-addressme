@@ -2,45 +2,60 @@ import Link from 'next/link';
 
 export default function Footer() {
   return (
-    <footer className="bg-dungeon-primary-header border-t border-dungeon-outline mt-auto">
-      <div className="max-w-7xl mx-auto px-4 py-8">
+    <footer className="bg-dungeon-surface border-t border-dungeon-outline mt-auto">
+      <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Brand */}
           <div>
-            <h3 className="text-xl font-bold text-dungeon-header-text mb-2">Dungeon Inn</h3>
+            <h3 className="text-dungeon-header-text font-bold text-lg mb-2">Dungeon Inn</h3>
             <p className="text-dungeon-secondary text-sm">
-              Find your sanctuary in the dark. Premium massage services curated for you.
+              Discover and book the best massage shops in Bangkok. Your relaxation starts here.
             </p>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h4 className="text-dungeon-sub-header font-bold mb-3">Quick Links</h4>
-            <div className="flex flex-col gap-2">
-              <Link href="/shops" className="text-dungeon-secondary hover:text-dungeon-accent text-sm transition-colors">
-                Browse Shops
-              </Link>
-              <Link href="/mybookings" className="text-dungeon-secondary hover:text-dungeon-accent text-sm transition-colors">
-                My Bookings
-              </Link>
-              <Link href="/register/merchant" className="text-dungeon-secondary hover:text-dungeon-accent text-sm transition-colors">
-                Become a Merchant
-              </Link>
-            </div>
+            <h4 className="text-dungeon-header-text font-semibold mb-3">Quick Links</h4>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link href="/shops" className="text-dungeon-secondary hover:text-dungeon-accent transition-colors">
+                  Browse Shops
+                </Link>
+              </li>
+              <li>
+                <Link href="/mybookings" className="text-dungeon-secondary hover:text-dungeon-accent transition-colors">
+                  My Bookings
+                </Link>
+              </li>
+              <li>
+                <Link href="/profile" className="text-dungeon-secondary hover:text-dungeon-accent transition-colors">
+                  Profile
+                </Link>
+              </li>
+            </ul>
           </div>
 
-          {/* Contact */}
+          {/* For Merchants */}
           <div>
-            <h4 className="text-dungeon-sub-header font-bold mb-3">Support</h4>
-            <p className="text-dungeon-secondary text-sm">
-              Need help? Chat with our assistant — it&apos;s available 24/7 on any page.
-            </p>
+            <h4 className="text-dungeon-header-text font-semibold mb-3">For Merchants</h4>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link href="/register/merchant" className="text-dungeon-secondary hover:text-dungeon-accent transition-colors">
+                  Register Your Shop
+                </Link>
+              </li>
+              <li>
+                <Link href="/merchant" className="text-dungeon-secondary hover:text-dungeon-accent transition-colors">
+                  Merchant Dashboard
+                </Link>
+              </li>
+            </ul>
           </div>
         </div>
 
         <div className="border-t border-dungeon-outline mt-8 pt-6 text-center">
           <p className="text-dungeon-muted text-sm">
-            &copy; {new Date().getFullYear()} Dungeon Inn. All rights reserved.
+            Dungeon Inn &copy; {new Date().getFullYear()} · All rights reserved
           </p>
         </div>
       </div>

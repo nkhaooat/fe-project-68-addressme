@@ -10,7 +10,7 @@ import { getShops, Shop } from '@/libs/shops';
 import Pagination from '@/components/Pagination';
 import ErrorBanner from '@/components/ErrorBanner';
 import AccessDenied from '@/components/AccessDenied';
-import LoadingState from '@/components/LoadingState';
+import { SkeletonPage } from '@/components/Skeleton';
 import ServiceCard from '@/components/admin/ServiceCard';
 import ServiceModal from '@/components/admin/ServiceModal';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -184,7 +184,7 @@ export default function AdminServicesPage() {
   };
 
   if (user?.role !== 'admin') return <AccessDenied />;
-  if (loading) return <LoadingState message="Loading services..." />;
+  if (loading) return <main className="min-h-screen bg-dungeon-canvas py-8 px-4"><SkeletonPage type="table" /></main>;
 
   return (
     <>

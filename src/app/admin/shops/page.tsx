@@ -9,7 +9,7 @@ import { getShops, createShop, updateShop, deleteShop, Shop, ShopQueryParams, ad
 import Pagination from '@/components/Pagination';
 import ErrorBanner from '@/components/ErrorBanner';
 import AccessDenied from '@/components/AccessDenied';
-import LoadingState from '@/components/LoadingState';
+import { SkeletonPage } from '@/components/Skeleton';
 import ShopCard from '@/components/admin/ShopCard';
 import ShopModal from '@/components/admin/ShopModal';
 import { PaginationData } from '@/types/api';
@@ -172,7 +172,7 @@ export default function AdminShopsPage() {
   };
 
   if (user?.role !== 'admin') return <AccessDenied />;
-  if (loading && shops.length === 0) return <LoadingState message="Loading shops..." />;
+  if (loading && shops.length === 0) return <main className="min-h-screen bg-dungeon-canvas py-8 px-4"><SkeletonPage type="table" /></main>;
 
   return (
     <>

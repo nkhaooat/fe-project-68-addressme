@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import { useRouter } from 'next/navigation';
 import { RootState } from '@/redux/store';
 import { getMerchantDashboard } from '@/libs/auth';
-import LoadingState from '@/components/LoadingState';
+import { SkeletonPage } from '@/components/Skeleton';
 
 interface ShopData {
   _id: string;
@@ -74,7 +74,7 @@ export default function MerchantShopPage() {
     setSaving(false);
   }
 
-  if (loading) return <LoadingState message="Loading shop details..." />;
+  if (loading) return <main className="min-h-screen bg-dungeon-canvas py-8 px-4"><SkeletonPage type="detail" /></main>;
 
   return (
     <main className="min-h-screen bg-dungeon-canvas py-8">

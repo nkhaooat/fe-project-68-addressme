@@ -7,7 +7,7 @@ import { useToast } from '@/components/ToastContext';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { getPromotions, createPromotion, deletePromotion } from '@/libs/promotions';
 import AccessDenied from '@/components/AccessDenied';
-import LoadingState from '@/components/LoadingState';
+import { SkeletonPage } from '@/components/Skeleton';
 import ErrorBanner from '@/components/ErrorBanner';
 
 interface Promotion {
@@ -100,7 +100,7 @@ export default function AdminPromotionsPage() {
   }
 
   if (user?.role !== 'admin') return <AccessDenied />;
-  if (loading) return <LoadingState message="Loading promotions..." />;
+  if (loading) return <main className="min-h-screen bg-dungeon-canvas py-8 px-4"><SkeletonPage type="table" /></main>;
 
   return (
     <>

@@ -8,6 +8,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { PaginationData } from '@/types/api';
 import Pagination from '@/components/Pagination';
 import ShopImage from '@/components/ShopImage';
+import { Skeleton, SkeletonGrid } from '@/components/Skeleton';
 
 export default function ShopsPage() {
   const [shops, setShops] = useState<Shop[]>([]);
@@ -89,8 +90,9 @@ export default function ShopsPage() {
 
   if (loading && shops.length === 0) {
     return (
-      <div className="min-h-screen bg-dungeon-canvas flex items-center justify-center">
-        <div className="text-dungeon-accent text-xl">Loading shops...</div>
+      <div className="min-h-screen bg-dungeon-canvas py-8 px-4">
+        <Skeleton className="h-8 w-48 mb-6" />
+        <SkeletonGrid count={6} lines={4} />
       </div>
     );
   }

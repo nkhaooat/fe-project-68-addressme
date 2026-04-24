@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import { useRouter } from 'next/navigation';
 import { RootState } from '@/redux/store';
 import { getMerchantServices, createMerchantService, updateMerchantService, deleteMerchantService } from '@/libs/auth';
-import LoadingState from '@/components/LoadingState';
+import { SkeletonPage } from '@/components/Skeleton';
 
 interface ServiceData {
   _id: string;
@@ -101,7 +101,7 @@ export default function MerchantServicesPage() {
     setShowForm(true);
   }
 
-  if (loading) return <LoadingState message="Loading services..." />;
+  if (loading) return <main className="min-h-screen bg-dungeon-canvas py-8 px-4"><SkeletonPage type="table" /></main>;
 
   return (
     <main className="min-h-screen bg-dungeon-canvas py-8">

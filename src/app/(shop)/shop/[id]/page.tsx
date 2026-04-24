@@ -8,6 +8,7 @@ import { getShopServices } from '@/libs/services';
 import { getShopReviews } from '@/libs/reviews';
 import { Shop, Service, Review } from '@/interface';
 import ShopImage from '@/components/ShopImage';
+import { SkeletonPage } from '@/components/Skeleton';
 
 // TikTok logo SVG
 function TikTokIcon({ className }: { className?: string }) {
@@ -154,8 +155,8 @@ export default function ShopDetailPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-dungeon-canvas flex items-center justify-center">
-        <div className="text-dungeon-accent text-xl">Loading shop details...</div>
+      <main className="min-h-screen bg-dungeon-canvas py-8 px-4">
+        <SkeletonPage type="detail" />
       </main>
     );
   }

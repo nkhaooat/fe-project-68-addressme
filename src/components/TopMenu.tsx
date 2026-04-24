@@ -7,7 +7,6 @@ import { RootState } from '@/redux/store';
 import { logout } from '@/redux/features/authSlice';
 import { useRouter, usePathname } from 'next/navigation';
 import { useState, useRef, useEffect } from 'react';
-import { changePassword } from '@/libs/auth';
 
 export default function TopMenu() {
   const { user, isAuthenticated, token } = useSelector((state: RootState) => state.auth);
@@ -17,14 +16,6 @@ export default function TopMenu() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAdminDropdownOpen, setIsAdminDropdownOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
-  const [pwStatus, setPwStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-  const [pwMessage, setPwMessage] = useState('');
-
-  // Change Password modal state
-  const [showChangePw, setShowChangePw] = useState(false);
-  const [currentPw, setCurrentPw] = useState('');
-  const [newPw, setNewPw] = useState('');
-  const [confirmPw, setConfirmPw] = useState('');
 
   const userDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -51,46 +42,6 @@ export default function TopMenu() {
     setIsMenuOpen(false);
     setIsAdminDropdownOpen(false);
     setIsUserDropdownOpen(false);
-  };
-
-  const openChangePw = () => {
-    setShowChangePw(true);
-    setIsUserDropdownOpen(false);
-    setCurrentPw('');
-    setNewPw('');
-    setConfirmPw('');
-    setPwStatus('idle');
-    setPwMessage('');
-  };
-
-  const handleChangePw = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newPw !== confirmPw) {
-      setPwStatus('error');
-      setPwMessage('New passwords do not match.');
-      return;
-    }
-    if (newPw.length < 6) {
-      setPwStatus('error');
-      setPwMessage('New password must be at least 6 characters.');
-      return;
-    }
-    setPwStatus('loading');
-    setPwMessage('');
-    try {
-      const res = await changePassword(currentPw, newPw, token ?? '');
-      if (res.success) {
-        setPwStatus('success');
-        setPwMessage('Password changed successfully! 🎉');
-        setTimeout(() => setShowChangePw(false), 2000);
-      } else {
-        setPwStatus('error');
-        setPwMessage(res.message || 'Failed to change password.');
-      }
-    } catch {
-      setPwStatus('error');
-      setPwMessage('Something went wrong. Please try again.');
-    }
   };
 
   const isAdminPage = pathname?.startsWith('/admin');
@@ -255,18 +206,26 @@ export default function TopMenu() {
                       {/* User dropdown */}
                       {isUserDropdownOpen && (
                         <div className="absolute top-full right-0 mt-2 w-48 bg-dungeon-surface border border-dungeon-outline rounded-lg shadow-lg py-2 z-50">
-                          <button
-                            onClick={openChangePw}
-                            className="w-full text-left px-4 py-2 text-dungeon-primary hover:text-dungeon-accent hover:bg-dungeon-canvas transition-colors"
+                          <Link
+                            href="/profile"
+                            onClick={() => setIsUserDropdownOpen(false)}
+                            className="block px-4 py-2 text-dungeon-primary hover:text-dungeon-accent hover:bg-dungeon-canvas transition-colors"
                           >
-                            🔑 Change Password
-                          </button>
+                            My Profile
+                          </Link>
+                          <Link
+                            href="/profile/password"
+                            onClick={() => setIsUserDropdownOpen(false)}
+                            className="block px-4 py-2 text-dungeon-primary hover:text-dungeon-accent hover:bg-dungeon-canvas transition-colors"
+                          >
+                            Change Password
+                          </Link>
                           <hr className="border-dungeon-outline my-1" />
                           <button
                             onClick={handleLogout}
                             className="w-full text-left px-4 py-2 text-red-400 hover:text-red-300 hover:bg-dungeon-canvas transition-colors"
                           >
-                            🚪 Logout
+                            Logout
                           </button>
                         </div>
                       )}
@@ -395,12 +354,20 @@ export default function TopMenu() {
 
                   <div className="border-t border-dungeon-outline pt-4 mt-2">
                     <span className="text-dungeon-sub-header block py-2">{user?.name}</span>
-                    <button
-                      onClick={() => { closeMenu(); openChangePw(); }}
+                    <Link
+                      href="/profile"
+                      onClick={closeMenu}
                       className="text-dungeon-primary hover:text-dungeon-accent transition-colors font-medium py-2 block"
                     >
-                      🔑 Change Password
-                    </button>
+                      My Profile
+                    </Link>
+                    <Link
+                      href="/profile/password"
+                      onClick={closeMenu}
+                      className="text-dungeon-primary hover:text-dungeon-accent transition-colors font-medium py-2 block"
+                    >
+                      Change Password
+                    </Link>
                     <button
                       onClick={handleLogout}
                       className="text-red-400 hover:text-red-300 transition-colors font-medium py-2"
@@ -431,90 +398,6 @@ export default function TopMenu() {
           </div>
         </div>
       </nav>
-
-      {/* Change Password Modal */}
-      {showChangePw && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[100] px-4">
-          <div className="bg-dungeon-surface border border-dungeon-outline rounded-lg p-8 w-full max-w-md relative">
-            {/* Close button */}
-            <button
-              onClick={() => setShowChangePw(false)}
-              className="absolute top-4 right-4 text-dungeon-secondary hover:text-dungeon-primary transition-colors text-xl"
-            >
-              ✕
-            </button>
-
-            <h2 className="text-2xl font-bold text-dungeon-header-text mb-2">Change Password</h2>
-            <p className="text-dungeon-secondary text-sm mb-6">Update your account password</p>
-
-            {pwStatus === 'success' ? (
-              <div className="text-center py-4">
-                <div className="text-4xl mb-3">✅</div>
-                <p className="text-dungeon-sub-header">{pwMessage}</p>
-              </div>
-            ) : (
-              <form onSubmit={handleChangePw} className="space-y-5">
-                {pwStatus === 'error' && (
-                  <div className="bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded">
-                    {pwMessage}
-                  </div>
-                )}
-
-                <div>
-                  <label className="block text-dungeon-sub-header text-sm font-bold mb-2">
-                    Current Password
-                  </label>
-                  <input
-                    type="password"
-                    value={currentPw}
-                    onChange={(e) => setCurrentPw(e.target.value)}
-                    className="w-full px-4 py-3 bg-dungeon-canvas border border-dungeon-outline rounded text-dungeon-primary focus:outline-none focus:border-dungeon-accent"
-                    placeholder="••••••••"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-dungeon-sub-header text-sm font-bold mb-2">
-                    New Password
-                  </label>
-                  <input
-                    type="password"
-                    value={newPw}
-                    onChange={(e) => setNewPw(e.target.value)}
-                    className="w-full px-4 py-3 bg-dungeon-canvas border border-dungeon-outline rounded text-dungeon-primary focus:outline-none focus:border-dungeon-accent"
-                    placeholder="••••••••"
-                    required
-                    minLength={6}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-dungeon-sub-header text-sm font-bold mb-2">
-                    Confirm New Password
-                  </label>
-                  <input
-                    type="password"
-                    value={confirmPw}
-                    onChange={(e) => setConfirmPw(e.target.value)}
-                    className="w-full px-4 py-3 bg-dungeon-canvas border border-dungeon-outline rounded text-dungeon-primary focus:outline-none focus:border-dungeon-accent"
-                    placeholder="••••••••"
-                    required
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={pwStatus === 'loading'}
-                  className="w-full py-3 bg-dungeon-accent text-dungeon-dark-text font-bold rounded hover:bg-dungeon-accent-dark transition-colors disabled:opacity-50"
-                >
-                  {pwStatus === 'loading' ? 'Saving...' : 'Save New Password'}
-                </button>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
     </>
   );
 }

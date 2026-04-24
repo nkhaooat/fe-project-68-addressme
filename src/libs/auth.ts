@@ -62,6 +62,18 @@ export async function changePassword(currentPassword: string, newPassword: strin
   return response.json();
 }
 
+export async function updateProfile(data: { name?: string; email?: string; telephone?: string }, token: string) {
+  const response = await fetch(`${API_URL}/auth/profile`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  return response.json();
+}
+
 export async function registerMerchant(name: string, email: string, telephone: string, password: string, shopId: string) {
   const response = await fetch(`${API_URL}/auth/register/merchant`, {
     method: 'POST',

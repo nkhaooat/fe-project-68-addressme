@@ -8,7 +8,7 @@
 </p>
 
 <p align="center">
-  <em>A dark, atmospheric massage reservation system with a fantasy tavern aesthetic.</em>
+  <em>A dark, atmospheric massage reservation system with AI chatbot, QR workflow, promotions, and merchant dashboard.</em>
 </p>
 
 ---
@@ -28,17 +28,32 @@
 ### Customer Features
 - 🔐 **Register / Login** — JWT-based authentication
 - 🔑 **Forgot / Reset Password** — email link via Brevo
-- 🔒 **Change Password** — from the top menu dropdown
-- 🏪 **Browse Shops** — search, filter, view TikTok previews
+- 🔒 **Change Password** — from profile page
+- 👤 **User Profile** — view and update profile info
+- 🏪 **Browse Shops** — search, filter, view TikTok previews, Google Places images
 - 💆 **Book Services** — reserve massage sessions with service selection
-- 📋 **My Bookings** — view, edit, cancel reservations
+- 🎟️ **Promotion Codes** — apply discount before payment, see price breakdown
+- 💳 **Payment Slip Upload** — upload slip image for admin verification
+- 📋 **My Bookings** — status filter tabs, search, QR display, edit, cancel
 - ⭐ **Leave Reviews** — star rating + comment on completed bookings
-- 🤖 **AI Chatbot** — get recommendations and book via natural language
+- 🔲 **QR Code** — view/download QR for each booking, hosted QR page
+- 🤖 **AI Chatbot** — get recommendations and book via natural language (streaming)
+
+### Merchant Features
+- 📝 **Merchant Registration** — request service account for a shop
+- 📊 **Merchant Dashboard** — sidebar navigation with route protection
+- 🏪 **My Shop** — edit shop details
+- 💆 **My Services** — CRUD (add, edit, delete) own services
+- 📋 **My Reservations** — filter by status, update status (confirm/complete/cancel)
+- 📷 **QR Scanner** — browser camera to scan customer QR codes
+- ✅ **Scan Result** — green overlay (confirmed) / red overlay (invalid)
 
 ### Admin Features
-- 👑 **Manage Bookings** — view, edit, delete any reservation
+- 👑 **Manage Bookings** — view, approve/reject payment slips
 - 🏪 **Manage Shops** — create, update, delete shops + TikTok links
 - 💆 **Manage Services** — create, update, delete services
+- 🎟️ **Manage Promotions** — create, delete promotion codes
+- 👥 **Manage Merchants** — approve/reject merchant registrations
 - 🤖 **Rebuild Chatbot** — refresh AI knowledge base from admin panel
 
 ---
@@ -66,6 +81,7 @@
 - **Styling:** Tailwind CSS
 - **State:** Redux Toolkit
 - **Auth:** JWT (stored in Redux + sessionStorage)
+- **QR:** qrcode.react + browser camera (html5-qrcode/jsQR)
 - **Hosting:** Vercel
 
 ---
@@ -113,35 +129,87 @@ npm start       # production server
 src/
 ├── app/
 │   ├── (shop)/
-│   │   ├── shops/          # Shop listing page
-│   │   └── shop/[id]/      # Shop detail + reviews
+│   │   ├── shops/              # Shop listing page
+│   │   └── shop/[id]/          # Shop detail + reviews + QR
 │   ├── admin/
-│   │   ├── bookings/       # Admin booking management
-│   │   ├── shops/          # Admin shop management
-│   │   └── services/       # Admin service management
-│   ├── booking/            # Create reservation
-│   ├── mybookings/         # User's reservations + reviews
-│   ├── login/              # Login page
-│   ├── register/           # Register page
-│   ├── forgot-password/    # Forgot password page
-│   ├── reset-password/     # Reset password page
-│   ├── layout.tsx          # Root layout (TopMenu + ChatWidget)
-│   └── page.tsx            # Home page
+│   │   ├── bookings/           # Admin booking + slip verification
+│   │   ├── merchants/          # Admin merchant management
+│   │   ├── promotions/         # Admin promotion CRUD
+│   │   ├── services/           # Admin service management
+│   │   ├── settings/           # Rebuild Embedding button
+│   │   └── shops/              # Admin shop management
+│   ├── booking/                # Create reservation + promo code
+│   ├── merchant/
+│   │   ├── page.tsx            # Merchant dashboard + reservations
+│   │   ├── shop/               # Edit own shop
+│   │   └── services/           # CRUD own services
+│   ├── mybookings/             # User's reservations + QR + reviews
+│   ├── profile/                # User profile
+│   │   └── password/           # Change password
+│   ├── qr/[token]/             # Hosted QR code page
+│   ├── register/
+│   │   └── merchant/           # Merchant registration
+│   ├── login/                  # Login page
+│   ├── register/               # Register page
+│   ├── forgot-password/        # Forgot password page
+│   ├── reset-password/         # Reset password page
+│   ├── error.tsx               # Error boundary
+│   ├── not-found.tsx           # 404 page
+│   ├── layout.tsx              # Root layout (TopMenu + ChatWidget)
+│   └── page.tsx                # Home page
 ├── components/
-│   ├── TopMenu.tsx          # Navigation + user dropdown
-│   ├── ChatWidget.tsx       # Floating AI chatbot
-│   ├── ReviewModal.tsx      # Star rating + review form
-│   └── EditBookingModal.tsx # Edit reservation modal
+│   ├── TopMenu.tsx             # Navigation + user dropdown
+│   ├── ChatWidget.tsx          # Floating AI chatbot (streaming)
+│   ├── ReviewModal.tsx         # Star rating + review form
+│   ├── EditBookingModal.tsx    # Edit reservation modal
+│   ├── ShopImage.tsx           # Google Places image + fallback
+│   ├── QRCodeDisplay.tsx       # QR code render + download
+│   ├── QrScanner.tsx          # Browser camera QR scanner
+│   ├── Pagination.tsx          # Shared pagination component
+│   ├── SearchFilterBar.tsx     # Status filter + search
+│   ├── ConfirmDialog.tsx       # Reusable confirm dialog
+│   ├── AccessDenied.tsx        # 403 page for unauthorized
+│   ├── ErrorBanner.tsx         # Shared error display
+│   ├── LoadingState.tsx        # Shared loading skeleton
+│   ├── ToastContext.tsx         # Toast notification provider
+│   ├── Footer.tsx              # Site footer
+│   ├── Skeleton.tsx            # Skeleton loader
+│   ├── admin/
+│   │   ├── BookingCard.tsx     # Booking card with slip approve/reject
+│   │   ├── ServiceCard.tsx     # Service card
+│   │   ├── ServiceModal.tsx    # Service create/edit modal
+│   │   ├── ShopCard.tsx        # Shop card
+│   │   └── ShopModal.tsx       # Shop create/edit modal
+│   └── merchant/
+│       └── MerchantReservationCard.tsx  # Merchant reservation card
+├── hooks/
+│   └── useDebounce.ts          # Debounce hook for search
 ├── libs/
-│   ├── auth.ts              # Auth API calls
-│   ├── shops.ts             # Shop API calls
-│   ├── reservations.ts      # Reservation API calls
-│   └── services.ts          # Service API calls
+│   ├── api.ts                  # Shared API client
+│   ├── auth.ts                 # Auth API calls
+│   ├── shops.ts                # Shop API calls
+│   ├── reservations.ts          # Reservation API calls
+│   ├── services.ts             # Service API calls
+│   ├── promotions.ts           # Promotion API calls
+│   ├── reviews.ts              # Review API calls
+│   └── config.ts               # API URL config
+├── types/
+│   ├── api.ts                  # Shared API types
+│   ├── reservation.ts          # Reservation types
+│   ├── review.ts               # Review types
+│   ├── service.ts              # Service types
+│   ├── shop.ts                 # Shop types
+│   └── user.ts                 # User types
+├── utils/
+│   ├── chatActions.ts          # Chat action helpers
+│   ├── reservationStatus.ts    # Status label/color utils
+│   └── shopHours.ts            # Shop hours utils
 ├── redux/
 │   ├── store.ts
 │   ├── ReduxProvider.tsx
 │   └── features/authSlice.ts
-└── interface.ts             # TypeScript interfaces
+├── interface.ts                # Legacy TypeScript interfaces
+└── globals.css                 # Tailwind + custom styles
 ```
 
 ---
@@ -153,15 +221,36 @@ src/
 | `/` | Home page with featured shops |
 | `/shops` | Browse all massage shops |
 | `/shop/[id]` | Shop detail with services, TikTok links, reviews |
-| `/booking` | Create a reservation |
-| `/mybookings` | View and manage own reservations |
+| `/booking` | Create a reservation + apply promotion code |
+| `/mybookings` | View and manage own reservations + QR codes |
+| `/qr/[token]` | Hosted QR code page |
+| `/profile` | User profile |
+| `/profile/password` | Change password |
 | `/login` | Login |
 | `/register` | Register |
+| `/register/merchant` | Register as merchant |
 | `/forgot-password` | Request password reset email |
 | `/reset-password` | Set new password via token |
-| `/admin/bookings` | Admin — all reservations |
+| `/admin/bookings` | Admin — all reservations + slip verification |
 | `/admin/shops` | Admin — shop management |
 | `/admin/services` | Admin — service management |
+| `/admin/promotions` | Admin — promotion code management |
+| `/admin/merchants` | Admin — approve/reject merchants |
+| `/admin/settings` | Admin — rebuild embedding |
+| `/merchant` | Merchant — dashboard + reservations + QR scanner |
+| `/merchant/shop` | Merchant — edit own shop |
+| `/merchant/services` | Merchant — CRUD own services |
+
+---
+
+## 🧪 Testing
+
+### Playwright (E2E)
+```bash
+npx playwright test
+```
+
+Covers: shop listing, shop detail, TikTok button visibility.
 
 ---
 

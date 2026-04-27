@@ -81,7 +81,7 @@
 | US6-4 | Confirmation email with QR | Done | 4 |
 | US6-5 | Completion email requests review | Done | 3 |
 | US6-6 | Cancellation email + QR void | Done | 2 |
-| US6-7 | Integration tests | Partial | 3 |
+| US6-7 | Integration tests | Done | 3 |
 | US6-8 | Invalidate expired QR codes | Done | 2 |
 
 ### EPIC 6.5 - /mybooking Styling
@@ -101,7 +101,7 @@
 | US7-5 | Merchant CRUD for shop/service | Done | 8 |
 | US7-6 | Merchant scans QR | Done | 1 |
 | US7-7 | Link for requesting service account | Done | 1 |
-| US7-8 | Verify QR workflow tests | Partial | 4 |
+| US7-8 | Verify QR workflow tests | Done | 4 |
 
 ### EPIC 8 - Merchant Dashboard
 

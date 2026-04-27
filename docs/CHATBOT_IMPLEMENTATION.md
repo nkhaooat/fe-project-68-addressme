@@ -6,7 +6,7 @@ RAG-based AI chatbot that recommends massage shops and services, with booking/ca
 ## Architecture
 
 ### Backend
-- **Endpoint:** `POST /api/v1/chat`
+- **Endpoints:** `POST /api/v1/chat` (standard), `POST /api/v1/chat/stream` (SSE streaming)
 - **Embeddings:** OpenAI `text-embedding-3-small`
 - **Vector Store:** In-memory (rebuilt on server start + midnight cron)
 - **Rebuild:** `POST /api/v1/chat/rebuild` (admin)

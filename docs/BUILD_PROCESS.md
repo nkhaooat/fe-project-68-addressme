@@ -2,7 +2,7 @@
 
 ## Project Overview
 **Theme:** Dungeon Inn - Dark fantasy tavern aesthetic
-**Tech Stack:** Next.js 14 + TypeScript + Tailwind CSS + Redux + Material UI
+**Tech Stack:** Next.js 14 + TypeScript + Tailwind CSS + Redux
 **Backend:** https://be-project-68-bitkrub.onrender.com
 **Frontend Repo:** https://github.com/nkhaooat/fe-project-68-addressme
 
@@ -146,6 +146,9 @@ npm install @reduxjs/toolkit react-redux axios
 | `/register/merchant` | Merchant registration |
 | `/forgot-password` | Request password reset |
 | `/reset-password` | Reset password with token |
+| `/privacy` | Privacy policy |
+| `/profile` | User profile |
+| `/profile/password` | Change password |
 | `/review` | Leave review (deep-link from email) |
 | `/qr/[token]` | QR code display page |
 | `/admin/shops` | Admin shop management |
@@ -173,19 +176,35 @@ src/
     merchant/       # Merchant pages
       shop/
       services/
-      scan/
     mybookings/     # User bookings
+    privacy/        # Privacy policy
+    profile/        # User profile + password
     qr/[token]/     # QR display
-    review/         # Review deep-link
-    shops/[id]/     # Shop detail
+    (shop)/         # Shop routes
+      shops/        # Shop listing
+      shop/[id]/    # Shop detail
   components/
     ChatWidget.tsx  # AI chatbot floating widget
     ReviewModal.tsx # Review form modal
+    Skeletons.tsx  # Skeleton loaders with shimmer
     TopMenu.tsx     # Navigation
+    ToastContext.tsx # Toast notification provider
+    ConfirmDialog.tsx # Reusable confirm dialog
+    QRCodeDisplay.tsx # QR code render + download
+    ShopImage.tsx   # Google Places image + fallback
+    Pagination.tsx  # Shared pagination
+    Footer.tsx      # Site footer
+  hooks/
+    useDebounce.ts  # Search debounce
   libs/
     auth.ts         # API functions
     config.ts       # API_URL
   redux/
     store.ts
     authSlice.ts
+  types/            # TypeScript type definitions
+  utils/
+    chatActions.ts   # Chat action helpers
+    reservationStatus.ts # Status label/color utils
+    shopHours.ts     # Shop hours utils
 ```

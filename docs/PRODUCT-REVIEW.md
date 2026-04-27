@@ -32,15 +32,7 @@ All medium/high items from the initial review have been addressed:
 
 ### `window.confirm()` Still Used (Low — UX Polish)
 
-6 confirm dialogs remain — not as jarring as `alert()` but still browser-native:
-- `mybookings/page.tsx:111` — cancel booking
-- `admin/services/page.tsx:143` — delete service
-- `admin/bookings/page.tsx:102` — cancel booking
-- `admin/promotions/page.tsx:85` — deactivate promotion
-- `admin/shops/page.tsx:116` — delete shop
-- `admin/shops/page.tsx:147` — remove TikTok link
-
-**Fix:** Create a `<ConfirmDialog>` component (modal with "Are you sure?" + Cancel/Confirm buttons) and replace.
+✅ **Resolved** — Replaced with `<ConfirmDialog>` component across all 6 locations.
 
 ### Shop Image Logic (Low — Dedup)
 
@@ -50,12 +42,7 @@ All medium/high items from the initial review have been addressed:
 
 ### QR Code Display (Low — Dedup)
 
-3 places render QR codes with slightly different patterns:
-- `booking/page.tsx` — inline `<QRCodeSVG>` after successful booking
-- `mybookings/page.tsx` — inline `<QRCodeSVG>` in card detail
-- `qr/[token]/page.tsx` — standalone QR display page
-
-**Fix:** Extract a `<QRCodeDisplay>` component wrapping `<QRCodeSVG>` with consistent sizing/styling.
+✅ **Resolved** — Extracted `<QRCodeDisplay>` component wrapping `<QRCodeSVG>` with consistent sizing/styling.
 
 ### Landing Page (Low — Enhancement)
 
@@ -67,8 +54,7 @@ Currently static with video banner + 3 feature cards. Could be enhanced with:
 
 ### Missing Pages (Low — Nice-to-Have)
 
-- Custom 404 page (currently uses Next.js default)
-- Footer component (no site-wide footer)
+✅ **Resolved** — Custom `not-found.tsx` (404) and `<Footer>` component now exist. Privacy policy page at `/privacy`.
 
 ### Empty Catch Blocks (Low — Code Hygiene)
 

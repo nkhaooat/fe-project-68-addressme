@@ -148,7 +148,7 @@ export default function ShopModal({
                   <div className="flex gap-2">
                     <input type="url" value={newTiktokUrl} onChange={(e) => onNewTiktokUrlChange(e.target.value)} placeholder="https://www.tiktok.com/@username/video/..."
                       className="flex-1 bg-dungeon-canvas border border-dungeon-outline rounded-lg px-4 py-2 text-dungeon-header-text focus:border-dungeon-accent focus:outline-none text-sm" />
-                    <button type="button" onClick={onAddTiktok} disabled={!newTiktokUrl.includes('tiktok.com')}
+                    <button type="button" onClick={onAddTiktok} disabled={!/^https:\/\/(?:www\.)?tiktok\.com\/@[^\s<>"']+$/.test(newTiktokUrl.trim())}
                       className="px-4 py-2 bg-dungeon-accent text-dungeon-dark-text rounded-lg font-medium hover:bg-dungeon-accent-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm">Add</button>
                   </div>
                 </div>

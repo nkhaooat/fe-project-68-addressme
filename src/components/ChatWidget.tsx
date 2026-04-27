@@ -60,19 +60,39 @@ export default function ChatWidget() {
   const [loading, setLoading] = useState(false);
   const [streaming, setStreaming] = useState(false);
   const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [geoRequested, setGeoRequested] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const sessionIdRef = useRef(getSessionId());
 
-  // Request geolocation on mount (optional — user can deny)
-  useEffect(() => {
-    if (navigator.geolocation) {
+  /** Request geolocation on-demand (only when user asks a location-relevant question) */
+  const requestGeolocation = useCallback((): Promise<{ lat: number; lng: number } | null> => {
+    if (userCoords) return Promise.resolve(userCoords);
+    if (geoRequested) return Promise.resolve(null); // already asked, user denied or pending
+    if (typeof window === 'undefined' || !navigator.geolocation) return Promise.resolve(null);
+
+    setGeoRequested(true);
+    return new Promise((resolve) => {
       navigator.geolocation.getCurrentPosition(
-        (pos) => setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-        () => {} // silently ignore denial — Bangkok will be used as fallback
+        (pos) => {
+          const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+          setUserCoords(coords);
+          resolve(coords);
+        },
+        () => {
+          resolve(null); // user denied or error — Bangkok fallback on backend
+        },
+        { timeout: 5000 }
       );
-    }
-  }, []);
+    });
+  }, [userCoords, geoRequested]);
+
+  /** Heuristic: does this message likely need user location? */
+  const isLocationRelevant = (text: string): boolean => {
+    const lower = text.toLowerCase();
+    return /\b(near(?:by| me)?|closest|nearest|around me|in my area|close to me|ใกล้ฉัน|ใกล้ฉั|ร้านใกล้|ใกล้บ้าน|not far|walking distance|ระยะใกล้)\b/i.test(lower)
+      || /\bnear\s+\S/i.test(lower);
+  };
 
   // Restore chat history from localStorage (per-user)
   useEffect(() => {
@@ -134,6 +154,12 @@ export default function ChatWidget() {
     setLoading(true);
     setStreaming(false);
 
+    // Lazily request geolocation if message seems location-relevant and we don't have coords yet
+    let coords = userCoords;
+    if (!coords && isLocationRelevant(text)) {
+      coords = await requestGeolocation();
+    }
+
     try {
       const history = nextMessages
         .slice(1)
@@ -150,8 +176,8 @@ export default function ChatWidget() {
         body: JSON.stringify({
           message: text,
           history,
-          lat: userCoords?.lat ?? null,
-          lng: userCoords?.lng ?? null,
+          lat: coords?.lat ?? null,
+          lng: coords?.lng ?? null,
           sessionId: sessionIdRef.current,
         }),
       });

@@ -10,6 +10,7 @@ import Pagination from '@/components/Pagination';
 import { useToast } from '@/components/ToastContext';
 import MerchantReservationCard from '@/components/merchant/MerchantReservationCard';
 import { setCredentials } from '@/redux/features/authSlice';
+import Loading from '@/components/Loading';
 
 interface ShopData {
   _id: string;
@@ -193,7 +194,7 @@ export default function MerchantDashboardPage() {
   if (loading) {
     return (
       <main className="min-h-screen bg-dungeon-canvas flex items-center justify-center">
-        <div className="text-dungeon-accent text-xl">Loading dashboard...</div>
+        <Loading text="Loading dashboard..." />
       </main>
     );
   }

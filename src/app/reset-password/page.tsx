@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
+import Loading from '@/components/Loading';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { resetPassword } from '@/libs/auth';
@@ -132,7 +133,7 @@ export default function ResetPasswordPage() {
   return (
     <Suspense fallback={
       <main className="min-h-screen bg-dungeon-canvas flex items-center justify-center">
-        <p className="text-dungeon-secondary">Loading...</p>
+        <Loading />
       </main>
     }>
       <ResetPasswordForm />

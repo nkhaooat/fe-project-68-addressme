@@ -12,7 +12,7 @@ import EditBookingModal from '@/components/EditBookingModal';
 import Pagination from '@/components/Pagination';
 import ErrorBanner from '@/components/ErrorBanner';
 import AccessDenied from '@/components/AccessDenied';
-import { SkeletonPage } from '@/components/Skeleton';
+import Loading from '@/components/Loading';
 import BookingCard from '@/components/admin/BookingCard';
 import { useDebounce } from '@/hooks/useDebounce';
 import { PaginationData } from '@/types/api';
@@ -136,7 +136,7 @@ export default function AdminBookingsPage() {
   };
 
   if (user?.role !== 'admin') return <AccessDenied />;
-  if (loading) return <main className="min-h-screen bg-dungeon-canvas py-8 px-4"><SkeletonPage type="table" /></main>;
+  if (loading) return <main className="min-h-screen bg-dungeon-canvas py-8 px-4"><Loading /></main>;
 
   return (
     <>

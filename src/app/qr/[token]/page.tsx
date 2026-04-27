@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import { QRCodeSVG } from 'qrcode.react';
 import QRCodeDisplay from '@/components/QRCodeDisplay';
+import Loading from '@/components/Loading';
 
 interface BookingInfo {
   success: boolean;
@@ -52,7 +53,7 @@ export default function QRPage() {
   if (loading) {
     return (
       <main className="min-h-screen bg-dungeon-canvas flex items-center justify-center">
-        <div className="text-dungeon-accent text-xl">Verifying...</div>
+        <Loading text="Verifying..." />
       </main>
     );
   }

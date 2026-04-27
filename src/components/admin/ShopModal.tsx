@@ -73,8 +73,8 @@ export default function ShopModal({
               </div>
 
               <div>
-                <label className="block text-dungeon-secondary text-sm mb-1">Telephone *</label>
-                <input type="text" name="tel" value={formData.tel} onChange={handleInputChange} required
+                <label className="block text-dungeon-secondary text-sm mb-1">Telephone</label>
+                <input type="text" name="tel" value={formData.tel} onChange={handleInputChange}
                   className="w-full bg-dungeon-canvas border border-dungeon-outline rounded-lg px-4 py-2 text-dungeon-header-text focus:border-dungeon-accent focus:outline-none" />
               </div>
 

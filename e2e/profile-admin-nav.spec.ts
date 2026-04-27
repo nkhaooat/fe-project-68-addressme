@@ -169,26 +169,27 @@ test.describe('EPIC 1: Admin TikTok CRUD (US1-2, US1-3, US1-4)', () => {
     const testLink = 'https://www.tiktok.com/@test/video/9999999999999999999';
 
     // Find the specific test link row and click its Remove button
-    const testLinkRow = tiktokSection.locator(`div:has(a[href="${testLink}"])`).first();
+    const testLinkRow = tiktokSection.locator('div:has(a[href="https://www.tiktok.com/@test/video/9999999999999999999"])').first();
     if (await testLinkRow.count() > 0) {
       const removeBtn = testLinkRow.locator('button:has-text("Remove")').first();
       await expect(removeBtn).toBeVisible({ timeout: 3000 });
       await removeBtn.click();
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(1000);
 
       // Confirmation dialog appears — find it by its unique message text
-      const confirmOverlay = page.locator('div.fixed.inset-0:has-text("Remove this TikTok link")');
+      const confirmOverlay = page.locator('div:has(> h3:text("Remove TikTok Link"))');
+      await expect(confirmOverlay).toBeVisible({ timeout: 3000 });
       const confirmRemoveBtn = confirmOverlay.locator('button:has-text("Remove")').first();
       await expect(confirmRemoveBtn).toBeVisible({ timeout: 3000 });
       await confirmRemoveBtn.click();
-      await page.waitForTimeout(2000);
+      await page.waitForTimeout(3000);
 
       // The removeTiktokLink API is called directly — no need to click Update Shop
       // Verify via API that the test link is removed
-      const response = await page.request.get(`http://localhost:5000/api/v1/shops/69be50224f7d836470ed1a66`);
+      const response = await page.request.get('http://localhost:5000/api/v1/shops/69be50224f7d836470ed1a66');
       const shopData = await response.json();
       const tiktokLinks = shopData.data?.tiktokLinks || [];
-      expect(tiktokLinks).not.toContain(testLink);
+      expect(tiktokLinks).not.toContain('https://www.tiktok.com/@test/video/9999999999999999999');
     } else {
       // Test link not found — may have already been removed
       console.log('Test TikTok link not found — already removed or never added');

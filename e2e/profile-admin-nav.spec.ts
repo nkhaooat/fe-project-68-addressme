@@ -119,6 +119,12 @@ test.describe('EPIC 1: Admin TikTok CRUD (US1-2, US1-3, US1-4)', () => {
         // New link should appear in the list with "Video" label
         const newVideo = page.locator('text=Video').last();
         await expect(newVideo).toBeVisible({ timeout: 3000 });
+
+        // Verify the link was persisted via API (addTiktokLinks calls API directly)
+        const response = await page.request.get('http://localhost:5000/api/v1/shops/69be50224f7d836470ed1a66');
+        const shopData = await response.json();
+        const tiktokLinks = shopData.data?.tiktokLinks || [];
+        expect(tiktokLinks).toContain(testUrl);
       }
     }
   });
@@ -169,7 +175,8 @@ test.describe('EPIC 1: Admin TikTok CRUD (US1-2, US1-3, US1-4)', () => {
     const testLink = 'https://www.tiktok.com/@test/video/9999999999999999999';
 
     // Find the specific test link row and click its Remove button
-    const testLinkRow = tiktokSection.locator('div:has(a[href="https://www.tiktok.com/@test/video/9999999999999999999"])').first();
+    // Use div.flex.items-center to match only the row-level div, not ancestor divs
+    const testLinkRow = tiktokSection.locator('div.flex.items-center:has(a[href="https://www.tiktok.com/@test/video/9999999999999999999"])').first();
     if (await testLinkRow.count() > 0) {
       const removeBtn = testLinkRow.locator('button:has-text("Remove")').first();
       await expect(removeBtn).toBeVisible({ timeout: 3000 });

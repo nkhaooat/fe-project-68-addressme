@@ -94,8 +94,8 @@
 ### Installation
 
 ```bash
-git clone https://github.com/2110503-CEDT68/se-project-fe-68-2-namthom.git
-cd se-project-fe-68-2-namthom
+git clone https://github.com/nkhaooat/fe-project-68-addressme.git
+cd fe-project-68-addressme
 npm install
 ```
 
@@ -144,6 +144,7 @@ src/
 │   │   ├── shop/               # Edit own shop
 │   │   └── services/           # CRUD own services
 │   ├── mybookings/             # User's reservations + QR + reviews
+│   ├── privacy/                # Privacy policy page
 │   ├── profile/                # User profile
 │   │   └── password/           # Change password
 │   ├── qr/[token]/             # Hosted QR code page
@@ -170,10 +171,10 @@ src/
 │   ├── ConfirmDialog.tsx       # Reusable confirm dialog
 │   ├── AccessDenied.tsx        # 403 page for unauthorized
 │   ├── ErrorBanner.tsx         # Shared error display
-│   ├── LoadingState.tsx        # Shared loading skeleton
+│   ├── Loading.tsx             # Shared loading spinner
+│   ├── Skeletons.tsx           # Skeleton loaders with shimmer animation
 │   ├── ToastContext.tsx         # Toast notification provider
 │   ├── Footer.tsx              # Site footer
-│   ├── Skeleton.tsx            # Skeleton loader
 │   ├── admin/
 │   │   ├── BookingCard.tsx     # Booking card with slip approve/reject
 │   │   ├── ServiceCard.tsx     # Service card
@@ -224,6 +225,7 @@ src/
 | `/booking` | Create a reservation + apply promotion code |
 | `/mybookings` | View and manage own reservations + QR codes |
 | `/qr/[token]` | Hosted QR code page |
+| `/privacy` | Privacy policy |
 | `/profile` | User profile |
 | `/profile/password` | Change password |
 | `/login` | Login |
@@ -250,7 +252,7 @@ src/
 npx playwright test
 ```
 
-Covers: shop listing, shop detail, TikTok button visibility.
+Covers: authentication, shop listing, shop detail, TikTok button visibility, Google Places images, reviews, promotions, QR workflow, merchant dashboard, chatbot, profile & admin navigation.
 
 ---
 
@@ -268,6 +270,12 @@ Covers: shop listing, shop detail, TikTok button visibility.
 | [@cppccpcp](https://github.com/cppccpcp) | Sarana Thanadeecharoenchok |
 | [@DeoTTo883xd](https://github.com/DeoTTo883xd) | Atichat Saengmani |
 | [@Zouyauwu](https://github.com/Zouyauwu) | Natchanon Maidee |
+
+---
+
+## 📧 Contact
+
+For questions or data deletion requests: **aotmetrasit@gmail.com**
 
 ---
 

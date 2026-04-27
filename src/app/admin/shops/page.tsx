@@ -136,9 +136,21 @@ export default function AdminShopsPage() {
   };
 
   const handleAddTiktok = async () => {
-    if (!editingShop || !newTiktokUrl.includes('tiktok.com') || !token) return;
+    if (!editingShop || !token) return;
+    const url = newTiktokUrl.trim();
+    // Strict validation: must be https://tiktok.com/... or https://www.tiktok.com/...
+    const tiktokUrlRegex = /^https:\/\/(?:www\.)?tiktok\.com\/@[^\s]+$/;
+    if (!tiktokUrlRegex.test(url)) {
+      addToast('Invalid TikTok URL. Must be https://tiktok.com/@... or https://www.tiktok.com/@...');
+      return;
+    }
+    // Prevent XSS: reject any URL containing <, >, ", ', or javascript:
+    if (/[<>"']|javascript:/i.test(url)) {
+      addToast('Invalid characters in URL');
+      return;
+    }
     try {
-      const data = await addTiktokLinks(editingShop._id, [newTiktokUrl], token);
+      const data = await addTiktokLinks(editingShop._id, [url], token);
       if (data.success) {
         setFormData(prev => ({ ...prev, tiktokLinks: data.data }));
         setNewTiktokUrl('');

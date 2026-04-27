@@ -35,6 +35,18 @@ export default function Footer() {
             </ul>
           </div>
 
+          {/* Legal */}
+          <div>
+            <h4 className="text-dungeon-header-text font-semibold mb-3">Legal</h4>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link href="/privacy" className="text-dungeon-secondary hover:text-dungeon-accent transition-colors">
+                  Privacy Policy
+                </Link>
+              </li>
+            </ul>
+          </div>
+
           {/* For Merchants */}
           <div>
             <h4 className="text-dungeon-header-text font-semibold mb-3">For Merchants</h4>

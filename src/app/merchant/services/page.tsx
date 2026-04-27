@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import { useRouter } from 'next/navigation';
 import { RootState } from '@/redux/store';
 import { getMerchantServices, createMerchantService, updateMerchantService, deleteMerchantService } from '@/libs/auth';
-import Loading from '@/components/Loading';
+import { MerchantServicesSkeleton, FadeIn } from '@/components/Skeletons';
 
 interface ServiceData {
   _id: string;
@@ -101,9 +101,9 @@ export default function MerchantServicesPage() {
     setShowForm(true);
   }
 
-  if (loading) return <main className="min-h-screen bg-dungeon-canvas py-8 px-4"><Loading /></main>;
+  if (loading) return <MerchantServicesSkeleton />;
 
-  return (
+  return (<FadeIn>
     <main className="min-h-screen bg-dungeon-canvas py-8">
       <div className="max-w-4xl mx-auto px-4">
         <div className="flex items-center justify-between mb-6">
@@ -223,5 +223,5 @@ export default function MerchantServicesPage() {
         )}
       </div>
     </main>
-  );
+  </FadeIn>);
 }

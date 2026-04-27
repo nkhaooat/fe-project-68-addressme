@@ -12,7 +12,7 @@ import ReviewModal from '@/components/ReviewModal';
 import { QRCodeSVG } from 'qrcode.react';
 import QRCodeDisplay from '@/components/QRCodeDisplay';
 import ErrorBanner from '@/components/ErrorBanner';
-import Loading from '@/components/Loading';
+import { MyBookingsSkeleton, FadeIn } from '@/components/Skeletons';
 import { API_URL } from '@/libs/config';
 import { getStatusColor, getPaymentStatusColor, getPaymentStatusLabel } from '@/utils/reservationStatus';
 import Pagination from '@/components/Pagination';
@@ -169,15 +169,10 @@ export default function MyBookingsPage() {
   }, [allReservations]);
 
   if (loading) {
-    return (
-      <main className="min-h-screen bg-dungeon-canvas py-8 px-4">
-        <Loading />
-        
-      </main>
-    );
+    return <MyBookingsSkeleton />;
   }
 
-  return (
+  return (<FadeIn>
     <>
     <main className="min-h-screen bg-dungeon-canvas py-8">
       <div className="max-w-4xl mx-auto px-4">
@@ -455,5 +450,5 @@ export default function MyBookingsPage() {
       onCancel={() => setPendingCancelId(null)}
     />
     </>
-  );
+  </FadeIn>);
 }

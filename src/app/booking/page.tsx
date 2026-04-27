@@ -7,7 +7,7 @@ import { RootState } from '@/redux/store';
 import { getShop } from '@/libs/shops';
 import { getService } from '@/libs/services';
 import { createReservation } from '@/libs/reservations';
-import Loading from '@/components/Loading';
+import { BookingFormSkeleton, FadeIn } from '@/components/Skeletons';
 import ErrorBanner from '@/components/ErrorBanner';
 import { QRCodeSVG } from 'qrcode.react';
 import QRCodeDisplay from '@/components/QRCodeDisplay';
@@ -173,11 +173,11 @@ export default function BookingPage() {
     }
   };
 
-  if (loading) return <main className="min-h-screen bg-dungeon-canvas py-8 px-4"><Loading /></main>;
+  if (loading) return <BookingFormSkeleton />;
 
   const displayPrice = promoApplied ? promoApplied.finalPrice : (service?.price || 0);
 
-  return (
+  return (<FadeIn>
     <main className="min-h-screen bg-dungeon-canvas py-8">
       <div className="max-w-2xl mx-auto px-4">
         <h1 className="text-3xl font-bold text-dungeon-header-text mb-8 text-center">
@@ -382,5 +382,5 @@ export default function BookingPage() {
         </form>
       </div>
     </main>
-  );
+  </FadeIn>);
 }

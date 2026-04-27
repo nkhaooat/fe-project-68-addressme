@@ -7,7 +7,7 @@ import { useToast } from '@/components/ToastContext';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { getPromotions, createPromotion, deletePromotion } from '@/libs/promotions';
 import AccessDenied from '@/components/AccessDenied';
-import Loading from '@/components/Loading';
+import { AdminPromotionsSkeleton, FadeIn } from '@/components/Skeletons';
 import ErrorBanner from '@/components/ErrorBanner';
 
 interface Promotion {
@@ -100,9 +100,9 @@ export default function AdminPromotionsPage() {
   }
 
   if (user?.role !== 'admin') return <AccessDenied />;
-  if (loading) return <main className="min-h-screen bg-dungeon-canvas py-8 px-4"><Loading /></main>;
+  if (loading) return <AdminPromotionsSkeleton />;
 
-  return (
+  return (<FadeIn>
     <>
     <main className="min-h-screen bg-dungeon-canvas py-8">
       <div className="max-w-6xl mx-auto px-4">
@@ -215,5 +215,5 @@ export default function AdminPromotionsPage() {
       onCancel={() => setPendingDeactivate(null)}
     />
     </>
-  );
+  </FadeIn>);
 }

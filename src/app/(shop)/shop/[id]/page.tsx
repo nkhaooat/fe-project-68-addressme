@@ -8,7 +8,7 @@ import { getShopServices } from '@/libs/services';
 import { getShopReviews } from '@/libs/reviews';
 import { Shop, Service, Review } from '@/interface';
 import ShopImage from '@/components/ShopImage';
-import Loading from '@/components/Loading';
+import { ShopDetailSkeleton, FadeIn } from '@/components/Skeletons';
 
 // TikTok logo SVG
 function TikTokIcon({ className }: { className?: string }) {
@@ -156,7 +156,7 @@ export default function ShopDetailPage() {
   if (loading) {
     return (
       <main className="min-h-screen bg-dungeon-canvas py-8 px-4">
-        <Loading />
+        <ShopDetailSkeleton />
       </main>
     );
   }
@@ -169,7 +169,7 @@ export default function ShopDetailPage() {
     );
   }
 
-  return (
+  return (<FadeIn>
     <main className="min-h-screen bg-dungeon-canvas py-8">
       <div className="max-w-4xl mx-auto px-4">
         {/* Back Link */}
@@ -435,5 +435,5 @@ export default function ShopDetailPage() {
         )}
       </div>
     </main>
-  );
+  </FadeIn>);
 }

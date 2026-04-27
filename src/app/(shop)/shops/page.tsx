@@ -8,7 +8,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { PaginationData } from '@/types/api';
 import Pagination from '@/components/Pagination';
 import ShopImage from '@/components/ShopImage';
-import Loading from '@/components/Loading';
+import { ShopsListSkeleton, FadeIn } from '@/components/Skeletons';
 
 export default function ShopsPage() {
   const [shops, setShops] = useState<Shop[]>([]);
@@ -91,7 +91,7 @@ export default function ShopsPage() {
   if (loading && shops.length === 0) {
     return (
       <div className="min-h-screen bg-dungeon-canvas py-8 px-4">
-        <Loading />
+        <ShopsListSkeleton />
       </div>
     );
   }
@@ -105,7 +105,7 @@ export default function ShopsPage() {
   }
 
 
-  return (
+  return (<FadeIn>
     <main className="min-h-screen bg-dungeon-canvas py-8">
       <div className="max-w-6xl mx-auto px-4">
         <h1 className="text-4xl font-bold text-dungeon-header-text mb-8 text-center">
@@ -268,5 +268,5 @@ export default function ShopsPage() {
         <Pagination pagination={pagination} currentPage={currentPage} onPageChange={setCurrentPage} />
       </div>
     </main>
-  );
+  </FadeIn>);
 }

@@ -12,7 +12,7 @@ import EditBookingModal from '@/components/EditBookingModal';
 import Pagination from '@/components/Pagination';
 import ErrorBanner from '@/components/ErrorBanner';
 import AccessDenied from '@/components/AccessDenied';
-import Loading from '@/components/Loading';
+import { AdminBookingsSkeleton, FadeIn } from '@/components/Skeletons';
 import BookingCard from '@/components/admin/BookingCard';
 import { useDebounce } from '@/hooks/useDebounce';
 import { PaginationData } from '@/types/api';
@@ -136,9 +136,9 @@ export default function AdminBookingsPage() {
   };
 
   if (user?.role !== 'admin') return <AccessDenied />;
-  if (loading) return <main className="min-h-screen bg-dungeon-canvas py-8 px-4"><Loading /></main>;
+  if (loading) return <AdminBookingsSkeleton />;
 
-  return (
+  return (<FadeIn>
     <>
     <main className="min-h-screen bg-dungeon-canvas py-8">
       <div className="max-w-6xl mx-auto px-4">
@@ -250,5 +250,5 @@ export default function AdminBookingsPage() {
       onCancel={() => setPendingCancelId(null)}
     />
     </>
-  );
+  </FadeIn>);
 }

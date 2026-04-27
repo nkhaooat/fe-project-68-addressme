@@ -10,7 +10,7 @@ import { getShops, Shop } from '@/libs/shops';
 import Pagination from '@/components/Pagination';
 import ErrorBanner from '@/components/ErrorBanner';
 import AccessDenied from '@/components/AccessDenied';
-import Loading from '@/components/Loading';
+import { AdminServicesSkeleton, FadeIn } from '@/components/Skeletons';
 import ServiceCard from '@/components/admin/ServiceCard';
 import ServiceModal from '@/components/admin/ServiceModal';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -184,9 +184,9 @@ export default function AdminServicesPage() {
   };
 
   if (user?.role !== 'admin') return <AccessDenied />;
-  if (loading) return <main className="min-h-screen bg-dungeon-canvas py-8 px-4"><Loading /></main>;
+  if (loading) return <AdminServicesSkeleton />;
 
-  return (
+  return (<FadeIn>
     <>
     <main className="min-h-screen bg-dungeon-canvas py-8">
       <div className="max-w-7xl mx-auto px-4">
@@ -280,5 +280,5 @@ export default function AdminServicesPage() {
       onCancel={() => setPendingDelete(null)}
     />
     </>
-  );
+  </FadeIn>);
 }

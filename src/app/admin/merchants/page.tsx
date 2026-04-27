@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import { getMerchants, approveMerchant, rejectMerchant } from '@/libs/auth';
 import AccessDenied from '@/components/AccessDenied';
-import Loading from '@/components/Loading';
+import { AdminMerchantsSkeleton, FadeIn } from '@/components/Skeletons';
 import Pagination from '@/components/Pagination';
 import { PaginationData } from '@/types/api';
 
@@ -86,7 +86,7 @@ export default function AdminMerchantsPage() {
   }
 
   if (user?.role !== 'admin') return <AccessDenied />;
-  if (loading) return <main className="min-h-screen bg-dungeon-canvas py-8 px-4"><Loading /></main>;
+  if (loading) return <AdminMerchantsSkeleton />;
 
   const pagination: PaginationData = {
     total: filteredMerchants.length,
@@ -95,7 +95,7 @@ export default function AdminMerchantsPage() {
     limit: PAGE_SIZE,
   };
 
-  return (
+  return (<FadeIn>
     <main className="min-h-screen bg-dungeon-canvas py-8">
       <div className="max-w-5xl mx-auto px-4">
         <h1 className="text-3xl font-bold text-dungeon-header-text mb-6">Merchant Applications</h1>
@@ -184,5 +184,5 @@ export default function AdminMerchantsPage() {
         )}
       </div>
     </main>
-  );
+  </FadeIn>);
 }

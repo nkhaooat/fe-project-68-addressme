@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import { useRouter } from 'next/navigation';
 import { RootState } from '@/redux/store';
 import { getMerchantDashboard } from '@/libs/auth';
-import Loading from '@/components/Loading';
+import { MerchantShopSkeleton, FadeIn } from '@/components/Skeletons';
 
 interface ShopData {
   _id: string;
@@ -74,9 +74,9 @@ export default function MerchantShopPage() {
     setSaving(false);
   }
 
-  if (loading) return <main className="min-h-screen bg-dungeon-canvas py-8 px-4"><Loading /></main>;
+  if (loading) return <MerchantShopSkeleton />;
 
-  return (
+  return (<FadeIn>
     <main className="min-h-screen bg-dungeon-canvas py-8">
       <div className="max-w-2xl mx-auto px-4">
         <div className="flex items-center justify-between mb-6">
@@ -144,5 +144,5 @@ export default function MerchantShopPage() {
         </div>
       </div>
     </main>
-  );
+  </FadeIn>);
 }

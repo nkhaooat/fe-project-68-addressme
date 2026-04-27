@@ -10,7 +10,7 @@ import Pagination from '@/components/Pagination';
 import { useToast } from '@/components/ToastContext';
 import MerchantReservationCard from '@/components/merchant/MerchantReservationCard';
 import { setCredentials } from '@/redux/features/authSlice';
-import Loading from '@/components/Loading';
+import { MerchantDashboardSkeleton, FadeIn } from '@/components/Skeletons';
 
 interface ShopData {
   _id: string;
@@ -192,11 +192,7 @@ export default function MerchantDashboardPage() {
   }
 
   if (loading) {
-    return (
-      <main className="min-h-screen bg-dungeon-canvas flex items-center justify-center">
-        <Loading text="Loading dashboard..." />
-      </main>
-    );
+    return <MerchantDashboardSkeleton />;
   }
 
   const statusColor = (s: string) => {
@@ -209,7 +205,7 @@ export default function MerchantDashboardPage() {
     }
   };
 
-  return (
+  return (<FadeIn>
     <main className="min-h-screen bg-dungeon-canvas py-8">
       <div className="max-w-5xl mx-auto px-4">
         <div className="flex items-center justify-between mb-6">
@@ -395,5 +391,5 @@ export default function MerchantDashboardPage() {
         )}
       </div>
     </main>
-  );
+  </FadeIn>);
 }

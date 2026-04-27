@@ -25,7 +25,13 @@ test.describe('EPIC 1: TikTok Videos', () => {
     // Page should load with shop content
     await expect(page.locator('h1, h2').first()).toBeVisible({ timeout: 10000 });
 
-    // TikTok link should be visible
+    // Click the TikTok button to expand the section
+    const tiktokBtn = page.locator('button:has-text("TikTok")').first();
+    await expect(tiktokBtn).toBeVisible({ timeout: 5000 });
+    await tiktokBtn.click();
+    await page.waitForTimeout(500);
+
+    // Now TikTok links should be visible
     const tiktokLink = page.locator('a[href*="tiktok.com"]').first();
     await expect(tiktokLink).toBeVisible({ timeout: 5000 });
 
@@ -53,6 +59,12 @@ test.describe('EPIC 1: TikTok Videos', () => {
   test('TC-03: Clicking TikTok link opens video in new tab', async ({ page, context }) => {
     await page.goto(`${BASE_URL}/shop/${SHOP_WITH_TIKTOK}`);
     await page.waitForLoadState('networkidle');
+
+    // Click the TikTok button to expand the section
+    const tiktokBtn = page.locator('button:has-text("TikTok")').first();
+    await expect(tiktokBtn).toBeVisible({ timeout: 5000 });
+    await tiktokBtn.click();
+    await page.waitForTimeout(500);
 
     const tiktokLink = page.locator('a[href*="tiktok.com"]').first();
     await expect(tiktokLink).toBeVisible({ timeout: 5000 });

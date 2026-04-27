@@ -162,22 +162,36 @@ test.describe('EPIC 1: Admin TikTok CRUD (US1-2, US1-3, US1-4)', () => {
   });
 
   // US1-4: Admin deletes TikTok video links
-  test('TC-TK06: Admin can click Remove on a TikTok link', async ({ page }) => {
+  test('TC-TK06: Admin can remove the test TikTok link added in TC-TK03', async ({ page }) => {
     await openEditModal(page);
 
     const tiktokSection = page.locator('div:has(> label:has-text("TikTok"))');
-    const removeBtn = tiktokSection.locator('button:has-text("Remove")').first();
-    if (await removeBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
-      // Click Remove — should remove the link from local state without crash
+    const testLink = 'https://www.tiktok.com/@test/video/9999999999999999999';
+
+    // Find the specific test link row and click its Remove button
+    const testLinkRow = tiktokSection.locator(`div:has(a[href="${testLink}"])`).first();
+    if (await testLinkRow.count() > 0) {
+      const removeBtn = testLinkRow.locator('button:has-text("Remove")').first();
+      await expect(removeBtn).toBeVisible({ timeout: 3000 });
       await removeBtn.click();
       await page.waitForTimeout(500);
-      // No crash = pass. The link is removed from UI state.
-      // (Persisting to DB requires clicking Save on the modal)
-      expect(true).toBe(true);
+
+      // Confirmation dialog appears — find it by its unique message text
+      const confirmOverlay = page.locator('div.fixed.inset-0:has-text("Remove this TikTok link")');
+      const confirmRemoveBtn = confirmOverlay.locator('button:has-text("Remove")').first();
+      await expect(confirmRemoveBtn).toBeVisible({ timeout: 3000 });
+      await confirmRemoveBtn.click();
+      await page.waitForTimeout(2000);
+
+      // The removeTiktokLink API is called directly — no need to click Update Shop
+      // Verify via API that the test link is removed
+      const response = await page.request.get(`http://localhost:5000/api/v1/shops/69be50224f7d836470ed1a66`);
+      const shopData = await response.json();
+      const tiktokLinks = shopData.data?.tiktokLinks || [];
+      expect(tiktokLinks).not.toContain(testLink);
     } else {
-      // No existing TikTok links to remove — valid state
-      const emptyMsg = tiktokSection.locator('text=No TikTok videos added yet');
-      await expect(emptyMsg).toBeVisible({ timeout: 2000 });
+      // Test link not found — may have already been removed
+      console.log('Test TikTok link not found — already removed or never added');
     }
   });
 });

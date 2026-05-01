@@ -16,6 +16,7 @@ export default function TopMenu() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAdminDropdownOpen, setIsAdminDropdownOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+  const [isMobileAdminOpen, setIsMobileAdminOpen] = useState(false);
 
   const userDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -42,6 +43,7 @@ export default function TopMenu() {
     setIsMenuOpen(false);
     setIsAdminDropdownOpen(false);
     setIsUserDropdownOpen(false);
+    setIsMobileAdminOpen(false);
   };
 
   const isAdminPage = pathname?.startsWith('/admin');
@@ -263,7 +265,7 @@ export default function TopMenu() {
           </div>
 
           {/* Mobile Dropdown Menu */}
-          <div className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${isMenuOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
+          <div className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${isMenuOpen ? 'max-h-[80vh] opacity-100 overflow-y-auto' : 'max-h-0 opacity-0'}`}>
             <div className="py-4 border-t border-dungeon-outline flex flex-col gap-4">
               <Link
                 href="/shops"
@@ -304,50 +306,63 @@ export default function TopMenu() {
                   
                   {user?.role === 'admin' && (
                     <div className="border-l-2 border-dungeon-accent pl-4">
-                      <p className="text-dungeon-accent font-medium mb-2">Admin</p>
-                      <div className="flex flex-col gap-2">
-                        <Link
-                          href="/admin/bookings"
-                          onClick={closeMenu}
-                          className={`py-2 pl-2 ${pathname === '/admin/bookings' ? 'text-dungeon-accent' : 'text-dungeon-primary hover:text-dungeon-accent'}`}
+                      <button
+                        onClick={() => setIsMobileAdminOpen(!isMobileAdminOpen)}
+                        className="flex items-center justify-between w-full text-dungeon-accent font-medium mb-2"
+                      >
+                        <span>Admin</span>
+                        <svg
+                          className={`w-4 h-4 transition-transform ${isMobileAdminOpen ? 'rotate-180' : ''}`}
+                          fill="none" stroke="currentColor" viewBox="0 0 24 24"
                         >
-                          📋 Bookings
-                        </Link>
-                        <Link
-                          href="/admin/shops"
-                          onClick={closeMenu}
-                          className={`py-2 pl-2 ${pathname === '/admin/shops' ? 'text-dungeon-accent' : 'text-dungeon-primary hover:text-dungeon-accent'}`}
-                        >
-                          🏪 Shops
-                        </Link>
-                        <Link
-                          href="/admin/services"
-                          onClick={closeMenu}
-                          className={`py-2 pl-2 ${pathname === '/admin/services' ? 'text-dungeon-accent' : 'text-dungeon-primary hover:text-dungeon-accent'}`}
-                        >
-                          💆 Services
-                        </Link>
-                        <Link
-                          href="/admin/promotions"
-                          onClick={closeMenu}
-                          className={`py-2 pl-2 ${pathname === '/admin/promotions' ? 'text-dungeon-accent' : 'text-dungeon-primary hover:text-dungeon-accent'}`}
-                        >
-                          🏷️ Promotions
-                        </Link>
-                        <Link
-                          href="/admin/merchants"
-                          onClick={closeMenu}
-                          className={`py-2 pl-2 ${pathname === '/admin/merchants' ? 'text-dungeon-accent' : 'text-dungeon-primary hover:text-dungeon-accent'}`}
-                        >
-                          Merchants
-                        </Link>
-                        <Link
-                          href="/admin/settings"
-                          onClick={closeMenu}
-                          className={`py-2 pl-2 ${pathname === '/admin/settings' ? 'text-dungeon-accent' : 'text-dungeon-primary hover:text-dungeon-accent'}`}
-                        >
-                          Settings
-                        </Link>
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                      <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isMobileAdminOpen || isAdminPage ? 'max-h-[400px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                        <div className="flex flex-col gap-2">
+                          <Link
+                            href="/admin/bookings"
+                            onClick={closeMenu}
+                            className={`py-2 pl-2 ${pathname === '/admin/bookings' ? 'text-dungeon-accent' : 'text-dungeon-primary hover:text-dungeon-accent'}`}
+                          >
+                            📋 Bookings
+                          </Link>
+                          <Link
+                            href="/admin/shops"
+                            onClick={closeMenu}
+                            className={`py-2 pl-2 ${pathname === '/admin/shops' ? 'text-dungeon-accent' : 'text-dungeon-primary hover:text-dungeon-accent'}`}
+                          >
+                            🏪 Shops
+                          </Link>
+                          <Link
+                            href="/admin/services"
+                            onClick={closeMenu}
+                            className={`py-2 pl-2 ${pathname === '/admin/services' ? 'text-dungeon-accent' : 'text-dungeon-primary hover:text-dungeon-accent'}`}
+                          >
+                            💆 Services
+                          </Link>
+                          <Link
+                            href="/admin/promotions"
+                            onClick={closeMenu}
+                            className={`py-2 pl-2 ${pathname === '/admin/promotions' ? 'text-dungeon-accent' : 'text-dungeon-primary hover:text-dungeon-accent'}`}
+                          >
+                            🏷️ Promotions
+                          </Link>
+                          <Link
+                            href="/admin/merchants"
+                            onClick={closeMenu}
+                            className={`py-2 pl-2 ${pathname === '/admin/merchants' ? 'text-dungeon-accent' : 'text-dungeon-primary hover:text-dungeon-accent'}`}
+                          >
+                            Merchants
+                          </Link>
+                          <Link
+                            href="/admin/settings"
+                            onClick={closeMenu}
+                            className={`py-2 pl-2 ${pathname === '/admin/settings' ? 'text-dungeon-accent' : 'text-dungeon-primary hover:text-dungeon-accent'}`}
+                          >
+                            Settings
+                          </Link>
+                        </div>
                       </div>
                     </div>
                   )}

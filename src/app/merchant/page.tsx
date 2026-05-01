@@ -45,6 +45,7 @@ export default function MerchantDashboardPage() {
   const [scanToken, setScanToken] = useState('');
   const [scanResult, setScanResult] = useState<{ success: boolean; message: string; data?: { user?: { name: string; email: string }; reservation?: { _id: string; resvDate: string; status: string } } } | null>(null);
   const [scanning, setScanning] = useState(false);
+  const [cameraOpen, setCamerOpen] = useState(false);
   const [tab, setTab] = useState<'overview' | 'reservations' | 'scan'>('overview');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -143,6 +144,70 @@ export default function MerchantDashboardPage() {
   // Pending state
   // Reset page on filter/search change
   useEffect(() => { setResPage(1); }, [statusFilter, searchQuery]);
+
+  // Camera QR scanner
+  useEffect(() => {
+    if (!cameraOpen) return;
+    let scanner: any = null;
+    let cancelled = false;
+
+    (async () => {
+      const { Html5Qrcode } = await import('html5-qrcode');
+      if (cancelled) return;
+
+      scanner = new Html5Qrcode('qr-reader');
+      try {
+        await scanner.start(
+          { facingMode: 'environment' },
+          { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 },
+          async (decodedText: string) => {
+            // Extract token from URL or use raw text
+            let qrToken = decodedText.trim();
+            try {
+              const url = new URL(qrToken);
+              const segments = url.pathname.split('/').filter(Boolean);
+              if (segments.length >= 2 && segments[segments.length - 2] === 'qr') {
+                qrToken = segments[segments.length - 1];
+              }
+            } catch {}
+
+            // Stop scanner and process
+            try { await scanner.stop(); } catch {}
+            setCamerOpen(false);
+            setScanToken(qrToken);
+
+            // Auto-verify
+            setScanning(true);
+            setScanResult(null);
+            try {
+              const res = await merchantScanQR(token!, qrToken);
+              setScanResult(res);
+              if (res.success) {
+                const resRes = await getMerchantReservations(token!);
+                if (resRes.success) setReservations(resRes.data);
+              }
+            } catch {
+              setScanResult({ success: false, message: 'Scan failed' });
+            }
+            setScanning(false);
+          },
+          () => {} // ignore scan failures (no QR in frame)
+        );
+      } catch (err: any) {
+        // Camera permission denied or no camera
+        addToast(err?.message || 'Could not access camera');
+        setCamerOpen(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      if (scanner) {
+        try { scanner.stop(); } catch {}
+        try { scanner.clear(); } catch {}
+      }
+    };
+  }, [cameraOpen]);
 
   // Filter reservations
   const filteredReservations = useMemo(() => {
@@ -348,16 +413,27 @@ export default function MerchantDashboardPage() {
         {/* Scan QR tab */}
         {tab === 'scan' && (
           <div className="space-y-6">
-            {/* Camera scanner link */}
+            {/* Camera scanner */}
             <div className="bg-dungeon-surface border border-dungeon-outline rounded-lg p-6 text-center">
               <div className="text-4xl mb-3">📷</div>
               <h3 className="text-lg font-bold text-dungeon-header-text mb-2">Camera Scanner</h3>
               <p className="text-dungeon-secondary text-sm mb-4">Use your device camera to scan customer QR codes</p>
-              <button onClick={() => setTab('scan')}
-                className="inline-block px-8 py-3 bg-dungeon-accent text-dungeon-dark-text font-bold rounded hover:bg-dungeon-accent-dark transition-colors">
-                Open Camera Scanner
+              <button onClick={() => setCamerOpen(!cameraOpen)}
+                className={`inline-block px-8 py-3 font-bold rounded transition-colors ${
+                  cameraOpen
+                    ? 'bg-red-600 text-white hover:bg-red-700'
+                    : 'bg-dungeon-accent text-dungeon-dark-text hover:bg-dungeon-accent-dark'
+                }`}>
+                {cameraOpen ? 'Stop Scanner' : 'Open Camera Scanner'}
               </button>
             </div>
+
+            {/* Camera view */}
+            {cameraOpen && (
+              <div className="bg-dungeon-surface border border-dungeon-outline rounded-lg p-4">
+                <div id="qr-reader" className="w-full max-w-md mx-auto" />
+              </div>
+            )}
 
             {/* Manual token input fallback */}
             <div className="bg-dungeon-surface border border-dungeon-outline rounded-lg p-6">

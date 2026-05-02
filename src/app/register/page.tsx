@@ -53,7 +53,7 @@ export default function RegisterPage() {
         
         if (meRes.success && meRes.data) {
           dispatch(setCredentials({ user: meRes.data, token: registerRes.token }));
-          router.push('/');
+          router.push('/consent');
         } else {
           setError('Account created but failed to get user info');
         }

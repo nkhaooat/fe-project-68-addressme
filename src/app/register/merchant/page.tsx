@@ -114,7 +114,7 @@ export default function RegisterMerchantPage() {
         const meRes = await getMe(res.token);
         if (meRes.success && meRes.data) {
           dispatch(setCredentials({ user: meRes.data, token: res.token }));
-          router.push('/merchant');
+          router.push('/consent?redirect=/merchant');
         }
       } else {
         setError(res.message || 'Registration failed');

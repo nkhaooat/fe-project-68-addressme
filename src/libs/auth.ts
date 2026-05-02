@@ -9,11 +9,11 @@ export async function userLogin(email: string, password: string) {
   return response.json();
 }
 
-export async function userRegister(name: string, email: string, telephone: string, password: string) {
+export async function userRegister(name: string, email: string, telephone: string, password: string, pdpaConsent?: { personalData: boolean; bookingEmails: boolean; aiChatbot: boolean; publicReviews: boolean }) {
   const response = await fetch(`${API_URL}/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, email, telephone, password }),
+    body: JSON.stringify({ name, email, telephone, password, pdpaConsent }),
   });
   return response.json();
 }
@@ -174,6 +174,18 @@ export async function updateMerchantReservationStatus(token: string, reservation
       'Authorization': `Bearer ${token}`,
     },
     body: JSON.stringify({ status }),
+  });
+  return response.json();
+}
+
+export async function updatePdpaConsent(token: string, consent: { personalData: boolean; bookingEmails: boolean; aiChatbot: boolean; publicReviews: boolean }) {
+  const response = await fetch(`${API_URL}/auth/pdpa-consent`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(consent),
   });
   return response.json();
 }

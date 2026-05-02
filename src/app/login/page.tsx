@@ -29,7 +29,12 @@ export default function LoginPage() {
         
         if (meRes.success && meRes.data) {
           dispatch(setCredentials({ user: meRes.data, token: loginRes.token }));
-          router.push('/');
+          // Check if user has completed PDPA consent
+          if (!meRes.data.pdpaConsentedAt) {
+            router.push('/consent');
+          } else {
+            router.push('/');
+          }
         } else {
           setError('Failed to get user info');
         }
